@@ -4,9 +4,10 @@ import {
     JsonRpcRequest,
     ValidationUtils
 } from "ferrum-plumbing";
-import { PoolDropService } from "./PoolDropService";
-import { PoolDrop } from "./Types";
+import { StakingAppService } from "./StakingAppService";
+import { StakingApp } from "./Types";
 import Big from 'big.js';
+
 
 function handlePreflight(request: any) {
     if (request.method === 'OPTIONS' || request.httpMethod === 'OPTIONS') {
@@ -25,7 +26,7 @@ function handlePreflight(request: any) {
 
 export class HttpHandler implements LambdaHttpHandler {
     constructor(private uniBack: UnifyreBackendProxyService,
-        private userSvc: PoolDropService,
+        private userSvc: StakingAppService,
         ) { }
 
     async handle(request: LambdaHttpRequest, context: any): Promise<LambdaHttpResponse> {
@@ -41,6 +42,15 @@ export class HttpHandler implements LambdaHttpHandler {
         request.path = request.path || (request as any).url;
         try {
             switch (req.command) {
+                case 'signInToServer':
+                    const {token} = req.data;
+                    const [userProfile, session] = await this.uniBack.signInToServer(token);
+                    const currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+                    ValidationUtils.isTrue(!!currency, 'signed in user has no active wallet');
+                    console.log(userProfile,'====<<>>>',req,currency);
+                    await this.userSvc.getStakeInfo(req.data.token, currency)
+                    body = {userProfile, session};
+                    break;
                 default:
                     return {
                         body: JSON.stringify({error: 'bad request'}),
@@ -79,71 +89,38 @@ export class HttpHandler implements LambdaHttpHandler {
         }
     }
 
-    async transactionsReceived(req: JsonRpcRequest): Promise<PoolDrop> {
+    async transactionsReceived(req: JsonRpcRequest): Promise<any> {
         const {linkId, transactionIds} = req.data;
         validateFieldsRequired({linkId, transactionIds});
-        return this.userSvc.addTransactionIds(linkId, transactionIds);
+        //return this.userSvc.addTransactionIds(linkId, transactionIds);
     }
 
-    async getLink(req: JsonRpcRequest): Promise<PoolDrop> {
+    async getLink(req: JsonRpcRequest): Promise<any> {
         const {linkId} = req.data;
         validateFieldsRequired({linkId});
-        const pd = await this.userSvc.get(linkId);
+        const pd = ''
         ValidationUtils.isTrue(!!pd, "Link not found");
         return pd!;
     }
 
-    async claim(req: JsonRpcRequest): Promise<PoolDrop> {
+    async claim(req: JsonRpcRequest): Promise<any> {
         const {token, linkId} = req.data;
         validateFieldsRequired({token, linkId});
-        return this.userSvc.claim(token, linkId);
+        //return this.userSvc.claim(token, linkId);
     }
 
-    async cancelLink(userId: string, req: JsonRpcRequest): Promise<PoolDrop> {
+    async cancelLink(userId: string, req: JsonRpcRequest): Promise<any> {
         const {linkId} = req.data;
         validateFieldsRequired({userId, linkId});
-        return this.userSvc.cancelLink(userId, linkId);
+       // return this.userSvc.cancelLink(userId, linkId);
     }
 
-    async createLinkAndRegister(req: JsonRpcRequest): Promise<PoolDrop> {
-        const {token, totalAmount, numberOfParticipants,
-            participationAmountFormatted, completedMessage, completedLink,restrictedParticipants } = req.data;
-        validateFieldsRequired({token, totalAmount, numberOfParticipants,
-            participationAmountFormatted});
-        ValidationUtils.isTrue(Big(totalAmount).gt(Big(0)), "Amount must be greater than zero");
-        ValidationUtils.isTrue(numberOfParticipants > 0, 'Number of participants must be greater than zero')
-        const participationAmount = Big(totalAmount).div(numberOfParticipants).toString();
-        const link = {
-            version: 0,
-            creatorId: '',
-            creatorAddress: '',
-            createdAt: 0,
-            displayName: '',
-            id: '',
-            network: '' as any,
-            currency: '',
-            symbol: '',
-            totalAmount,
-            numberOfParticipants,
-            participationAmount,
-            participationAmountFormatted,
-            claims: [],
-            cancelled: false,
-            executed: false,
-            completedLink,
-            completedMessage,
-            transactionIds: [],
-            restrictedParticipants
-        } as PoolDrop;
-        return this.userSvc.createLinkAndRegister(token, link);
-    }
-
-    async signAndSendAsync(userId: string, req: JsonRpcRequest): Promise<{requestId: string}> {
+    async signAndSendAsync(userId: string, req: JsonRpcRequest): Promise<any> {
         const {linkId, token} = req.data;
         ValidationUtils.isTrue(!!linkId, '"linkId" must be provided');
         ValidationUtils.isTrue(!!token, '"token" must be provided');
-        const requestId = await this.userSvc.signAndSendAsync(userId, linkId, token);
-        return {requestId};
+        //const requestId = await this.userSvc.signAndSendAsync(userId, linkId, token);
+        return //{requestId};
     }
 }
 
