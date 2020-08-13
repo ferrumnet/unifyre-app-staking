@@ -19,7 +19,11 @@ const STAKING_APP_ID = 'STAKING_APP';
 
 // DEV - only use for local. Remote dev is considered prod
 const IS_DEV = true;
-const STAKING_APP_SMART_CONTRACT_ADDRESS_DEV = '0xa5E076B576a01Ca7233140A6dd39599e2635e2AE';
+const STAKING_APP_SMART_CONTRACT_ADDRESS_DEV = '0xbaC16a35204d809b17EF3e5F47437F43e6360310';
+
+const STAKING_APP_TOKEN_ADDRESS_DEV = '0x402a8e00603aB331d3F5Bf5632348E6EE66C6Fca';
+
+const STAKING_APP_TOKEN_ADDRESS_PROD = '0x402a8e00603aB331d3F5Bf5632348E6EE66C6Fca';
 
 const STAKING_APP_SMART_CONTRACT_ADDRESS_PROD = {
  
@@ -27,6 +31,8 @@ const STAKING_APP_SMART_CONTRACT_ADDRESS_PROD = {
 
 const STAKING_APP_ADDRESS = IS_DEV ?
     { 'ETHEREUM': STAKING_APP_SMART_CONTRACT_ADDRESS_DEV } : STAKING_APP_SMART_CONTRACT_ADDRESS_PROD;
+
+const STAKING_TOKEN_ADDRESS = IS_DEV ? STAKING_APP_TOKEN_ADDRESS_DEV : STAKING_APP_TOKEN_ADDRESS_PROD;
 
 async function init() {
     if (global.init) {
@@ -120,7 +126,8 @@ export class stakingAppModule implements Module {
             () => new SmartContratClient(
                 stakingAppConfig.web3ProviderEthereum,
                 stakingAppConfig.web3ProviderRinkeby,
-                STAKING_APP_ADDRESS));
+                STAKING_APP_ADDRESS,
+                STAKING_TOKEN_ADDRESS));
         container.register('JsonStorage', () => new Object());
         container.registerSingleton(StakingAppService,
                 c => new StakingAppService(

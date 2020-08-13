@@ -11,6 +11,9 @@ export const defaultUserPreference = {
 export interface DashboardProps {
     initialized: boolean;
     fatalError?: string;
+    stakingData?: any;
+    balance?: string;
+    address?: any
 }
 
 export interface ClaimState {
@@ -22,6 +25,7 @@ export interface RootState {
     data : {
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
+        stakingData: any
     },
     ui: {
         flags: {

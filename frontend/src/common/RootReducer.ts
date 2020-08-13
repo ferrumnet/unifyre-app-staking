@@ -20,7 +20,17 @@ function userData(state: { userProfile: AppUserProfile } = {} as any, action: An
     switch(action.type) {
         case StakingAppServiceActions.USER_DATA_RECEIVED:
             const {userProfile} = action.payload;
-            return {...state, profile: userProfile};
+            return {...state, profile: userProfile };
+        default:
+            return state;
+    }
+}
+
+function stakingData(state: { userProfile: AppUserProfile } = {} as any, action: AnyAction) {
+    switch(action.type) {
+        case StakingAppServiceActions.STAKING_DATA_RECEIVED:
+            const {stakingData} = action.payload;
+            return {...state, stakingData };
         default:
             return state;
     }
@@ -28,6 +38,7 @@ function userData(state: { userProfile: AppUserProfile } = {} as any, action: An
 
 const data = combineReducers({
     userData,
+    stakingData,
     userPreference: userPreferenceReducer,
 });
 

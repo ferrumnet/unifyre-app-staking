@@ -2,13 +2,16 @@ import React, {useEffect} from 'react';
 import { DashboardDispatch, Dashboard } from './Dashboard';
 import { Switch, Route, useHistory } from 'react-router-dom';
 import {
-    Page, Row, ThemedText, Gap,
+    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon
     // @ts-ignore
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
 import { CONFIG } from '../../common/IocModule';
 import { Utils } from '../../common/Utils';
 import { intl } from 'unifyre-react-helper';
+import { StakingComponent } from './../staking/StakingContainer';
+import { MainComponent } from './../staking/Main';
+import {StakeComponent} from '../staking/StakeTokenPage';
 
 
 function DashboardComponent(props: any) {
@@ -24,9 +27,16 @@ function DashboardComponent(props: any) {
         // Render the routes
         return (
             <>
-              {testAlert}
               <Switch>
-              
+                  <Route path='/stake/:address'>
+                        <StakeComponent props={props}/>
+                  </Route>
+                  <Route path='/info/:address'>
+                        <StakingComponent props={props.stakingData}/>
+                  </Route>
+                  <Route path='/'>
+                        <MainComponent props={props.stakingData}/>
+                  </Route>
               </Switch>
             </>
         );

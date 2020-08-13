@@ -45,11 +45,22 @@ export class HttpHandler implements LambdaHttpHandler {
                 case 'signInToServer':
                     const {token} = req.data;
                     const [userProfile, session] = await this.uniBack.signInToServer(token);
-                    const currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+                    let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
                     ValidationUtils.isTrue(!!currency, 'signed in user has no active wallet');
-                    console.log(userProfile,'====<<>>>',req,currency);
-                    await this.userSvc.getStakeInfo(req.data.token, currency)
+                    console.log(userProfile);
+                    await this.userSvc.saveStakeInfo(req.data.token, currency)
                     body = {userProfile, session};
+                    break;
+                case 'getTokenStakingInfo':
+                    const {symbol} = req.data;
+                    //ValidationUtils.isTrue(!!userId, 'Not signed in');
+                    body = await this.userSvc.get(symbol);
+                    break;
+                case 'stakeToken':
+                    const {amount,userAddress,Usercurrency} = req.data;   
+                    //ValidationUtils.isTrue(!!Usercurrency, 'signed in user has no active wallet');                
+                    //await this.userSvc.saveStakeInfo(req.data.token, currency)
+                    body = await this.userSvc.AddStake({amount,userAddress,currency:Usercurrency})
                     break;
                 default:
                     return {

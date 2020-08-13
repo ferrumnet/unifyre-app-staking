@@ -12,6 +12,7 @@ export const StakingAppServiceActions = {
     AUTHENTICATION_FAILED: 'AUTHENTICATION_FAILED',
     AUTHENTICATION_COMPLETED: 'AUTHENTICATION_COMPLETED',
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
+    STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
 };
 
 const Actions = StakingAppServiceActions;
@@ -24,14 +25,21 @@ export class StakingAppClient implements Injectable {
 
     __name__() { return 'PoolDropClient'; }
 
-    async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile | undefined> {
+    async signInToServer(dispatch: Dispatch<AnyAction>): Promise< any | undefined> {
         const token = this.getToken(dispatch);
         if (!token) { return; }
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
             const res = await this.api({
-                command: 'signInToServer', data: {token}, params: [] } as JsonRpcRequest);
-            const {userProfile, session} = res;
+                command: 'signInToServer', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);
+            const {userProfile, session } = res;
+            let symbol = userProfile.accountGroups[0].addresses[0].symbol;
+            ValidationUtils.isTrue(!!symbol, "error getting token symbol");
+            let stakingData;
+            if(symbol){
+                stakingData = await this.api({
+                    command: 'getTokenStakingInfo', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);                    
+            }
             if (!session) {
                 dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
                 return;
@@ -39,7 +47,24 @@ export class StakingAppClient implements Injectable {
             this.jwtToken = session;
             dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
             dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
-            return userProfile;
+            dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
+            return {userProfile,stakingData};
+        } catch (e) {
+            console.error('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async stakeToken(dispatch: Dispatch<AnyAction>,amount:Number,userAddress:string,currency:any): Promise< any | undefined> {
+        const token = this.getToken(dispatch);
+        if (!token) { return; }
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+            const res = await this.api({
+                command: 'stakeToken', data: {amount,userAddress,currency}, params: [] } as JsonRpcRequest);
+                return res;        
         } catch (e) {
             console.error('Error sigining in', e);
             dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));

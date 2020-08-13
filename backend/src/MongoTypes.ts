@@ -4,26 +4,22 @@ import { StakingApp } from "./Types";
 
 
 const StakingAppSchema: Schema = new Schema<StakingApp>({
-    id: String,
-    creatorId: String,
-    createdAt: Number,
-    displayName: String,
+    tokenName: String,
+    stakingCap: Number,
+    stakedAmount: Number,
+    withdrawEnds: Number,
+    withdrawStarts: Number,
+    stakingEnds: Number,
+    stakingStarts: Number,
+    version: Number,
     network: String,
-    currency: String,
+    creatorAddress: String,
+    createdAt: Number,
     symbol: String,
-    totalAmount: String,
-    numberOfParticipants: Number,
-    participationAmount: String,
-    participationAmountFormatted: String,
-    transactionIds: [String],
-    cancelled: Boolean,
-    executed: Boolean,
-    completedLink: String,
-    completedMessage: String,
-    restrictedParticipants: String
+    numberOfStakeParticipants: Number,
 });
 
-export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('StakingApp', StakingAppSchema);
+export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
 
 export function getEnv(env: string) {
     const res = process.env[env];
