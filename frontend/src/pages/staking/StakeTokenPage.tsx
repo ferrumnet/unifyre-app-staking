@@ -12,7 +12,6 @@ export function StakeComponent(props: any) {
     const {symbol,stakingCap,balance,stakedAmount} = stakeInfo;   
     // Render the routes
     let currency = props.props.address.currency;
-    console.log(props,'====?>>>>>',currency)
     const data = props.props.stakingData;
     return (
         <Page>
@@ -61,7 +60,7 @@ export function StakeComponent(props: any) {
                   </Row>
                   <Gap/>
                   <Row withPadding>
-                        <ThemedButton text={`Submit Stake`} onClick={()=>{props.props.stakeToken({address:'',amount:20,currency })}}/>
+                        <ThemedButton text={`Submit Stake`} onClick={()=>{props.props.stakeToken({address:'',amount:20,currency,symbol:'FRM' })}}/>
                   </Row>
               </>
             }        

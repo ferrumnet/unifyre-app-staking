@@ -1,8 +1,8 @@
 import { Injectable, HexString, LocalCache, ValidationUtils, Network } from "ferrum-plumbing";
 // @ts-ignore
-import * as erc20Abi from './resources/IERC20.json'
+import * as erc20Abi from './resources/ERC20.json'
 // @ts-ignore
-import * as poolDropAbi from './resources/StakingApp.json';
+import * as stakingAbi from './resources/Staking.json';
 // import { Eth } from 'web3-eth';
 import Web3 from 'web3';
 import Big from 'big.js';
@@ -10,8 +10,6 @@ import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 import { timeStamp } from "console";
 
 //@ts-nocheck
-
-  
 
 export class SmartContratClient implements Injectable {
     cache: LocalCache;
@@ -22,44 +20,46 @@ export class SmartContratClient implements Injectable {
         private stakingTokenContract: string
     ) {
         this.cache = new LocalCache();
-
     }
 
     __name__() { return 'SmartContratClient'; }
 
     async instance(currency: string){
         const network = currency.split(':')[0];
+        const contract = this.stakingAppContract[network];
+        console.log(network,contract)
         return this.stakingApp(network);
     }
 
-    
-
-    async checkAllowance(
+    async checkAllowanceAndStake(
         currency: string,
+        symbol: string,
         userAddress:string,
         amount:number,
     ): Promise<any> {
-        const network = currency.split(':')[0];
+        let token = currency.split(':')[1];
+        let network = currency.split(':')[0];
         const contract = this.stakingAppContract[network];
-        const instance = await this.stakingApp(network);
-        const erc2 = await this.erc20(network,this.stakingTokenContract);
-        console.log('contractToken',this.stakingTokenContract);
-        let name = await this.stakingApp(network).methods.tokenName().call();
-        let er = await erc2.methods.INITIAL_SUPPLY().call();
-        console.log(name,'stakingContractName',er);
         ValidationUtils.isTrue(!!contract, 'No contract address is configured for this network');
-        let allowance = await this.allowance(userAddress, this.stakingTokenContract,network);
+        const decimalFactor = 10 ** await this.decimals(network, token);;
+        const amountToStake = new Big(amount).times(new Big(decimalFactor)).round(0, 0);
+        const [approve, approveGas] = await this.approve(network, token, userAddress, amount);
+        const [staking, stakingGas] = await this.stakeToken(network, token, userAddress, amountToStake);
+        const nonce = await this.web3(network).getTransactionCount(userAddress, 'pending');
+        const fullAmount = amountToStake.div(decimalFactor).toFixed();
+        console.log('contractToken',this.stakingTokenContract);
+        let name = await this.stakingApp(network).methods.tokenAddress().call();
+        let allowance
         try {
             allowance = await this.allowance(userAddress,this.stakingTokenContract,network);
-            console.log(allowance,'allowance====',!allowance,contract);
-            if (allowance) {
                 console.log('About to approve for amount.', amount);
-                const [approve, approveGas] = await this.approve(network,this.stakingAppContract[network], contract, amount);
                 console.log('Approve was successful, now doing some moew.')
-                const nonce = await this.web3(network).getTransactionCount(userAddress, 'pending');
-                console.log(nonce,'pppppp');
-                return [];
-            }
+                return [
+                    callRequest(token, currency, userAddress, approve, approveGas.toFixed(), nonce,
+                        `Approve ${fullAmount} ${symbol} to be spent by PoolDrop contract`,),
+                    callRequest(contract, currency, userAddress, staking, stakingGas.toFixed(), nonce + 1,
+                        `${amount} ${symbol} to be staked`,),
+                ];    
         } catch (error) {
             console.log('Unable to approve the stake, try again',error);
             return;
@@ -80,9 +80,9 @@ export class SmartContratClient implements Injectable {
     private async approve(network: string, token: string,from: string,amount:Number): Promise<any> {
         const erc2 = await this.erc20(network,this.stakingTokenContract);
         console.log('contractToken',this.stakingTokenContract);
-        let name = await this.stakingApp(network).methods.tokenName().call();
-        let er = await erc2.methods.INITIAL_SUPPLY().call();
-        let initial = await erc2.methods.INITIAL_SUPPLY().call();
+        //let name = await this.stakingApp(network).methods.tokenName().call();
+        //let er = await erc2.methods.INITIAL_SUPPLY().call();
+        //let initial = await erc2.methods.INITIAL_SUPPLY().call();
         const m = await erc2.methods.approve(this.stakingAppContract[network], amount.toFixed());
         const gas = await m.estimateGas({from});
         console.log('APPROVE', gas);
@@ -109,8 +109,9 @@ export class SmartContratClient implements Injectable {
 
     private stakingApp(network: string) {
         const contractAddress = this.stakingAppContract[network];
+        console.log(contractAddress);
         const web3 = this.web3(network);
-        return new web3.Contract(poolDropAbi.abi as any, contractAddress);
+        return new web3.Contract(stakingAbi.abi as any, contractAddress);
     }
 
     async balanceOf(address:string,network: string, token: string) {
@@ -123,20 +124,27 @@ export class SmartContratClient implements Injectable {
 
     async amountToRaw(amount:number,network:string,contractAddress:string) {
         const erc2 = await this.erc20(network,this.stakingTokenContract);
-        console.log('contractToken',this.stakingTokenContract);
-        let er = await erc2.methods.INITIAL_SUPPLY().call();
+        console.log('contractToken',this.stakingTokenContract,erc2);
         let decimal = await this.erc20(network,contractAddress).methods.decimals().call();
-        console.log(decimal,'illl====')
         return amount * (10 ** decimal);
     }
 
-    async stake(stakerAddress:string, amount:number,network:string) {
+    private async stakeToken(network: string, token: string, userAddress: string,  amount: Big):
+        Promise<[HexString, number]> {
+        console.log('stake', {token, userAddress, amount: amount.toFixed()});
+        const m = this.stakingApp(network).methods.stake(amount.toFixed());
+        const gas = 35000 + 1 * 60000;
+        // await m.estimateGas({from}); This will fail unfortunately because tx will revert!
+        console.log('stake', gas);
+        return [m.encodeABI(), gas];
+    }
+
+    async stake(amount:number,network:string) {
         const rawAmount = await this.amountToRaw(amount,network,this.stakingTokenContract);
-        let contractInstance = await this.instance(network);
-        let instance = await contractInstance.methods.stake(29);
+        console.log(await this.stakingApp(network).methods.tokenAddress().call());
         console.log('ABOUT TO CALL STAKE', rawAmount)
         try{
-            let stakeResponse = await this.stakingApp('ETHEREUM').methods.stake(amount,stakerAddress).call();
+            await this.stakingApp(network).methods.stake(amount);
         }catch (error) {
             console.log('Error occured staking , try again', error);
             return;
@@ -148,4 +156,18 @@ export class SmartContratClient implements Injectable {
         return Number(raw) / (10 ** decimal);
     }
     
+}
+
+function callRequest(contract: string, currency: string, from: string, data: string, gasLimit: string, nonce: number,
+    description: string): CustomTransactionCallRequest {
+    return {
+        currency,
+        from,
+        amount: '0',
+        contract,
+        data,
+        gas: { gasPrice: '0', gasLimit },
+        nonce,
+        description,
+    };
 }

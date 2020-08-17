@@ -11,6 +11,11 @@ export function StakingComponent(props: any) {
     // Render the routes
     console.log(stakeInfo);
     const history = useHistory();
+    var utcSeconds = stakingStarts;
+    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+    d.setUTCSeconds(utcSeconds);
+    console.log(d);
+    
 
     const navigateToInfoPage = (address:string) => {
         history.replace(`/stake/${address}`);
@@ -69,7 +74,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={stakingStarts}
+                    value={'8/1/2020'}
                     onChange={props.stakingStarts}
                     inputMode={'decimal'}
                     disabled={true}
@@ -80,8 +85,8 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={stakingEnds}
-                    onChange={props.stakingEnds}
+                    value={'8/5/2020'}
+                    onChange={'8/5/2020'}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -91,7 +96,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={withdrawStarts}
+                    value={'8/5/2020'}
                     onChange={props.withdrawalEnds}
                     inputMode={'decimal'}
                     disabled={true}
@@ -102,7 +107,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={withdrawEnds}
+                    value={'8/11/2020'}
                     onChange={props.withdrawalEnds}
                     inputMode={'decimal'}
                     disabled={true}

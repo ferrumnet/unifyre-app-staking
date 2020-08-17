@@ -34,7 +34,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const wyre = inject<StakingAppClient>(StakingAppClient);
-            const data = await wyre.stakeToken(dispatch,props.amount,props.address,props.currency);
+            const data = await wyre.signAndSend(dispatch,props.amount,props.address,props.currency,props.symbol);
         } catch (e) {
             console.error('Dashboard.mapDispatchToProps', e);
             dispatch(addAction(Actions.INIT_FAILED, { error: e.toString() }));
@@ -48,6 +48,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             await IocModule.init(dispatch);
             const wyre = inject<StakingAppClient>(StakingAppClient);
             const data = await wyre.signInToServer(dispatch);
+            console.log(data,'------9899-=====')
             if (data?.userProfile) {
                 if(!data['stakingData']){
                     dispatch(addAction(Actions.INIT_FAILED, { error: 'Staking for selected token is yet to start.' }));

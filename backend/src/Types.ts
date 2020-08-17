@@ -27,6 +27,7 @@ export interface stake {
     amount: number;
     userAddress: string;
     currency: string;
+    uniToken: string;
 }
 export interface StakingAppConfig {
     database: MongooseConfig;

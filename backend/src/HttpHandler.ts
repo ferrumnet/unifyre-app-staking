@@ -43,24 +43,21 @@ export class HttpHandler implements LambdaHttpHandler {
         try {
             switch (req.command) {
                 case 'signInToServer':
-                    const {token} = req.data;
+                    let {token} = req.data;
                     const [userProfile, session] = await this.uniBack.signInToServer(token);
                     let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
                     ValidationUtils.isTrue(!!currency, 'signed in user has no active wallet');
                     console.log(userProfile);
-                    await this.userSvc.saveStakeInfo(req.data.token, currency)
+                    //await this.userSvc.saveStakeInfo(req.data.token, currency)
                     body = {userProfile, session};
                     break;
                 case 'getTokenStakingInfo':
-                    const {symbol} = req.data;
-                    //ValidationUtils.isTrue(!!userId, 'Not signed in');
-                    body = await this.userSvc.get(symbol);
+                    body = await this.userSvc.get(req.data.symbol)
                     break;
-                case 'stakeToken':
-                    const {amount,userAddress,Usercurrency} = req.data;   
-                    //ValidationUtils.isTrue(!!Usercurrency, 'signed in user has no active wallet');                
-                    //await this.userSvc.saveStakeInfo(req.data.token, currency)
-                    body = await this.userSvc.AddStake({amount,userAddress,currency:Usercurrency})
+                case 'stakeTokenSignAndSend':
+                    const {amount} = req.data;   
+                    body = await this.signAndSendAsync(amount,req.data.token);          
+                    //body = await this.userSvc.createStake({amount,userAddress,uniToken:token,currency})
                     break;
                 default:
                     return {
@@ -126,12 +123,13 @@ export class HttpHandler implements LambdaHttpHandler {
        // return this.userSvc.cancelLink(userId, linkId);
     }
 
-    async signAndSendAsync(userId: string, req: JsonRpcRequest): Promise<any> {
-        const {linkId, token} = req.data;
-        ValidationUtils.isTrue(!!linkId, '"linkId" must be provided');
-        ValidationUtils.isTrue(!!token, '"token" must be provided');
-        //const requestId = await this.userSvc.signAndSendAsync(userId, linkId, token);
-        return //{requestId};
+    async signAndSendAsync(amount:number,uniToken:string): Promise<any> {
+        ValidationUtils.isTrue(!!uniToken, '"token" must be provided');
+        const [userProfile] = await this.uniBack.signInToServer(uniToken);
+        let userAddress = ((userProfile.accountGroups[0] || []).addresses[0] || {}).address;
+        let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+        const requestId = this.userSvc.stakeToken({amount,userAddress,uniToken,currency})
+        return {requestId};
     }
 }
 
