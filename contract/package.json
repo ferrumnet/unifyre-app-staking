@@ -16,6 +16,7 @@
     "truffle-flattener": "^1.4.4"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.0.2"
+    "@openzeppelin/contracts": "^3.1.0",
+    "openzeppelin-solidity": "^3.1.0"
   }
 }

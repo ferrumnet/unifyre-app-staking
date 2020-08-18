@@ -1,35 +1,25 @@
 import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
-import { PoolDrop, PoolDropClaim } from "./Types";
+import { StakingApp } from "./Types";
 
-const claimSchema: Schema = new Schema<PoolDropClaim>({
-    address: String,
-    email: String,
-    userId: String,
-});
 
-const poolDropSchema: Schema = new Schema<PoolDrop>({
-    id: String,
-    creatorId: String,
-    createdAt: Number,
-    displayName: String,
+const StakingAppSchema: Schema = new Schema<StakingApp>({
+    tokenName: String,
+    stakingCap: Number,
+    stakedAmount: Number,
+    withdrawEnds: Number,
+    withdrawStarts: Number,
+    stakingEnds: Number,
+    stakingStarts: Number,
+    version: Number,
     network: String,
-    currency: String,
+    creatorAddress: String,
+    createdAt: Number,
     symbol: String,
-    totalAmount: String,
-    numberOfParticipants: Number,
-    participationAmount: String,
-    participationAmountFormatted: String,
-    claims: [claimSchema],
-    transactionIds: [String],
-    cancelled: Boolean,
-    executed: Boolean,
-    completedLink: String,
-    completedMessage: String,
-    restrictedParticipants: String
+    numberOfStakeParticipants: Number,
 });
 
-export const PoolDropModel = (c: Connection) => c.model<PoolDrop&Document>('poolDrops', poolDropSchema);
+export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
 
 export function getEnv(env: string) {
     const res = process.env[env];

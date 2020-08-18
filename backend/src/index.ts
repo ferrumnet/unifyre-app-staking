@@ -9,31 +9,37 @@ import {
 } from "ferrum-plumbing";
 import { ClientModule, UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { getEnv } from './MongoTypes';
-import { PoolDropService } from './StakingAppService';
+import { StakingAppService } from './StakingAppService';
 import { SmartContratClient } from './SmartContractClient';
 import { KMS } from 'aws-sdk';
-import { PoolDropConfig } from './Types';
+import { StakingAppConfig } from './Types';
 
 const global = { init: false };
-const POOLDROP_APP_ID = 'POOL_DROP';
+const STAKING_APP_ID = 'STAKING_APP';
 
 // DEV - only use for local. Remote dev is considered prod
-const IS_DEV = !!process.env.IS_DEV;
-const POOL_DROP_SMART_CONTRACT_ADDRESS_DEV = '0x32d7c376594bb287a252ffba01e70ad56174702a';
+const IS_DEV = false;
+const STAKING_APP_SMART_CONTRACT_ADDRESS_DEV = '0xe31048F6D54379950F7de0d945329121e2515e38';
 
-const POOL_DROP_SMART_CONTRACT_ADDRESS_PROD = {
-    'ETHEREUM': '0x953816f333952f2132f132df8edd9b703582b30f',
-    'RINKEBY': '0xcc33f44fff89c369d9e770186a018243522fe220'
+const STAKING_APP_TOKEN_ADDRESS_DEV = '0x93698a057CEC27508A9157a946e03E277B46Fe56';
+
+const STAKING_APP_TOKEN_ADDRESS_PROD = '0x93698a057CEC27508A9157a946e03E277B46Fe56';
+
+const STAKING_APP_SMART_CONTRACT_ADDRESS_PROD = {
+    'RINKEBY': '0x5b16C26c7B65518711e29798cf09B27f09907288'
 };
-const POOL_DROP_ADDRESS = IS_DEV ?
-    { 'ETHEREUM': POOL_DROP_SMART_CONTRACT_ADDRESS_DEV } : POOL_DROP_SMART_CONTRACT_ADDRESS_PROD;
+
+const STAKING_APP_ADDRESS = IS_DEV ?
+    { 'ETHEREUM': STAKING_APP_SMART_CONTRACT_ADDRESS_DEV } : STAKING_APP_SMART_CONTRACT_ADDRESS_PROD;
+
+const STAKING_TOKEN_ADDRESS = IS_DEV ? STAKING_APP_TOKEN_ADDRESS_DEV : STAKING_APP_TOKEN_ADDRESS_PROD;
 
 async function init() {
     if (global.init) {
         return LambdaGlobalContext.container();
     }
     const container = await LambdaGlobalContext.container();
-    await container.registerModule(new PoolDropModule());
+    await container.registerModule(new stakingAppModule());
     global.init = true;
     return container;
 }
@@ -57,18 +63,18 @@ export async function handler(event: any, context: any) {
     }
 }
 
-export class PoolDropModule implements Module {
+export class stakingAppModule implements Module {
     async configAsync(container: Container) {
         // Only uncomment to encrypt sk
         // await encryptEnv('SK', container);
 
         const region = process.env.AWS_REGION || process.env[AwsEnvs.AWS_DEFAULT_REGION] || 'us-east-2';
-        const poolDropConfArn = process.env[AwsEnvs.AWS_SECRET_ARN_PREFIX + 'UNI_APP_POOL_DROP'];
-        let poolDropConfig: PoolDropConfig = {} as any;
-        if (poolDropConfArn) {
-            poolDropConfig = await new SecretsProvider(region, poolDropConfArn).get();
+        const stakingAppConfArn = process.env[AwsEnvs.AWS_SECRET_ARN_PREFIX + 'UNI_APP_STAKING_APP'];
+        let stakingAppConfig: StakingAppConfig = {} as any;
+        if (stakingAppConfArn) {
+            stakingAppConfig = await new SecretsProvider(region, stakingAppConfArn).get();
         } else {
-            poolDropConfig = {
+            stakingAppConfig = {
                 database: {
                     connectionString: getEnv('MONGOOSE_CONNECTION_STRING'),
                 },
@@ -79,7 +85,7 @@ export class PoolDropModule implements Module {
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
-            } as PoolDropConfig;
+            } as StakingAppConfig;
         }
         // makeInjectable('CloudWatch', CloudWatch);
         // container.register('MetricsUploader', c =>
@@ -96,15 +102,15 @@ export class PoolDropModule implements Module {
 
         // This will register sdk modules. Good for client-side, for server-side we also need the next
         // step
-        await container.registerModule(new ClientModule(poolDropConfig.backend, POOLDROP_APP_ID));
+        await container.registerModule(new ClientModule(stakingAppConfig.backend, STAKING_APP_ID));
         
         // Decrypt the signing key
-        let signingKeyHex = poolDropConfig.signingKeyHex;
-        if (poolDropConfig.signingKey) { // For prod only
-            container.register('KMS', () => new KMS({region: poolDropConfig.region}));
+        let signingKeyHex = stakingAppConfig.signingKeyHex;
+        if (stakingAppConfig.signingKey) { // For prod only
+            container.register('KMS', () => new KMS({region: stakingAppConfig.region}));
             container.register(KmsCryptor, c => new KmsCryptor(c.get('KMS'),
-                poolDropConfig.cmkKeyArn));
-            const jsonKey = poolDropConfig.signingKey!;
+            stakingAppConfig.cmkKeyArn));
+            const jsonKey = stakingAppConfig.signingKey!;
             signingKeyHex = await container.get<KmsCryptor>(KmsCryptor).decryptToHex(jsonKey);
         }
 
@@ -113,28 +119,29 @@ export class PoolDropModule implements Module {
         // this will ensure that the ExtensionClient does not cache the token between different
         // requests, and also it will ensure that client will sign the requests using sigining_key.
         await container.registerModule(
-            new UnifyreBackendProxyModule(POOLDROP_APP_ID, poolDropConfig.authRandomKey,
+            new UnifyreBackendProxyModule(STAKING_APP_ID, stakingAppConfig.authRandomKey,
                 signingKeyHex!,));
 
         container.registerSingleton(SmartContratClient,
             () => new SmartContratClient(
-                poolDropConfig.web3ProviderEthereum,
-                poolDropConfig.web3ProviderRinkeby,
-                POOL_DROP_ADDRESS));
+                stakingAppConfig.web3ProviderEthereum,
+                stakingAppConfig.web3ProviderRinkeby,
+                STAKING_APP_ADDRESS,
+                STAKING_TOKEN_ADDRESS));
         container.register('JsonStorage', () => new Object());
-        container.registerSingleton(PoolDropService,
-                c => new PoolDropService(
+        container.registerSingleton(StakingAppService,
+                c => new StakingAppService(
                     () => c.get(UnifyreExtensionKitClient),
                     c.get(SmartContratClient),
                     ));
 
         container.registerSingleton('LambdaHttpHandler',
-                c => new HttpHandler(c.get(UnifyreBackendProxyService), c.get(PoolDropService)));
+                c => new HttpHandler(c.get(UnifyreBackendProxyService), c.get(StakingAppService)));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
-        await container.get<PoolDropService>(PoolDropService).init(poolDropConfig.database);
+        await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
     }
 }
 

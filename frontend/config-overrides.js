@@ -1,13 +1,11 @@
-var overrideDevServer = require('customize-cra');
 var paths = require('react-scripts/config/paths');
 var path = require ('path');
-var fs = require ('fs');
 
 module.exports = {
     webpack: function override(config) {
         config.module.rules.push({
             test: /\.(js|jsx)$/,
-            include: [paths.appSrc, paths.appNodeModules + '/unifyre-web-components/src'],
+            include: [paths.appSrc, paths.appNodeModules + '\\unifyre-web-components\\src'],
             loader: require.resolve('babel-loader'),
             options: {
                 babelrc: false,
@@ -15,6 +13,7 @@ module.exports = {
                 cacheDirectory: true,
             },
         });
+        console.log('======>>>>>>>>>>>>>>>>>>>>>>>');
 
         console.log('Current watch op', config)
         return config
