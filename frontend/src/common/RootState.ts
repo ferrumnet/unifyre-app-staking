@@ -1,4 +1,5 @@
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
+import { StakingApp } from "./Types";
 
 export interface UserPreference {
     lastRedirectLink?: string;
@@ -11,27 +12,29 @@ export const defaultUserPreference = {
 export interface DashboardProps {
     initialized: boolean;
     fatalError?: string;
-    stakingData?: any;
-    balance?: string;
-    address?: any,
-    amount?: string
+}
+
+export interface StakeTokenState {
+    error?: string;
+    amount: string;
 }
 
 export interface ClaimState {
     error?: string;
 }
 
-
 export interface RootState {
     data : {
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
-        stakingData: any
+        stakingData: {contracts: StakingApp[], selected?: string },
     },
     ui: {
         flags: {
             waiting: boolean,
         },
         dashboard: DashboardProps,
+        stakeToken: StakeTokenState,
+        unstakeToken: StakeTokenState,
     }
 }

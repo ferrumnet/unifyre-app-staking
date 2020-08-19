@@ -1,27 +1,24 @@
 import React, {useEffect} from 'react';
-import { DashboardDispatch, Dashboard } from './Dashboard';
-import { Switch, Route, useHistory } from 'react-router-dom';
+import { Dashboard, DashboardDispatch } from './Dashboard';
+import { Switch, Route } from 'react-router-dom';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon
+    Page, Row, ThemedText, Gap,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
 import { CONFIG } from '../../common/IocModule';
-import { Utils } from '../../common/Utils';
 import { intl } from 'unifyre-react-helper';
-import { StakingComponent } from './../staking/StakingContainer';
-import { MainComponent } from './../staking/Main';
-import {StakeComponent} from '../staking/StakeTokenPage';
-import {UnStakeComponent} from '../staking/Unstake';
+import { DashboardProps } from '../../common/RootState';
+import { MainContainer } from '../main/MainContainer';
+import { StakingContractContainer } from '../stakingContract/StakingContractContainer';
+import { StakeTokenContainer } from '../stakeToken/StakeTokenContainer';
+import { UnstakeTokenContainer } from '../unstakeToken/UnstakeTokenContainer';
 
-
-function DashboardComponent(props: any) {
+function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onLoad} = props;
-    const history = useHistory();
     useEffect(() => {
         onLoad();
     }, [onLoad]);
-    const linkId = Utils.getQueryparam('linkId');
 
     const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><ThemedText.H1>TEST MODE</ThemedText.H1></Row></>)
     if (props.initialized) {
@@ -29,17 +26,17 @@ function DashboardComponent(props: any) {
         return (
             <>
               <Switch>
-                  <Route path='/unstake/:address'>
-                        <UnStakeComponent props={props}/>
+                  <Route path='/unstake'>
+                        <UnstakeTokenContainer/>
                   </Route>
-                  <Route path='/stake/:address'>
-                        <StakeComponent props={props}/>
+                  <Route path='/stake'>
+                        <StakeTokenContainer/>
                   </Route>
-                  <Route path='/info/:address'>
-                        <StakingComponent props={props.stakingData}/>
+                  <Route path='/info'>
+                        <StakingContractContainer />
                   </Route>
                   <Route path='/'>
-                        <MainComponent props={props.stakingData}/>
+                        <MainContainer />
                   </Route>
               </Switch>
             </>

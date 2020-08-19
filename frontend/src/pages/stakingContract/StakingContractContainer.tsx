@@ -5,17 +5,17 @@ import {
 } from 'unifyre-web-components';
 import { useHistory } from 'react-router-dom';
 import { formatter,dataFormat } from "../../common/Utils";
+import { connect } from 'react-redux';
+import { StakingContract, StakingContractDispatch, StakingContractProps } from './StakingContract';
 
-export function StakingComponent(props: any) {
-    const stakeInfo = props.props.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol,stakingCap,stakingStarts,withdrawStarts,stakingEnds,withdrawEnds,stakedAmount,contractAddress,balance} = stakeInfo;        
+function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
+    // const stakeInfo = props.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
     // Render the routes
     const history = useHistory();
-    var utcSeconds = stakingStarts;
+    const {contract, symbol} = props;
+    var utcSeconds = contract.stakingStarts;
     var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
     d.setUTCSeconds(utcSeconds);
-    console.log(d);
-    
 
     const navigateToInfoPage = (address:string) => {
         history.replace(`/stake/${address}`);
@@ -29,19 +29,18 @@ export function StakingComponent(props: any) {
                     <ThemedText.H3>{`Unifyre ${symbol} Staking`}</ThemedText.H3>
                 </Row>
                 <Row withPadding centered>
-                    <ThemedText.H2>{props.symbol}</ThemedText.H2>
+                    <ThemedText.H2>{symbol}</ThemedText.H2>
                 </Row>
             </PageTopPart>
             <Row withPadding centered>
-                <ThemedText.H3>{stakeInfo.tokenName}</ThemedText.H3>
+                <ThemedText.H3>{contract.tokenName}</ThemedText.H3>
             </Row>
             <Row withPadding>
                 <ThemedText.SMALL>{'Total staking Amount'}</ThemedText.SMALL>
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={stakingCap}
-                    onChange={`${formatter.format('0',false)} ${symbol}`}
+                    value={`${formatter.format(contract.stakingCap,false)} ${symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -51,7 +50,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={formatter.format(stakedAmount,true)?.toString()}
+                    value={formatter.format(contract.stakedAmount,true)}
                     inputMode={'decimal'}
                     disabled={true}
 
@@ -62,7 +61,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={`${formatter.format(balance,false)?.toString()} ${symbol}`}
+                    value={`${formatter.format(props.balance,false)} ${symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -72,7 +71,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={dataFormat(stakingStarts)}
+                    value={dataFormat(contract.stakingStarts)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -82,7 +81,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={dataFormat(stakingEnds)}
+                    value={dataFormat(contract.stakingEnds)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -92,7 +91,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={dataFormat(withdrawStarts)}
+                    value={dataFormat(contract.withdrawStarts)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -102,14 +101,16 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={dataFormat(withdrawEnds)}
+                    value={dataFormat(contract.withdrawEnds)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
             </Row>
             <Gap />
             <Row withPadding>
-                <ThemedButton text={`Stake ${symbol}`} onClick={()=>{navigateToInfoPage(contractAddress)}}/>
+                <ThemedButton
+                    text={`Stake ${symbol}`}
+                    onClick={()=>{navigateToInfoPage(contract.contractAddress)}}/>
             </Row>
             <Row withPadding>
                 <ThemedButton text={'Return'}/>
@@ -118,3 +119,6 @@ export function StakingComponent(props: any) {
         </Page>
     );
 }
+
+export const StakingContractContainer = connect(
+  StakingContract.mapStateToProps, StakingContract.mapDispatchToProps)(StakingContractComponent);

@@ -5,7 +5,7 @@ module.exports = {
     webpack: function override(config) {
         config.module.rules.push({
             test: /\.(js|jsx)$/,
-            include: [paths.appSrc, paths.appNodeModules + '\\unifyre-web-components\\src'],
+            include: [paths.appSrc, paths.appNodeModules + (process.platform === 'win32' ? '\\unifyre-web-components\\src' : '/unifyre-web-components/src')],
             loader: require.resolve('babel-loader'),
             options: {
                 babelrc: false,

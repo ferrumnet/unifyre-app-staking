@@ -4,6 +4,9 @@ import { CommonActions } from "./Actions";
 import { userPreferenceReducer } from "../services/UserPreferenceService";
 import {  StakingAppServiceActions } from "../services/StakingAppClient";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
+import { StakingApp } from "./Types";
+import { StakeToken } from "../pages/stakeToken/StakeToken";
+import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -16,7 +19,7 @@ function flags(state: { waiting: boolean } = { waiting: false }, action: AnyActi
     }
 }
 
-function userData(state: { userProfile: AppUserProfile } = {} as any, action: AnyAction) {
+function userData(state: { profile: AppUserProfile } = {} as any, action: AnyAction) {
     switch(action.type) {
         case StakingAppServiceActions.USER_DATA_RECEIVED:
             const {userProfile} = action.payload;
@@ -26,11 +29,14 @@ function userData(state: { userProfile: AppUserProfile } = {} as any, action: An
     }
 }
 
-function stakingData(state: { userProfile: AppUserProfile } = {} as any, action: AnyAction) {
+function stakingData(state: { contracts: StakingApp[], selected?: string } = { contracts: []}, action: AnyAction) {
     switch(action.type) {
         case StakingAppServiceActions.STAKING_DATA_RECEIVED:
             const {stakingData} = action.payload;
-            return {...state, stakingData };
+            return {...state, contracts: stakingData };
+        case StakingAppServiceActions.CONTRACT_SELECTED:
+            const {address} = action.payload;
+            return {...state, address};
         default:
             return state;
     }
@@ -45,6 +51,8 @@ const data = combineReducers({
 const ui = combineReducers({
     flags,
     dashboard: Dashboard.reduce,
+    stakeToken: StakeToken.reduce,
+    unstakeToken: UnstakeToken.reduce,
 });
 
 export const rootReducer = combineReducers({ data, ui });

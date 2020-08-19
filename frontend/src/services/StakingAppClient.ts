@@ -1,6 +1,5 @@
 import { Injectable, JsonRpcRequest, ValidationUtils, Network } from "ferrum-plumbing";
 import { Dispatch, AnyAction } from "redux";
-import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { addAction, CommonActions } from "../common/Actions";
 import { Utils } from "../common/Utils";
 import { UnifyreExtensionKitClient, SendMoneyResponse } from 'unifyre-extension-sdk';
@@ -13,7 +12,8 @@ export const StakingAppServiceActions = {
     AUTHENTICATION_COMPLETED: 'AUTHENTICATION_COMPLETED',
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
-    STAKING_FAILED: 'STAKING_FAILED'
+    STAKING_FAILED: 'STAKING_FAILED',
+    CONTRACT_SELECTED: 'CONTRACT_SELECTED',
 };
 
 const Actions = StakingAppServiceActions;
@@ -34,18 +34,16 @@ export class StakingAppClient implements Injectable {
             const res = await this.api({
                 command: 'signInToServer', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);
             const {userProfile, session } = res;
-            let symbol = userProfile.accountGroups[0].addresses[0].symbol;
-            ValidationUtils.isTrue(!!symbol, "error getting token symbol");
-            let stakingData;
-            if(symbol){                
-                stakingData = await this.api({
-                    command: 'getTokenStakingInfo', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);                                    
-            }
             if (!session) {
                 dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
                 return;
             }
             this.jwtToken = session;
+            let symbol = userProfile.accountGroups[0].addresses[0].symbol;
+            ValidationUtils.isTrue(!!symbol, "error getting token symbol");
+            const stakingData = await this.api({
+                    command: 'getTokenStakingInfo', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);
+            ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard')
             dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
             dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
             dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
