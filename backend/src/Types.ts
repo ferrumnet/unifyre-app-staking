@@ -23,6 +23,13 @@ export interface StakingApp {
     numberOfStakeParticipants?: number;
 }
 
+export interface UserStakingData {
+    userId: string,
+    amountInStake: number,
+    tokenId: string,
+    createdAt: number
+}
+
 export interface stake {
     amount: number;
     userAddress: string;

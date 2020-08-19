@@ -5,8 +5,6 @@ import {
     ValidationUtils
 } from "ferrum-plumbing";
 import { StakingAppService } from "./StakingAppService";
-import { StakingApp } from "./Types";
-import Big from 'big.js';
 
 
 function handlePreflight(request: any) {
@@ -48,16 +46,30 @@ export class HttpHandler implements LambdaHttpHandler {
                     let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
                     ValidationUtils.isTrue(!!currency, 'signed in user has no active wallet');
                     console.log(userProfile);
-                    //await this.userSvc.saveStakeInfo(req.data.token, currency)
+                    body = {userProfile, session};
+                    break;
+                case 'adminSaveStakingContractInfo':
+                    //admin save new contract
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    await this.saveStakingContactInfo(req.data.token)
                     body = {userProfile, session};
                     break;
                 case 'getTokenStakingInfo':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.userSvc.get(req.data.symbol)
                     break;
                 case 'stakeTokenSignAndSend':
-                    const {amount} = req.data;   
-                    body = await this.signAndSendAsync(amount,req.data.token);          
-                    //body = await this.userSvc.createStake({amount,userAddress,uniToken:token,currency})
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.signAndSendAsync(req.data.amount,req.data.token);          
+                    break;
+                case 'saveTransaction':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.saveUserStakingData(req.data.token);
+                    //todo: update user data after staking         
+                    break;
+                case 'unstakeTokenSignAndSend':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.unstakeSignAndSendAsync(req.data.amount,req.data.token);          
                     break;
                 default:
                     return {
@@ -97,30 +109,13 @@ export class HttpHandler implements LambdaHttpHandler {
         }
     }
 
-    async transactionsReceived(req: JsonRpcRequest): Promise<any> {
-        const {linkId, transactionIds} = req.data;
-        validateFieldsRequired({linkId, transactionIds});
-        //return this.userSvc.addTransactionIds(linkId, transactionIds);
-    }
 
-    async getLink(req: JsonRpcRequest): Promise<any> {
-        const {linkId} = req.data;
-        validateFieldsRequired({linkId});
-        const pd = ''
-        ValidationUtils.isTrue(!!pd, "Link not found");
-        return pd!;
-    }
-
-    async claim(req: JsonRpcRequest): Promise<any> {
-        const {token, linkId} = req.data;
-        validateFieldsRequired({token, linkId});
-        //return this.userSvc.claim(token, linkId);
-    }
-
-    async cancelLink(userId: string, req: JsonRpcRequest): Promise<any> {
-        const {linkId} = req.data;
-        validateFieldsRequired({userId, linkId});
-       // return this.userSvc.cancelLink(userId, linkId);
+    async saveStakingContactInfo (uniToken:string) {
+        ValidationUtils.isTrue(!!uniToken, '"token" must be provided');
+        const [userProfile] = await this.uniBack.signInToServer(uniToken);
+        let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+        const response = await this.userSvc.saveStakeInfo(uniToken,currency)
+        return response;
     }
 
     async signAndSendAsync(amount:number,uniToken:string): Promise<any> {
@@ -131,12 +126,23 @@ export class HttpHandler implements LambdaHttpHandler {
         const requestId = this.userSvc.stakeToken({amount,userAddress,uniToken,currency})
         return {requestId};
     }
-}
 
-function validateFieldsRequired(obj: any) {
-    for(const k in obj) {
-        if (!obj[k]) {
-            ValidationUtils.isTrue(false, `"${k}" must be provided`);
-        }
+    async unstakeSignAndSendAsync(amount:number,uniToken:string): Promise<any> {
+        ValidationUtils.isTrue(!!uniToken, '"token" must be provided');
+        const [userProfile] = await this.uniBack.signInToServer(uniToken);
+        let userAddress = ((userProfile.accountGroups[0] || []).addresses[0] || {}).address;
+        let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+        const requestId = this.userSvc.unstakeToken({amount,userAddress,uniToken,currency})
+        return {requestId};
+    }
+
+    async saveUserStakingData (uniToken:string): Promise<any> {
+        ValidationUtils.isTrue(!!uniToken, '"token" must be provided');
+        const [userProfile] = await this.uniBack.signInToServer(uniToken);
+        let userAddress = ((userProfile.accountGroups[0] || []).addresses[0] || {}).address;
+        let currency = ((userProfile.accountGroups[0] || []).addresses[0] || {}).currency;
+        let id = userProfile.accountGroups[0].id;
+        const response = this.userSvc.saveUserStakingData(id,userAddress,currency)
+        return response;
     }
 }

@@ -12,6 +12,7 @@ import { intl } from 'unifyre-react-helper';
 import { StakingComponent } from './../staking/StakingContainer';
 import { MainComponent } from './../staking/Main';
 import {StakeComponent} from '../staking/StakeTokenPage';
+import {UnStakeComponent} from '../staking/Unstake';
 
 
 function DashboardComponent(props: any) {
@@ -28,6 +29,9 @@ function DashboardComponent(props: any) {
         return (
             <>
               <Switch>
+                  <Route path='/unstake/:address'>
+                        <UnStakeComponent props={props}/>
+                  </Route>
                   <Route path='/stake/:address'>
                         <StakeComponent props={props}/>
                   </Route>

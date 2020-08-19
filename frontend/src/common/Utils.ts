@@ -1,5 +1,7 @@
+import Big from 'big.js';
+import { LocaleManager } from "unifyre-react-helper";
 
-
+const FEE_RATE = new Big('0.0');
 export class Utils {
     static getQueryparam(param: string): string | undefined {
         const queryParams = (window.location.href.split('?')[1] || '').split('&').map(p => p.split('='));
@@ -66,3 +68,24 @@ export class Utils {
         return {emails,invalidEmails,validEmails};
     }     
 }
+
+export class CurrencyFormatter {
+    unFormat(num: string): string | undefined {
+        if (!num) return num;
+        return LocaleManager.unFormatDecimalString(num);
+    }
+
+    format(num: string, isFiat: boolean): string | undefined {
+        if (!num) return num;
+        const decimals = isFiat ? 2 : 4;
+        const canonical = LocaleManager.unFormatDecimalString(num);
+        if (!canonical) {
+            return;
+        }
+        return LocaleManager.formatDecimalString(canonical, decimals);
+    }
+}
+
+export const dataFormat = (data:number) =>  { return new Date(data).toLocaleString()}
+
+export const formatter = new CurrencyFormatter();

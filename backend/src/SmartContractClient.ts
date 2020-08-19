@@ -8,6 +8,7 @@ import Web3 from 'web3';
 import Big from 'big.js';
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 import { timeStamp } from "console";
+import { unwatchFile } from "fs";
 
 //@ts-nocheck
 
@@ -27,7 +28,6 @@ export class SmartContratClient implements Injectable {
     async instance(currency: string){
         const network = currency.split(':')[0];
         const contract = this.stakingAppContract[network];
-        console.log(network,contract)
         return this.stakingApp(network);
     }
 
@@ -38,10 +38,10 @@ export class SmartContratClient implements Injectable {
         amount:number,
     ): Promise<any> {
         let token = currency.split(':')[1];
-        let network = currency.split(':')[0];
+        let network = 'RINKEBY';
         const contract = this.stakingAppContract[network];
         ValidationUtils.isTrue(!!contract, 'No contract address is configured for this network');
-        const decimalFactor = 10 ** await this.decimals(network, token);;
+        const decimalFactor = 10 ** 0.000322;
         const amountToStake = new Big(amount).times(new Big(decimalFactor)).round(0, 0);
         const [approve, approveGas] = await this.approve(network, token, userAddress, amount);
         const [staking, stakingGas] = await this.stakeToken(network, token, userAddress, amountToStake);
@@ -56,9 +56,43 @@ export class SmartContratClient implements Injectable {
                 console.log('Approve was successful, now doing some moew.')
                 return [
                     callRequest(token, currency, userAddress, approve, approveGas.toFixed(), nonce,
-                        `Approve ${fullAmount} ${symbol} to be spent by PoolDrop contract`,),
+                        `Approve ${fullAmount} ${symbol} to be spent by Staking contract`,),
                     callRequest(contract, currency, userAddress, staking, stakingGas.toFixed(), nonce + 1,
                         `${amount} ${symbol} to be staked`,),
+                ];    
+        } catch (error) {
+            console.log('Unable to approve the stake, try again',error);
+            return;
+        }
+    }
+
+    async checkAllowanceAndUnStake(
+        currency: string,
+        symbol: string,
+        userAddress:string,
+        amount:number,
+    ): Promise<any> {
+        let token = currency.split(':')[1];
+        let network = 'RINKEBY';
+        const contract = this.stakingAppContract[network];
+        ValidationUtils.isTrue(!!contract, 'No contract address is configured for this network');
+        const decimalFactor = 10 ** 0.000322;
+        const amountToStake = new Big(amount).times(new Big(decimalFactor)).round(0, 0);
+        const [approve, approveGas] = await this.approve(network, token, userAddress, amount);
+        const [staking, stakingGas] = await this.unstakeToken(network, token, userAddress, amountToStake);
+        const nonce = await this.web3(network).getTransactionCount(userAddress, 'pending');
+        const fullAmount = amountToStake.div(decimalFactor).toFixed();
+        console.log('contractToken',this.stakingTokenContract);
+        let allowance
+        try {
+            allowance = await this.allowance(userAddress,this.stakingTokenContract,network);
+                console.log('About to approve for amount.', amount);
+                console.log('Approve was successful, now doing some moew.')
+                return [
+                    callRequest(token, currency, userAddress, approve, approveGas.toFixed(), nonce,
+                        `Approve ${fullAmount} ${symbol} to be spent by Staking contract`,),
+                    callRequest(contract, currency, userAddress, staking, stakingGas.toFixed(), nonce + 1,
+                        `${amount} ${symbol} to be unstaked`,),
                 ];    
         } catch (error) {
             console.log('Unable to approve the stake, try again',error);
@@ -73,6 +107,13 @@ export class SmartContratClient implements Injectable {
         return {
             symbol
         }
+    }
+
+    async userStake (userAdress:string,currency:string) {
+        let token = currency.split(':')[1];
+        let network = 'RINKEBY' ?? currency.split(':')[0];
+        const userStake = await (await this.instance(network)).methods.stakeOf(userAdress)
+        return userStake;
     }
 
    
@@ -109,7 +150,6 @@ export class SmartContratClient implements Injectable {
 
     private stakingApp(network: string) {
         const contractAddress = this.stakingAppContract[network];
-        console.log(contractAddress);
         const web3 = this.web3(network);
         return new web3.Contract(stakingAbi.abi as any, contractAddress);
     }
@@ -138,6 +178,18 @@ export class SmartContratClient implements Injectable {
         console.log('stake', gas);
         return [m.encodeABI(), gas];
     }
+
+    private async unstakeToken(network: string, token: string, userAddress: string,  amount: Big):
+        Promise<[HexString, number]> {
+        console.log('stake', {token, userAddress, amount: amount.toFixed()});
+        const m = this.stakingApp(network).methods.unstake(amount.toFixed());
+        const gas = 35000 + 1 * 60000;
+        // await m.estimateGas({from}); This will fail unfortunately because tx will revert!
+        console.log('unstake', gas);
+        return [m.encodeABI(), gas];
+    }
+
+    
 
     async stake(amount:number,network:string) {
         const rawAmount = await this.amountToRaw(amount,network,this.stakingTokenContract);

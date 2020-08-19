@@ -8,12 +8,14 @@ import { StakingAppClient } from "../../services/StakingAppClient";
 const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
     INIT_SUCCEED: 'INIT_SUCCEED',
+    AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED'
 };
 const Actions = DashboardActions;
 
 export interface DashboardDispatch {
     onLoad: () => Promise<void>;
     stakeToken: () => Promise<void>;
+    onAmountToStakeChanged: (v:number) => Promise<void>;
  }
 
 function mapStateToProps(state: RootState): DashboardProps {
@@ -34,7 +36,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const wyre = inject<StakingAppClient>(StakingAppClient);
-            const data = await wyre.signAndSend(dispatch,props.amount,props.address,props.currency,props.symbol);
+            const data = await wyre.stakeSignAndSend(dispatch,props.amount,props.address,props.currency,props.symbol);
+            // todo: if successful, get user staking data and redirect to staking info page
+            // todo: if not successful, return error
         } catch (e) {
             console.error('Dashboard.mapDispatchToProps', e);
             dispatch(addAction(Actions.INIT_FAILED, { error: e.toString() }));
@@ -42,13 +46,16 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
+    onAmountToStakeChanged: async (v:number) => {
+        console.log(v);
+        dispatch(addAction(Actions.AMOUNT_TO_STAKE_CHANGED, { amount: v }));
+    },
     onLoad: async () => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const wyre = inject<StakingAppClient>(StakingAppClient);
             const data = await wyre.signInToServer(dispatch);
-            console.log(data,'------9899-=====')
             if (data?.userProfile) {
                 if(!data['stakingData']){
                     dispatch(addAction(Actions.INIT_FAILED, { error: 'Staking for selected token is yet to start.' }));
@@ -67,12 +74,19 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     }
 } as DashboardDispatch);
 
-function reduce(state: DashboardProps = { initialized: false }, action: AnyAction) {
+const defaultStakingCreateState = {
+    initialized: false,
+    amount: '0'
+}
+
+function reduce(state: DashboardProps = defaultStakingCreateState, action: AnyAction) {    
     switch(action.type) {
         case Actions.INIT_FAILED:
             return {...state, initialized: false, fatalError: action.payload.error};
         case Actions.INIT_SUCCEED:
             return {...state, initialized: true, fatalError: undefined, stakingData: action.payload.stakingData};
+        case Actions.AMOUNT_TO_STAKE_CHANGED:
+            return {...state, initialized: true, fatalError: undefined, amount: action.payload.amount}
         default:
         return state;
     }
