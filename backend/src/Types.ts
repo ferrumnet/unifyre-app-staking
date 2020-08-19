@@ -17,10 +17,10 @@ export interface StakingApp {
     stakingStarts: number;
     version: number;
     network: Network;
-    creatorAddress: string;
+    currency: string;
+    contractAddress: string;
     createdAt: number;
     symbol: string;
-    numberOfStakeParticipants?: number;
 }
 
 export interface UserStakingData {
@@ -36,6 +36,7 @@ export interface stake {
     currency: string;
     uniToken: string;
 }
+
 export interface StakingAppConfig {
     database: MongooseConfig;
     region: string;

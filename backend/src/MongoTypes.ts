@@ -2,7 +2,6 @@ import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
 import { StakingApp,UserStakingData } from "./Types";
 
-
 const StakingAppSchema: Schema = new Schema<StakingApp>({
     tokenName: String,
     stakingCap: Number,
