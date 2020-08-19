@@ -71,9 +71,9 @@ export class StakingAppClient implements Injectable {
         return token;
     }
 
-    async signAndSend(
+    async stakeSignAndSend(
         dispatch: Dispatch<AnyAction>, 
-        amount: string,
+        amount: number,
         network: Network,
         currency: string,
         symbol: string,
@@ -97,8 +97,14 @@ export class StakingAppClient implements Injectable {
             const transactionIds = (response.response as SendMoneyResponse[]).map(r => r.transactionId);  
            
             if (transactionIds) {
-                //validate transaction
-            }          
+                const res = await this.api({
+                    command: 'saveTransaction', data: { token }, params: []
+                } as JsonRpcRequest) as {requestId: string};
+                ValidationUtils.isTrue(!!res, 'Error updating user staking data');
+                return //userstakedata
+            } else {
+                // failed
+            }      
         } catch (e) {
             console.error('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request.' + e.message || '' }));

@@ -3,13 +3,13 @@ import {
     Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Switch, Route, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { formatter,dataFormat } from "../../common/Utils";
 
 export function StakingComponent(props: any) {
     const stakeInfo = props.props.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol,stakingCap,stakingStarts,withdrawStarts,stakingEnds,withdrawEnds,stakedAmount,contractAddress} = stakeInfo;        
+    const {symbol,stakingCap,stakingStarts,withdrawStarts,stakingEnds,withdrawEnds,stakedAmount,contractAddress,balance} = stakeInfo;        
     // Render the routes
-    console.log(stakeInfo);
     const history = useHistory();
     var utcSeconds = stakingStarts;
     var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
@@ -41,7 +41,7 @@ export function StakingComponent(props: any) {
             <Row withPadding>
                 <InputGroupAddon
                     value={stakingCap}
-                    onChange={props.onTotalAmountChanged}
+                    onChange={`${formatter.format('0',false)} ${symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -51,8 +51,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={stakedAmount.toString()}
-                    onChange={props.onTotalAmountChanged}
+                    value={formatter.format(stakedAmount,true)?.toString()}
                     inputMode={'decimal'}
                     disabled={true}
 
@@ -63,8 +62,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={stakedAmount.toString()}
-                    onChange={props.onTotalAmountChanged}
+                    value={`${formatter.format(balance,false)?.toString()} ${symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -74,8 +72,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={'8/1/2020'}
-                    onChange={props.stakingStarts}
+                    value={dataFormat(stakingStarts)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -85,8 +82,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={'8/5/2020'}
-                    onChange={'8/5/2020'}
+                    value={dataFormat(stakingEnds)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -96,8 +92,7 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={'8/5/2020'}
-                    onChange={props.withdrawalEnds}
+                    value={dataFormat(withdrawStarts)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -107,15 +102,14 @@ export function StakingComponent(props: any) {
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={'8/11/2020'}
-                    onChange={props.withdrawalEnds}
+                    value={dataFormat(withdrawEnds)}
                     inputMode={'decimal'}
                     disabled={true}
                 />
             </Row>
             <Gap />
             <Row withPadding>
-                <ThemedButton text={`stake ${symbol}`} onClick={()=>{navigateToInfoPage(contractAddress)}}/>
+                <ThemedButton text={`Stake ${symbol}`} onClick={()=>{navigateToInfoPage(contractAddress)}}/>
             </Row>
             <Row withPadding>
                 <ThemedButton text={'Return'}/>

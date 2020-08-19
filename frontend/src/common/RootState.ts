@@ -13,7 +13,8 @@ export interface DashboardProps {
     fatalError?: string;
     stakingData?: any;
     balance?: string;
-    address?: any
+    address?: any,
+    amount?: string
 }
 
 export interface ClaimState {
