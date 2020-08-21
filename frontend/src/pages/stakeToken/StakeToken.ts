@@ -30,10 +30,11 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     const userProfile = state.data.userData?.profile;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
+
     return {
         ...state.ui.stakeToken,
         symbol: address.symbol,
-        contract: state.data.stakingData.selectedContract || {} as any,
+        contract: Utils.selectedContrat(state, (state.data.stakingData.selected ?? window.location.href.split('?')[1]) || '') || {} as any,
         balance: address.balance,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,

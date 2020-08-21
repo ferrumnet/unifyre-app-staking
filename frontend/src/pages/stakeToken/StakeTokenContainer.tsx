@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { connect } from 'react-redux';
 import {
     Page,PageTopPart,  Row, ThemedText, Gap, InputCurrency, ThemedButton, ErrorMessage,
@@ -8,12 +8,13 @@ import {
 import { formatter } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
-import { useHistory } from 'react-router-dom';
+import {ThemeContext, Theme} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
-    const {name, symbol, stakingCap} = props.contract;   
-    const history = useHistory();
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
+    const {symbol,stakingCap,stakedAmount} = props.contract;   
     const {balance} = props;
     const error = props.error ? (
         <Row withPadding>
@@ -24,13 +25,8 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
         <Page>
             <LoaderContainer />
             <PageTopPart>
-                <Gap />
-                <Row withPadding centered>
-                    <ThemedText.H3>{name}</ThemedText.H3>
-                </Row>
-                <Row withPadding centered>
-                    <ThemedText.H3>{`Stake ${symbol}`}</ThemedText.H3>
-                </Row>
+                <Row centered><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
+                <div style={{...styles.divider}}></div>
             </PageTopPart>
             {
                 <>
@@ -76,9 +72,11 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                   {error}
                   <Row withPadding>
                         <ThemedButton
+                            highlight={true}
                             text={`Sign and Submit Stake`}
                             onClick={()=>{
-                                props.onStakeToken(history, props)}}/>
+                                props.onStakeToken(props)}}
+                            textStyle={styles.btnText}/>
                   </Row>
               </>
             }        
@@ -88,3 +86,79 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
 
 export const StakeTokenContainer = connect(
   StakeToken.mapStateToProps, StakeToken.mapDispatchToProps)(StakeTokenComponent);
+
+  //@ts-ignore
+const themedStyles = (theme) => ({
+    stakingInfoHeader: { 
+        justifyContent: 'center',  
+        fontSize: '19px',
+        fontWeight: 'bold',
+        letterspacing: 1,
+        lineHeight: '1.2'
+    },
+    stakingAmountStyle: {
+        fontSize: '33px',
+        lineHeight: 1,
+        fontWeight: 900,
+        letterSpacing: '2.4px',
+        color:'rgb(255 59 47 / 88%)'
+    },
+    stakingSymbol:{
+        paddingTop: '3px',
+        letterSpacing: 1
+    },
+    unifyreMainTextlineHeight: {
+        lineHeight: 0.9
+    },
+    smallerMediumText:{
+        fontSize: '13px',
+        letterSpacing: '1px',
+        lineHeight: '0.8'
+    },
+    navHeader: {
+        fontSize: '17px',
+        lineHeight: 1
+    },
+    mediumText: {
+        fontSize: '25px',
+        fontWeight: 'bold',
+        letterSpacing: '1px',
+        lineHeight: '1.2'
+    },
+    littleText: {
+        fontSize: '12.5px',
+        fontWeight: 'bold'
+    },
+    percentStake: {
+        textAlign: "center" as "center",
+        marginTop: '15px',
+        marginRight: '0px',
+        marginLeft: '40px',
+        marginBottom: '2px',
+        width:'40%',
+        display: 'flex',
+        flexDirection: "row" as "row",
+    },
+    arrows: {
+        marginRight: '10px',
+        marginLeft: '10px',
+        width: '16px'
+    },
+    divider: {
+        height: '3px',
+        borderTopStyle: "solid" as "solid",
+        borderTopColor: 'rgba(249, 64, 43, 1)',
+        width: '10%',
+        margin: '0px auto',
+    },
+    highlight:{
+        color: 'rgb(255, 59, 47)'
+    },
+    DurText: {
+        fontSize: '12.5px' 
+    },
+    btnText: {
+        color: '#ffffff',
+        lineHeight:1.6
+    }
+});

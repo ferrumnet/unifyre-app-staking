@@ -2,6 +2,9 @@ import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../common/RootState";
 import { StakingApp } from "../../common/Types";
 import { StakingState, Utils } from "../../common/Utils";
+import { addAction } from "../../common/Actions";
+import { StakingAppServiceActions } from "../../services/StakingAppClient";
+import { History } from 'history';
 
 export interface StakingContractProps {
     balance: string;
@@ -12,6 +15,7 @@ export interface StakingContractProps {
 }
 
 export interface StakingContractDispatch {
+    onContractSelected: (history: History, address: string) => void;
 }
 
 function mapStateToProps(state: RootState): StakingContractProps {
@@ -27,7 +31,11 @@ function mapStateToProps(state: RootState): StakingContractProps {
     };
 }
 
-const mapDispatchToProps = (_: Dispatch<AnyAction>) => ({
+const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
+    onContractSelected: (history, address) => {
+        dispatch(addAction(StakingAppServiceActions.CONTRACT_SELECTED, {address}));
+        history.push(`/unstake/?${address}`);
+    }
 } as StakingContractDispatch);
 
 export const StakingContract = ({

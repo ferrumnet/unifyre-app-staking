@@ -7,10 +7,12 @@ import {
 import { formatter } from "../../common/Utils";
 import { LoaderContainer } from '../../components/Loader';
 import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './UnstakeToken';
+import Big from 'big.js';
 
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     // const stakeInfo = props.props.stakingData.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol, stakingCap, stakedBalance} = props.contract;   
+    const {symbol,stakingCap,stakedAmount} = props.contract;   
+
     return (
         <Page>
             <LoaderContainer />
@@ -40,7 +42,11 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
+<<<<<<< HEAD
                               new Big(stakingCap).minus(new Big(stakedBalance)).toFixed(),true)} ${symbol}`}
+=======
+                              new Big(stakingCap).minus(new Big(props.amount)).toFixed(),true)} ${symbol}`}
+>>>>>>> redesigned dashboard
                           inputMode={'decimal'}
                           disabled={true}
                       />
