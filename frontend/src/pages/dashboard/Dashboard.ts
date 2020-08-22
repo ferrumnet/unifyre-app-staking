@@ -28,13 +28,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const wyre = inject<StakingAppClient>(StakingAppClient);
-            const data = await wyre.signInToServer(dispatch);
-            if (data?.userProfile) {
-                if(!data['stakingData']){
-                    dispatch(addAction(Actions.INIT_FAILED, { error: 'Staking for selected token is yet to start.' }));
-                    return
-                }
-                dispatch(addAction(Actions.INIT_SUCCEED, {"stakingData": data['stakingData']}));
+            const userProfile = await wyre.signInToServer(dispatch);
+            if (!!userProfile) {
+                dispatch(addAction(Actions.INIT_SUCCEED, {}));
             } else {
                 dispatch(addAction(Actions.INIT_FAILED, { error: intl('fatal-error-details') }));
             }
@@ -57,7 +53,7 @@ function reduce(state: DashboardProps = defaultStakingCreateState, action: AnyAc
         case Actions.INIT_FAILED:
             return {...state, initialized: false, fatalError: action.payload.error};
         case Actions.INIT_SUCCEED:
-            return {...state, initialized: true, fatalError: undefined, stakingData: action.payload.stakingData};
+            return {...state, initialized: true, fatalError: undefined};
         default:
         return state;
     }

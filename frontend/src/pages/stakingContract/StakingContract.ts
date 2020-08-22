@@ -1,12 +1,12 @@
 import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../common/RootState";
 import { StakingApp } from "../../common/Types";
-import { Utils } from "../../common/Utils";
 
 export interface StakingContractProps {
     balance: string;
     symbol: string;
     contract: StakingApp;
+    stakedAmount: string;
 }
 
 export interface StakingContractDispatch {
@@ -19,7 +19,8 @@ function mapStateToProps(state: RootState): StakingContractProps {
     return {
         balance: address.balance,
         symbol: address.symbol,
-        contract: Utils.selectedContrat(state, state.data.stakingData.selected || '') || {} as any,
+        contract: state.data.stakingData.selectedContract || {} as any,
+        stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
     };
 }
 

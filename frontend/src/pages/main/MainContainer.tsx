@@ -30,8 +30,8 @@ function MainComponent(props: MainProps&MainDispatch) {
                         <Gap size={'small'}/>
                         <Row withPadding>
                             <ThemedButton
-                                text={`${staking.tokenName}`}
-                                onClick={() => props.onContractSelected(history, staking.contractAddress)}
+                                text={`${staking.symbol}`}
+                                onClick={() => props.onContractSelected(history, staking, props.userAddress)}
                             />
                         </Row>
                     </React.Fragment>

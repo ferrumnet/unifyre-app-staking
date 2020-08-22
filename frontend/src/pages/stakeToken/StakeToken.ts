@@ -4,7 +4,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { StakingApp } from "../../common/Types";
-import { Utils } from "../../common/Utils";
+import { History } from 'history';
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -17,10 +17,12 @@ export interface StakeTokenProps extends StakeTokenState {
     symbol: string;
     contract: StakingApp;
     balance: string;
+    stakedAmount: string;
+    userAddress: string;
 }
 
 export interface StakeTokenDispatch {
-    onStakeToken: (props: StakeTokenProps) => Promise<void>;
+    onStakeToken: (history: History, props: StakeTokenProps) => Promise<void>;
     onAmountToStakeChanged: (v:number) => Promise<void>;
 }
 
@@ -31,20 +33,29 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     return {
         ...state.ui.stakeToken,
         symbol: address.symbol,
-        contract: Utils.selectedContrat(state, state.data.stakingData.selected || '') || {} as any,
+        contract: state.data.stakingData.selectedContract || {} as any,
         balance: address.balance,
+        stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
+        userAddress: address.address,
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onStakeToken: async (props:any) => {
+    onStakeToken: async (history, props) => {
         try{
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeToken' }));
             await IocModule.init(dispatch);
-            const wyre = inject<StakingAppClient>(StakingAppClient);
-            const data = await wyre.stakeSignAndSend(dispatch,props.amount,props.address,props.currency,props.symbol);
-            // todo: if successful, get user staking data and redirect to staking info page
-            // todo: if not successful, return error
+            const client = inject<StakingAppClient>(StakingAppClient);
+            const data = await client.stakeSignAndSend(
+                dispatch, props.amount,
+                props.contract.network,
+                props.contract.contractAddress,
+                props.userAddress,
+                props.balance,
+                );
+            if (!!data) {
+                history.replace('/info');
+            }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);
             dispatch(addAction(Actions.STAKE_FAILED, { error: e.toString() }));

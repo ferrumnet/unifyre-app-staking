@@ -9,7 +9,7 @@ import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './Unstake
 
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     // const stakeInfo = props.props.stakingData.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol,stakingCap,stakedAmount} = props.contract;   
+    const {symbol, stakingCap, stakedBalance} = props.contract;   
     return (
         <Page>
             <PageTopPart>
@@ -38,7 +38,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-                              new Big(stakingCap).minus(new Big(stakedAmount)).toFixed(),true)} ${symbol}`}
+                              new Big(stakingCap).minus(new Big(stakedBalance)).toFixed(),true)} ${symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />

@@ -32,15 +32,12 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
                     <ThemedText.H2>{symbol}</ThemedText.H2>
                 </Row>
             </PageTopPart>
-            <Row withPadding centered>
-                <ThemedText.H3>{contract.tokenName}</ThemedText.H3>
-            </Row>
             <Row withPadding>
                 <ThemedText.SMALL>{'Total staking Amount'}</ThemedText.SMALL>
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={`${formatter.format(contract.stakingCap,false)} ${symbol}`}
+                    value={`${formatter.format(contract.stakingCap, false)} ${symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
                 />
@@ -50,7 +47,7 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={formatter.format(contract.stakedAmount,true)}
+                    value={formatter.format(props.stakedAmount,true)}
                     inputMode={'decimal'}
                     disabled={true}
 

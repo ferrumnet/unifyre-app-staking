@@ -4,9 +4,9 @@ import { CommonActions } from "./Actions";
 import { userPreferenceReducer } from "../services/UserPreferenceService";
 import {  StakingAppServiceActions } from "../services/StakingAppClient";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { StakingApp } from "./Types";
 import { StakeToken } from "../pages/stakeToken/StakeToken";
 import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
+import { StakingDataState } from "./RootState";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -29,14 +29,17 @@ function userData(state: { profile: AppUserProfile } = {} as any, action: AnyAct
     }
 }
 
-function stakingData(state: { contracts: StakingApp[], selected?: string } = { contracts: []}, action: AnyAction) {
+function stakingData(state: StakingDataState = { contracts: []}, action: AnyAction) {
     switch(action.type) {
         case StakingAppServiceActions.STAKING_DATA_RECEIVED:
             const {stakingData} = action.payload;
             return {...state, contracts: stakingData };
-        case StakingAppServiceActions.CONTRACT_SELECTED:
-            const {address} = action.payload;
-            return {...state, address};
+        case StakingAppServiceActions.STAKING_CONTACT_RECEIVED:
+            const {selectedContract} = action.payload;
+            return {...state, selectedContract};
+        case StakingAppServiceActions.USER_STAKE_RECEIVED:
+            const {userStake} = action.payload;
+            return {...state, userStake};
         default:
             return state;
     }

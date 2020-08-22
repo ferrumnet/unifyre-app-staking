@@ -7,9 +7,11 @@ import {
 import { formatter } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
+import { useHistory } from 'react-router-dom';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
-    const {symbol,stakingCap,stakedAmount} = props.contract;   
+    const {symbol, stakingCap} = props.contract;   
+    const history = useHistory();
     const {balance} = props;
     return (
         <Page>
@@ -50,7 +52,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-                              new Big(stakingCap).minus(new Big(stakedAmount)).toFixed(),true)} ${symbol}`}
+                              new Big(stakingCap).minus(new Big(props.stakedAmount)).toFixed(),true)} ${symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />
@@ -60,7 +62,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                         <ThemedButton
                             text={`Sign and Submit Stake`}
                             onClick={()=>{
-                                props.onStakeToken(props)}}/>
+                                props.onStakeToken(history, props)}}/>
                   </Row>
               </>
             }        
