@@ -1,40 +1,31 @@
 import { Network, EncryptedData } from "ferrum-plumbing";
 import { MongooseConfig } from "aws-lambda-helper";
 
-export interface StakingAppClaim {
-    address: string;
-    userId: string;
-    email?: string;
-}
-
 export interface StakingApp {
-    tokenName: string;
-    stakingCap: number;
-    stakedAmount: number;
-    withdrawEnds: number;
-    withdrawStarts: number;
-    stakingEnds: number;
-    stakingStarts: number;
-    version: number;
     network: Network;
     currency: string;
-    contractAddress: string;
-    createdAt: number;
     symbol: string;
+    contractAddress: string;
+    name: string;
+    tokenAddress: string;
+    stakedBalance: string;
+    rewardBalance: string;
+    stakingCap: string;
+    stakedTotal: string;
+    totalReward: string;
+    withdrawStarts: number;
+    withdrawEnds: number;
+    stakingStarts: number;
+    stakingEnds: number;
 }
 
-export interface UserStakingData {
-    userId: string,
-    amountInStake: number,
-    tokenId: string,
-    createdAt: number
-}
-
-export interface stake {
-    amount: number;
-    userAddress: string;
+export interface UserStake {
+    userId: string;
+    network: string;
     currency: string;
-    uniToken: string;
+    userAddress: string;
+    contractAddress: string;
+    amountInStake: string;
 }
 
 export interface StakingAppConfig {
@@ -47,4 +38,5 @@ export interface StakingAppConfig {
     web3ProviderEthereum: string;
     backend: string;
     cmkKeyArn: string;
+    adminSecret: string;
 }

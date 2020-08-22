@@ -1,131 +1,104 @@
 import { MongooseConnection } from "aws-lambda-helper";
 import { Connection, Model, Document } from "mongoose";
-import { Injectable, ValidationUtils, RetryableError, retry } from "ferrum-plumbing";
-import { UnifyreExtensionKitClient, ClientModule } from "unifyre-extension-sdk";
-import { StakingApp,UserStakingData } from "./Types";
-import { StakingAppModel,UserStakingAppModel } from "./MongoTypes";
-import { AppLinkRequest } from "unifyre-extension-sdk/dist/client/model/AppLink";
+import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
+import { UnifyreExtensionKitClient } from "unifyre-extension-sdk";
+import { StakingApp, UserStake } from "./Types";
+import { StakingAppModel } from "./MongoTypes";
 import { SmartContratClient } from "./SmartContractClient";
-import {stake} from './Types';
+import { TimeoutError } from "unifyre-extension-sdk/dist/client/AsyncRequestRepeater";
+
+const SIGNATURE_TIMEOUT = 1000 * 45;
+
+async function undefinedOnTimeout<T>(fun: () => Promise<T|undefined>) {
+    try {
+        return await fun();
+    } catch (e) {
+        if (e instanceof TimeoutError) {
+            return undefined
+        }
+    }
+}
 
 export class StakingAppService extends MongooseConnection implements Injectable {
-    private model: Model<StakingApp & Document, {}> | undefined;
-    private userModel: Model<UserStakingData & Document, {}> | undefined;
+    private stakingModel: Model<StakingApp & Document, {}> | undefined;
+    // private userModel: Model<UserStake & Document, {}> | undefined; // TODO: Properly implement user stake management
     constructor(
         private uniClientFac: () => UnifyreExtensionKitClient,
         private contract: SmartContratClient,
     ) { super(); }
 
     initModels(con: Connection): void {
-        this.model = StakingAppModel(con)
-        this.userModel = UserStakingAppModel(con)
+        this.stakingModel = StakingAppModel(con)
+        // this.userModel = UserStakingAppModel(con)
     }
-
     
-    async saveStakeInfo(
-        token: string,
-        currency: string
-    ): Promise<any> {
-        let inst = await this.contract.instance(currency);
-        let contractInstance = inst.methods;
-        let tokenName = await contractInstance.tokenAddress().call();
-        let tokenContract = await this.contract.contractInfo(currency);
-        let stakedTotal = await contractInstance.stakedTotal().call();
-        let stakingTotal = await contractInstance.stakingTotal().call();
-        let withdrawStarts = await contractInstance.withdrawStarts().call();
-        let withdrawEnds = await contractInstance.withdrawEnds().call();
-        let stakingStarts = await contractInstance.stakingStarts().call();
-        let stakingEnds = await contractInstance.stakingEnds().call();
-        let response = await this.save(
-            {
-                tokenName,
-                symbol: currency,
-                stakedAmount: stakedTotal,
-                stakingCap: stakingTotal,
-                withdrawEnds,
-                withdrawStarts,
-                stakingEnds,
-                stakingStarts,
-                createdAt: Date.now(),
-                creatorAddress: token,
-                network: 'ETHEREUM',
-                version: 0
-            }
-        )
+    async saveStakeInfo(network: string, contractAddress: string): Promise<StakingApp> {
+        let response = await this.contract.contractInfo(network, contractAddress);
+        ValidationUtils.isTrue(!!response && !!response.currency, 'Staking contract not found: ' + contractAddress)
+        await this.saveStakingApp(response);
         return response;
     }
 
+    async getStakingsForToken(currency: string): Promise<StakingApp[]> {
+        const apps = await this.stakingModel?.find({currency}).exec() || [];
+        return apps.map(a => a.toJSON());
+    }
 
-    async stakeToken (args: stake) {
-        const { amount,uniToken } = args;
-        const client = this.uniClientFac();
-        await client.signInWithToken(uniToken);
-        const userProfile = client.getUserProfile();
-        ValidationUtils.isTrue(!!userProfile, 'Error connecting to unifyre');
-        let stakerAddress = (userProfile.accountGroups[0]?.addresses || [])[0]?.address;
-        let network = (userProfile.accountGroups[0]?.addresses || [])[0]?.network;
-        let currency = (userProfile.accountGroups[0]?.addresses || [])[0]?.currency;
-        let symbol = (userProfile.accountGroups[0]?.addresses || [])[0]?.symbol;
+    async getStakingContractForUser(
+        network: string, contractAddress: string, userAddress: string, userId: string): Promise<[UserStake, StakingApp]> {
+        const stakingContract = await this.contract.contractInfo(network, contractAddress);
+        ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
+        const currency = stakingContract.currency;
+        const stakeOf = await this.contract.stakeOf(network, contractAddress, currency, userAddress);
+        const userStake = {
+            amountInStake: stakeOf,
+            contractAddress,
+            currency,
+            network,
+            userAddress,
+            userId,
+        } as UserStake;
+        return [userStake, stakingContract]
+    }
+
+    async stakeTokenSignAndSend(
+            network: Network, contractAddress: string, userAddress: string, amount: string): Promise<string> {
+        const stakingContract = await this.contract.contractInfo(network, contractAddress);
+        ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         const txs = await this.contract.checkAllowanceAndStake(
-            currency,
-            symbol,
-            stakerAddress,
-            amount,
+            stakingContract,
+            userAddress,
+            amount
         );
-        return await client.sendTransactionAsync(network, txs);
-    };
-
-    async unstakeToken (args: stake) {
-        const { amount,uniToken } = args;
         const client = this.uniClientFac();
-        await client.signInWithToken(uniToken);
-        const userProfile = client.getUserProfile();
-        ValidationUtils.isTrue(!!userProfile, 'Error connecting to unifyre');
-        let stakerAddress = (userProfile.accountGroups[0]?.addresses || [])[0]?.address;
-        let network = (userProfile.accountGroups[0]?.addresses || [])[0]?.network;
-        let currency = (userProfile.accountGroups[0]?.addresses || [])[0]?.currency;
-        let symbol = (userProfile.accountGroups[0]?.addresses || [])[0]?.symbol;
-        const txs = await this.contract.checkAllowanceAndUnStake(
-            currency,
-            symbol,
-            stakerAddress,
-            amount,
-        );
-        return await client.sendTransactionAsync(network, txs);
+        const requestId = await client.sendTransactionAsync(network, txs);
+        const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
+        if (!!response) {
+            // TODO: Process response and save transaction IDs
+        }
+        return requestId;
     };
 
-    async saveUserStakingData (address:string,userId:string,currency: string) {
-        let userStakeData = await this.contract.userStake(address,currency);
-        if(userStakeData){
-           const response = await this.saveUserData(
-               {
-                   amountInStake: userStakeData.amount,
-                   userId,
-                   tokenId: currency,
-                   createdAt: Date.now()
-               }
-           );
-           console.log(response.toString())
-           return response;
+    async unstakeTokenSignAndSend(
+            network: Network, contractAddress: string, userAddress: string, amount: string): Promise<string> {
+        const stakingContract = await this.contract.contractInfo(network, contractAddress);
+        ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
+        const txs = await this.contract.unStake(
+            stakingContract,
+            userAddress,
+            amount
+        );
+        const client = this.uniClientFac();
+        const requestId = await client.sendTransactionAsync(network, txs);
+        const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
+        if (!!response) {
+            // TODO: Process response and save transaction IDs
         }
-        return;
-    }
+        return requestId;
+    };
 
-    private async saveUserData(pd: UserStakingData) { 
+    private async saveStakingApp(pd:StakingApp) { 
         this.verifyInit();
-        return new this.userModel!(pd).save();
-    }
-
-    private async save(pd:StakingApp) { 
-        this.verifyInit();
-        return new this.model!(pd).save();
-    }
-
-    async get(symbol: string): Promise<any> {
-        ValidationUtils.isTrue(!!symbol, '"symbol" must be provided');
-        const pd = await this.model?.find({symbol}).exec();
-        if (!pd) return;
-        console.log(pd.toString())
-        return pd;
+        return new this.stakingModel!(pd).save();
     }
 }

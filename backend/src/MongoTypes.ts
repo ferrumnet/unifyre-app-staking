@@ -1,33 +1,36 @@
 import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
-import { StakingApp,UserStakingData } from "./Types";
+import { StakingApp, UserStake, } from "./Types";
 
 const StakingAppSchema: Schema = new Schema<StakingApp>({
-    tokenName: String,
-    stakingCap: Number,
-    stakedAmount: Number,
-    withdrawEnds: Number,
-    withdrawStarts: Number,
-    stakingEnds: Number,
-    stakingStarts: Number,
-    version: Number,
     network: String,
-    creatorAddress: String,
-    createdAt: Number,
+    currency: String,
     symbol: String,
-    numberOfStakeParticipants: Number,
+    contractAddress: String,
+    name: String,
+    tokenAddress: String,
+    stakedBalance: String,
+    rewardBalance: String,
+    stakingCap: String,
+    stakedTotal: String,
+    totalReward: String,
+    withdrawStarts: Number,
+    withdrawEnds: Number,
+    stakingStarts: Number,
+    stakingEnds: Number,
 });
 
-const UserStakingDataSchema: Schema = new Schema<UserStakingData>({
+const UserStakeSchema: Schema = new Schema<UserStake>({
     userId: String,
-    amountInStake: Number,
-    tokenId: String,
-    createdAt: String
+    contractAddress: String,
+    amountInStake: String,
+    currency: String,
+    createdAt: Number
 });
 
 export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
 
-export const UserStakingAppModel = (c: Connection) => c.model<UserStakingData&Document>('userStakingData', UserStakingDataSchema);
+export const UserStakingAppModel = (c: Connection) => c.model<UserStake&Document>('userStake', UserStakeSchema);
 
 export function getEnv(env: string) {
     const res = process.env[env];

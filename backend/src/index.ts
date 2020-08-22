@@ -1,11 +1,12 @@
 import {
-    LambdaGlobalContext, MongooseConfig, UnifyreBackendProxyModule, UnifyreBackendProxyService, KmsCryptor, AwsEnvs, SecretsProvider,
+    LambdaGlobalContext, UnifyreBackendProxyModule,
+    UnifyreBackendProxyService, KmsCryptor, AwsEnvs, SecretsProvider,
 } from 'aws-lambda-helper';
 import {HttpHandler} from "./HttpHandler";
 import {
     ConsoleLogger,
     Container,
-    LoggerFactory, Module, EncryptedData,
+    LoggerFactory, Module,
 } from "ferrum-plumbing";
 import { ClientModule, UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { getEnv } from './MongoTypes';
@@ -13,26 +14,10 @@ import { StakingAppService } from './StakingAppService';
 import { SmartContratClient } from './SmartContractClient';
 import { KMS } from 'aws-sdk';
 import { StakingAppConfig } from './Types';
+import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 
 const global = { init: false };
 const STAKING_APP_ID = 'STAKING_APP';
-
-// DEV - only use for local. Remote dev is considered prod
-const IS_DEV = false;
-const STAKING_APP_SMART_CONTRACT_ADDRESS_DEV = '0xe31048F6D54379950F7de0d945329121e2515e38';
-
-const STAKING_APP_TOKEN_ADDRESS_DEV = '0x93698a057CEC27508A9157a946e03E277B46Fe56';
-
-const STAKING_APP_TOKEN_ADDRESS_PROD = '0x93698a057CEC27508A9157a946e03E277B46Fe56';
-
-const STAKING_APP_SMART_CONTRACT_ADDRESS_PROD = {
-    'RINKEBY': '0x5b16C26c7B65518711e29798cf09B27f09907288'
-};
-
-const STAKING_APP_ADDRESS = IS_DEV ?
-    { 'ETHEREUM': STAKING_APP_SMART_CONTRACT_ADDRESS_DEV } : STAKING_APP_SMART_CONTRACT_ADDRESS_PROD;
-
-const STAKING_TOKEN_ADDRESS = IS_DEV ? STAKING_APP_TOKEN_ADDRESS_DEV : STAKING_APP_TOKEN_ADDRESS_PROD;
 
 async function init() {
     if (global.init) {
@@ -65,9 +50,6 @@ export async function handler(event: any, context: any) {
 
 export class stakingAppModule implements Module {
     async configAsync(container: Container) {
-        // Only uncomment to encrypt sk
-        // await encryptEnv('SK', container);
-
         const region = process.env.AWS_REGION || process.env[AwsEnvs.AWS_DEFAULT_REGION] || 'us-east-2';
         const stakingAppConfArn = process.env[AwsEnvs.AWS_SECRET_ARN_PREFIX + 'UNI_APP_STAKING_APP'];
         let stakingAppConfig: StakingAppConfig = {} as any;
@@ -85,6 +67,7 @@ export class stakingAppModule implements Module {
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
+                adminSecret: getEnv('ADMIN_SECRET')
             } as StakingAppConfig;
         }
         // makeInjectable('CloudWatch', CloudWatch);
@@ -122,12 +105,15 @@ export class stakingAppModule implements Module {
             new UnifyreBackendProxyModule(STAKING_APP_ID, stakingAppConfig.authRandomKey,
                 signingKeyHex!,));
 
+        container.registerSingleton(EthereumSmartContractHelper,
+            () => new EthereumSmartContractHelper(
+                {
+                    'ETHEREUM': stakingAppConfig.web3ProviderEthereum,
+                    'RINKEBY': stakingAppConfig.web3ProviderRinkeby,
+                } as Web3ProviderConfig
+            ));
         container.registerSingleton(SmartContratClient,
-            () => new SmartContratClient(
-                stakingAppConfig.web3ProviderEthereum,
-                stakingAppConfig.web3ProviderRinkeby,
-                STAKING_APP_ADDRESS,
-                STAKING_TOKEN_ADDRESS));
+            c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
         container.register('JsonStorage', () => new Object());
         container.registerSingleton(StakingAppService,
                 c => new StakingAppService(
@@ -136,26 +122,15 @@ export class stakingAppModule implements Module {
                     ));
 
         container.registerSingleton('LambdaHttpHandler',
-                c => new HttpHandler(c.get(UnifyreBackendProxyService), c.get(StakingAppService)));
+                c => new HttpHandler(
+                    c.get(UnifyreBackendProxyService),
+                    c.get(StakingAppService),
+                    stakingAppConfig.adminSecret,
+                    ));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
     }
-}
-
-async function encryptEnv(env: string, c: Container) {
-    // Run this once on the lambda function to print out the encrypted private key
-    // then use this encrypted private key as the app parameter going forward
-    // and discard the plain text private key.
-    const sk = getEnv(env);
-    const cmkKeyArn = getEnv('CMK_KEY_ARN');
-    c.register('KMS', () => new KMS({region: 'us-east-2'}));
-    c.register(KmsCryptor, _c => new KmsCryptor(_c.get('KMS'),
-        cmkKeyArn));
-    const enc = await c.get<KmsCryptor>(KmsCryptor).encryptHex(sk);
-    console.log('ENCRYPTED');
-    console.log(enc);
-    throw new Error('DEV ONLY');
 }
