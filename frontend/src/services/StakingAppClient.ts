@@ -117,11 +117,11 @@ export class StakingAppClient implements Injectable {
             }
             // TODO: Fix the response format in client
             // {"serverError":null,"data":{"requestId":"659ff5c5-5e6a-407a-835d-d43e8b64aee2","appId":"POOL_DROP","response":[{"transactionId":"0x4d6b570dea6d5940e4dd8ea09f930622593ff19a8b733c0deda0927dd3d7929e"},{"transactionId":"0xab28e8cadb0cd73e8f8788a89065f62cae06f746da44ef6147b900341cca8514"}]}}
-            const response = await this.client.getSendTransactionResponse(requestId) as any;
+            const response = await this.client.getSendTransactionResponse(requestId);
             if (response.rejected) {
-                throw new Error(response.reason || 'Request was rejected');
+                throw new Error((response as any).reason || 'Request was rejected');
             }
-            const transactionIds = (response.response as SendMoneyResponse[]).map(r => r.transactionId);  
+            const transactionIds = (response.response || []).map(r => r.transactionId);  
             console.log('Received transaction IDs', transactionIds);
            
             /* TODO: Add functionality to record transaction IDs and staking attempts.
