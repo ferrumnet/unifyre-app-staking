@@ -1,10 +1,8 @@
 import { Injectable, HexString, ValidationUtils } from "ferrum-plumbing";
-// @ts-ignore
-import * as stakingAbi from './resources/Staking.json';
+import stakingAbi from './resources/Festaking-abi.json';
 import Big from 'big.js';
 import { StakingApp } from "./Types";
 import { EthereumSmartContractHelper } from 'aws-lambda-helper/dist/blockchain';
-import { url } from "inspector";
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 const Helper = EthereumSmartContractHelper;
 
@@ -81,19 +79,20 @@ export class SmartContratClient implements Injectable {
     async contractInfo(network:string, contract: string): Promise<StakingApp> {
         const inst = this.instance(network, contract);
         const contractInstance = inst.methods;
-        const tokenAddress = await contractInstance.tokenAddress().call().toString().toLowerCase();
+        const tokenAddress = (await contractInstance.tokenAddress().call()).toString().toLowerCase();
         const currency = Helper.toCurrency(network, tokenAddress);
         const symbol = await this.helper.symbol(currency);
-        const name = await contractInstance.name().call().toString();
-        const stakedBalanceRaw = await contractInstance.stakedBalance().call().toString();
-        const rewardBalanceRaw = await contractInstance.rewardBalance().call().toString();
-        const stakingCapRaw = await contractInstance.stakingCap().call().toString();
-        const stakedTotalRaw = await contractInstance.stakedTotal().call().toString();
-        const totalRewardRaw = await contractInstance.totalReward().call().toString();
-        const withdrawStarts = await contractInstance.withdrawStarts().call();
-        const withdrawEnds = await contractInstance.withdrawEnds().call();
-        const stakingStarts = await contractInstance.stakingStarts().call();
-        const stakingEnds = await contractInstance.stakingEnds().call();
+        const name = (await contractInstance.name().call()).toString();
+        const stakedBalanceRaw = (await contractInstance.stakedBalance().call()).toString();
+        const rewardBalanceRaw = (await contractInstance.rewardBalance().call()).toString();
+        const stakingCapRaw = (await contractInstance.stakingCap().call()).toString();
+        const stakedTotalRaw = (await contractInstance.stakedTotal().call()).toString();
+        console.log('STAKED NUMBER', {stakedBalanceRaw, rewardBalanceRaw, stakingCapRaw, stakedTotalRaw})
+        const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
+        const withdrawStarts = (await contractInstance.withdrawStarts().call());
+        const withdrawEnds = (await contractInstance.withdrawEnds().call());
+        const stakingStarts = (await contractInstance.stakingStarts().call());
+        const stakingEnds = (await contractInstance.stakingEnds().call());
         return {
             network,
             currency,
@@ -120,7 +119,7 @@ export class SmartContratClient implements Injectable {
 
     private stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
-        return new web3.Contract(stakingAbi.abi as any, contractAddress);
+        return new web3.Contract(stakingAbi, contractAddress);
     }
 
     private async stakeToken(network: string,

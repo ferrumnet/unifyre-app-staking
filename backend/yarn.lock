@@ -1214,9 +1214,9 @@
     chalk "^4.0.0"
 
 "@sindresorhus/is@^3.0.0":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-3.1.1.tgz#6e39e4222add8b362da35720c9dd5d53345d5851"
-  integrity sha512-tLnujxFtfH7F+i5ghUfgGlJsvyCKvUnSMFMlWybFdX9/DdX8svb4Zwx1gV0gkkVCHXtmPSetoAR3QlKfOld6Tw==
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-3.1.2.tgz#548650de521b344e3781fbdb0ece4aa6f729afb8"
+  integrity sha512-JiX9vxoKMmu8Y3Zr2RVathBL1Cdu4Nt4MuNWemt1Nc06A0RAin9c5FArkhGsyMBWfCu4zj+9b+GxtjAnE4qqLQ==
 
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.5"
@@ -1787,7 +1787,7 @@ atob@^2.1.2:
 
 "aws-lambda-helper@git+https://github.com/ferrumnet/aws-lambda-helper.git":
   version "1.0.0"
-  resolved "git+https://github.com/ferrumnet/aws-lambda-helper.git#90e1d7eee6fc78b880b6b8371a9f467e53e893fa"
+  resolved "git+https://github.com/ferrumnet/aws-lambda-helper.git#c48043ba2b9687a7e7723d39a766bd44eeb81d29"
   dependencies:
     aws-sdk "^2.572.0"
     big.js "^5.2.2"
