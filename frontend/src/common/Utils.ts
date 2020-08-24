@@ -2,6 +2,8 @@ import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
 import { StakingApp } from './Types';
 
+const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
+
 export class Utils {
     static getQueryparam(param: string): string | undefined {
         const queryParams = (window.location.href.split('?')[1] || '').split('&').map(p => p.split('='));
@@ -60,6 +62,11 @@ export class CurrencyFormatter {
             return;
         }
         return LocaleManager.formatDecimalString(canonical, decimals);
+    }
+
+    icon(currency: string): string {
+        const parts = currency.split(':');
+        return LOGO_TEMPLATE.replace('{NETWORk}', parts[0]).replace('{TOKEN}', parts[1]);
     }
 }
 
