@@ -32,7 +32,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         const res = await client.selectStakingContract(dispatch, contract.network,
             contract.contractAddress, userAddress);
         if (!!res) {
-            history.push('/info');
+            history.push('/info/' + contract.contractAddress);
         }
     }
 } as MainDispatch);

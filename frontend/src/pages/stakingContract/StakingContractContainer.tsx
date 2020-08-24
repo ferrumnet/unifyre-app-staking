@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { formatter,dataFormat } from "../../common/Utils";
 import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from './StakingContract';
+import { LoaderContainer } from '../../components/Loader';
 
 function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
     // const stakeInfo = props.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
@@ -23,13 +24,14 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
 
     return (
         <Page>
+            <LoaderContainer />
             <PageTopPart>
                 <Gap />
                 <Row withPadding centered>
                     <ThemedText.H3>{`Unifyre ${symbol} Staking`}</ThemedText.H3>
                 </Row>
                 <Row withPadding centered>
-                    <ThemedText.H2>{symbol}</ThemedText.H2>
+                    <ThemedText.H2>{contract.name}</ThemedText.H2>
                 </Row>
             </PageTopPart>
             <Row withPadding>
@@ -47,7 +49,7 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
             </Row>
             <Row withPadding>
                 <InputGroupAddon
-                    value={formatter.format(props.stakedAmount,true)}
+                    value={`${formatter.format(props.stakedAmount,true)} ${props.symbol}`}
                     inputMode={'decimal'}
                     disabled={true}
 

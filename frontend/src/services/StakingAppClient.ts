@@ -2,10 +2,11 @@ import { Injectable, JsonRpcRequest, ValidationUtils, Network } from "ferrum-plu
 import { Dispatch, AnyAction } from "redux";
 import { addAction, CommonActions } from "../common/Actions";
 import { Utils } from "../common/Utils";
-import { UnifyreExtensionKitClient, SendMoneyResponse } from 'unifyre-extension-sdk';
+import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { UserStake } from "../common/Types";
+import { Big } from 'big.js';
 
 export const StakingAppServiceActions = {
     TOKEN_NOT_FOUND_ERROR: 'TOKEN_NOT_FOUND_ERROR',
@@ -18,6 +19,7 @@ export const StakingAppServiceActions = {
     GET_STAKING_CONTRACT_FAILED: 'GET_STAKING_CONTRACT_FAILED',
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
     STAKING_FAILED: 'STAKING_FAILED',
+    UN_STAKING_FAILED: 'UN_STAKING_FAILED',
 };
 
 const Actions = StakingAppServiceActions;
@@ -35,6 +37,7 @@ export class StakingAppClient implements Injectable {
         if (!token) { return; }
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+            await this.client.signInWithToken(token);
             const res = await this.api({
                 command: 'signInToServer', data: {token,symbol: 'FRM'}, params: [] } as JsonRpcRequest);
             const {userProfile, session } = res;
@@ -68,7 +71,7 @@ export class StakingAppClient implements Injectable {
             dispatch(addAction(CommonActions.WAITING, { source: 'selectStakingContract' }));
             const res = await this.api({
                 command: 'getStakingContractForUser', data: {network, contractAddress, userAddress}, params: [] } as JsonRpcRequest);
-            const { userStake, stakingContract } = res;
+            const [ userStake, stakingContract ] = res;
             if (!userStake) {
                 dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could not get the staking contract data' }));
                 return;
@@ -106,6 +109,7 @@ export class StakingAppClient implements Injectable {
         balance: string,
         ) {
         try {
+            ValidationUtils.isTrue(new Big(amount).gt(new Big('0')), 'Amount must be positive');
             ValidationUtils.isTrue(new Big(balance).gte(new Big(amount)), 'Not enough balance');
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeSignAndSend' }));
             const token = this.getToken(dispatch);
@@ -115,9 +119,8 @@ export class StakingAppClient implements Injectable {
             if (!requestId) {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not send a sign request.' }));
             }
-            // TODO: Fix the response format in client
-            // {"serverError":null,"data":{"requestId":"659ff5c5-5e6a-407a-835d-d43e8b64aee2","appId":"POOL_DROP","response":[{"transactionId":"0x4d6b570dea6d5940e4dd8ea09f930622593ff19a8b733c0deda0927dd3d7929e"},{"transactionId":"0xab28e8cadb0cd73e8f8788a89065f62cae06f746da44ef6147b900341cca8514"}]}}
             const response = await this.client.getSendTransactionResponse(requestId);
+            console.log('RESPONSE FROM SERVER?', response);
             if (response.rejected) {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
@@ -138,7 +141,7 @@ export class StakingAppClient implements Injectable {
             return transactionIds;
         } catch (e) {
             console.error('Error signAndSend', e);
-            dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request.' + e.message || '' }));
+            dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
         }

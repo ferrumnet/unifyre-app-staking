@@ -6,6 +6,8 @@ import { Dispatch, AnyAction } from 'redux';
 import { StakingAppClient } from '../services/StakingAppClient';
 import { UnifyreExtensionKitClient, ClientModule } from 'unifyre-extension-sdk';
 
+class DummyStorage {}
+
 interface Config {
     unifyreBackend: string;
     poolDropBackend: string;
@@ -19,20 +21,20 @@ const LOCAL_DEV_CONF = {
     isProd: false,
 } as Config;
 
-const REMOTE_DEV_CONF = {
-    unifyreBackend: 'https://tbe.ferrumnetwork.io/api/',
-    poolDropBackend: 'https://sczl7wvxvf.execute-api.us-east-2.amazonaws.com/default/test-unifyre-extension-pool-drop-backend',
-    isProd: false,
-} as Config;
+// const REMOTE_DEV_CONF = {
+//     unifyreBackend: 'https://tbe.ferrumnetwork.io/api/',
+//     poolDropBackend: 'https://sczl7wvxvf.execute-api.us-east-2.amazonaws.com/default/test-unifyre-extension-pool-drop-backend',
+//     isProd: false,
+// } as Config;
 
-const PROD_CONF = {
-    unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
-    poolDropBackend: 'https://e1j2b5gei9.execute-api.us-east-2.amazonaws.com/default/prod-unifyre-extension-pool-drop-backend',
-    isProd: true,
-} as Config;
+// const PROD_CONF = {
+//     unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
+//     poolDropBackend: 'https://e1j2b5gei9.execute-api.us-east-2.amazonaws.com/default/prod-unifyre-extension-pool-drop-backend',
+//     isProd: true,
+// } as Config;
 
-const DEV_USES_LOCAL: boolean = true;
-const NODE_ENV = process.env.NODE_ENV;
+// const DEV_USES_LOCAL: boolean = true;
+// const NODE_ENV = process.env.NODE_ENV;
 
 export const CONFIG = LOCAL_DEV_CONF; // NODE_ENV === 'production' ? PROD_CONF :
     // (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
@@ -46,7 +48,7 @@ export class IocModule {
 
         const c = new Container();
         c.register(LoggerFactory, () => new LoggerFactory(n => new ConsoleLogger(n)));
-        c.register('JsonStorage', () => new Object());
+        c.register('JsonStorage', () => new DummyStorage());
         await c.registerModule(new ClientModule(CONFIG.unifyreBackend, 'STAKING_APP'));
         c.registerSingleton(StakingAppClient, c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
         c.registerSingleton(UserPreferenceService, c => new UserPreferenceService());

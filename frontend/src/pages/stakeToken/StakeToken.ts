@@ -2,13 +2,12 @@ import { AnyAction, Dispatch } from "redux";
 import { IocModule, inject } from "../../common/IocModule";
 import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
-import { StakingAppClient } from "../../services/StakingAppClient";
+import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakingApp } from "../../common/Types";
 import { History } from 'history';
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
-    STAKE_FAILED: 'STAKE_FAILED',
 };
 
 const Actions = StakeTokenActions;
@@ -54,11 +53,11 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                history.replace('/info');
+                history.replace('/info/' + props.contract.contractAddress);
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);
-            dispatch(addAction(Actions.STAKE_FAILED, { error: e.toString() }));
+            dispatch(addAction(StakingAppServiceActions.STAKING_FAILED, { error: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'stakeToken' }));
         }
@@ -75,8 +74,8 @@ const defaultStakeTokenState = {
 
 function reduce(state: StakeTokenState = defaultStakeTokenState, action: AnyAction) {    
     switch(action.type) {
-        case Actions.STAKE_FAILED:
-            return {...state, error: action.payload.error};
+        case StakingAppServiceActions.STAKING_FAILED:
+            return {...state, error: action.payload.message};
         case Actions.AMOUNT_TO_STAKE_CHANGED:
             return {...state, error: undefined, amount: action.payload.amount}
         default:

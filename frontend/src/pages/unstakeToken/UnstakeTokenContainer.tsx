@@ -5,6 +5,7 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { formatter } from "../../common/Utils";
+import { LoaderContainer } from '../../components/Loader';
 import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './UnstakeToken';
 
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
@@ -12,6 +13,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     const {symbol, stakingCap, stakedBalance} = props.contract;   
     return (
         <Page>
+            <LoaderContainer />
             <PageTopPart>
                 <Gap />
                 <Row withPadding centered>

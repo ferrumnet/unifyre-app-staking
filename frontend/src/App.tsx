@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {ThemeContext, ThemeConstantProvider, Theme, defaultDarkThemeConstantsBuilder} from 'unifyre-react-helper';
 import {

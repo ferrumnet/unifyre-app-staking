@@ -2,6 +2,7 @@ import { Network } from "ferrum-plumbing";
 
 export interface StakingApp {
     network: Network;
+    name: string;
     currency: string;
     symbol: string;
     contractAddress: string;

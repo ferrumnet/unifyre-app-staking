@@ -35,7 +35,7 @@ function stakingData(state: StakingDataState = { contracts: []}, action: AnyActi
             const {stakingData} = action.payload;
             return {...state, contracts: stakingData };
         case StakingAppServiceActions.STAKING_CONTACT_RECEIVED:
-            const {selectedContract} = action.payload;
+            const {stakingContract: selectedContract} = action.payload;
             return {...state, selectedContract};
         case StakingAppServiceActions.USER_STAKE_RECEIVED:
             const {userStake} = action.payload;

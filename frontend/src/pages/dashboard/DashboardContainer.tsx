@@ -26,13 +26,13 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         return (
             <>
               <Switch>
-                  <Route path='/unstake'>
+                  <Route path='/unstake/:contractAddress'>
                         <UnstakeTokenContainer/>
                   </Route>
-                  <Route path='/stake'>
+                  <Route path='/stake/:contractAddress'>
                         <StakeTokenContainer/>
                   </Route>
-                  <Route path='/info'>
+                  <Route path='/info/:contractAddress'>
                         <StakingContractContainer />
                   </Route>
                   <Route path='/'>

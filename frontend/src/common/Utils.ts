@@ -1,9 +1,7 @@
-import Big from 'big.js';
 import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
 import { StakingApp } from './Types';
 
-const FEE_RATE = new Big('0.0');
 export class Utils {
     static getQueryparam(param: string): string | undefined {
         const queryParams = (window.location.href.split('?')[1] || '').split('&').map(p => p.split('='));
@@ -65,6 +63,7 @@ export class CurrencyFormatter {
     }
 }
 
-export const dataFormat = (data:number) =>  { return new Date(data).toLocaleString()}
+export const dataFormat = (data:number) =>  {
+    return new Date(Number(data * 1000)).toLocaleString()}
 
 export const formatter = new CurrencyFormatter();
