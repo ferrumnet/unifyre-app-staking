@@ -11,6 +11,7 @@ export interface StakingApp {
     rewardBalance: string;
     stakingCap: string;
     stakedTotal: string;
+    earlyWithdrawReward: string;
     totalReward: string;
     withdrawStarts: number;
     withdrawEnds: number;

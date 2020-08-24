@@ -1,10 +1,18 @@
 import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
 import { StakingApp } from './Types';
+import { Big } from 'big.js';
+import { earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  
 export type StakingState = 'pre-stake' | 'stake' | 'pre-withdraw' | 'withdraw' | 'maturity';
+
+export interface StakingRewards {
+    earlyWithdrawAnnual: string;
+    maturityAnnual: string;
+    maturityMaxAmount: string;
+}
 
 export class Utils {
     static getQueryparam(param: string): string | undefined {
@@ -67,6 +75,34 @@ export class Utils {
             return 'withdraw';
         }
         return 'maturity';
+    }
+
+    static stakingRewards(contract?: StakingApp): StakingRewards {
+        if (!contract || !contract.stakingStarts) {
+            return {
+                earlyWithdrawAnnual: '0%',
+                maturityAnnual: '0%',
+                maturityMaxAmount: '0',
+            } as StakingRewards;
+        }
+        // Percentage rewards
+        const stakedTotal = new Big(contract.stakedTotal || '0');
+        const earlyWithdrawReward = new Big(contract.earlyWithdrawReward || '0');
+        const totalReward = new Big(contract.totalReward || '0');
+        return {
+            earlyWithdrawAnnual: earlyWithdrawAnnualRate(
+                stakedTotal,
+                earlyWithdrawReward,
+                contract.withdrawEnds,
+                contract.stakingEnds).times(100).toFixed(2),
+            maturityAnnual: maturityAnnualRate(
+                stakedTotal,
+                totalReward,
+                contract.withdrawEnds,
+                contract.stakingEnds,
+            ).times(100).toFixed(2),
+            maturityMaxAmount: totalReward.toFixed(),
+        } as StakingRewards;
     }
 }
 
