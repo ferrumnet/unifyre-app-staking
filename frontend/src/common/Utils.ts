@@ -3,6 +3,8 @@ import { RootState } from './RootState';
 import { StakingApp } from './Types';
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
+ 
+export type StakingState = 'pre-stake' | 'stake' | 'pre-withdraw' | 'withdraw' | 'maturity';
 
 export class Utils {
     static getQueryparam(param: string): string | undefined {
@@ -45,6 +47,26 @@ export class Utils {
 
     static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {
         return state.data.stakingData.contracts.find(c => c.contractAddress ===  contractAddress);
+    }
+
+    static stakingState(contract?: StakingApp): StakingState {
+        if (!contract) {
+            return 'pre-stake';
+        }
+        const now = Date.now() / 1000;
+        if (now < contract.stakingStarts) {
+            return 'pre-stake';
+        }
+        if (now < contract.stakingEnds) {
+            return 'stake';
+        }
+        if (now < contract.withdrawStarts) {
+            return 'pre-withdraw';
+        }
+        if (now <= contract.withdrawEnds) {
+            return 'withdraw';
+        }
+        return 'maturity';
     }
 }
 

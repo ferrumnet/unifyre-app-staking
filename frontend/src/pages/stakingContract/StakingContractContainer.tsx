@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
+    Page,PageTopPart,  Row, ThemedText, Gap, InputGroupAddon, ThemedButton, ThemedLink,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { useHistory } from 'react-router-dom';
@@ -9,31 +9,21 @@ import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from './StakingContract';
 import { LoaderContainer } from '../../components/Loader';
 
-function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
-    // const stakeInfo = props.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    // Render the routes
+function PreStakingView(props: StakingContractProps&StakingContractDispatch) {
+    return (
+        <>
+        </>
+    )
+}
+
+function StakingView(props: StakingContractProps&StakingContractDispatch) {
     const history = useHistory();
     const {contract, symbol} = props;
-    var utcSeconds = contract.stakingStarts;
-    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(utcSeconds);
-
-    const navigateToInfoPage = (address:string) => {
+    const navigateToStakePage = (address:string) => {
         history.replace(`/stake/${address}`);
     }
-
     return (
-        <Page>
-            <LoaderContainer />
-            <PageTopPart>
-                <Gap />
-                <Row withPadding centered>
-                    <ThemedText.H3>{`Unifyre ${symbol} Staking`}</ThemedText.H3>
-                </Row>
-                <Row withPadding centered>
-                    <ThemedText.H2>{contract.name}</ThemedText.H2>
-                </Row>
-            </PageTopPart>
+        <>
             <Row withPadding>
                 <ThemedText.SMALL>{'Total staking Amount'}</ThemedText.SMALL>
             </Row>
@@ -109,10 +99,70 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
             <Row withPadding>
                 <ThemedButton
                     text={`Stake ${symbol}`}
-                    onClick={()=>{navigateToInfoPage(contract.contractAddress)}}/>
+                    disabled={props.state !== 'stake'}
+                    onClick={()=>{navigateToStakePage(contract.contractAddress)}}/>
             </Row>
-            <Row withPadding>
-                <ThemedButton text={'Return'}/>
+        </>
+    )
+}
+
+function PreWithdrawView(props: StakingContractProps&StakingContractDispatch) {
+    return (
+        <>
+        </>
+    )
+}
+
+function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
+    return (
+        <>
+        </>
+    )
+}
+
+function MaturityView(props: StakingContractProps&StakingContractDispatch) {
+    return (
+        <>
+        </>
+    )
+}
+
+function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
+    const history = useHistory();
+    let mainPart = (<> </>);
+    switch (props.state) {
+        case 'pre-stake':
+            mainPart = (<PreStakingView {...props} />);
+            break;
+        case 'stake':
+            mainPart = (<StakingView {...props} />);
+            break;
+        case 'pre-withdraw':
+            mainPart = (<PreWithdrawView {...props} />);
+            break;
+        case 'withdraw':
+            mainPart = (<WithdrawView {...props} />);
+            break;
+        case 'maturity':
+            mainPart = (<MaturityView {...props} />);
+            break;
+    }
+
+    return (
+        <Page>
+            <LoaderContainer />
+            <PageTopPart>
+                <Gap />
+                <Row withPadding centered>
+                    <ThemedText.H3>{`Unifyre ${props.symbol} Staking`}</ThemedText.H3>
+                </Row>
+                <Row withPadding centered>
+                    <ThemedText.H2>{props.contract.name}</ThemedText.H2>
+                </Row>
+            </PageTopPart>
+            {mainPart}
+            <Row withPadding centered>
+                <ThemedLink text={'Go back'} onClick={() => history.replace('/')} />
             </Row>
             <Gap size={'small'}/>
         </Page>
