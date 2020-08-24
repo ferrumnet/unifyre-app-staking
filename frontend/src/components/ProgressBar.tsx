@@ -38,19 +38,19 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
     const { bgcolor, completed } = props;
   
     const containerStyles = {
-      height: 45,
-      width: 'auto',
+      height: 43,
+      width: '80%',
       backgroundColor: "#1a1a1a",
       borderRadius: 10,
-      margin: '10px 30px',
+      margin: '10px auto',
       display: 'flex'
     }
 
     const labelContainer = {
         height: 25,
-        width: 'auto',
+        width: '80%',
         borderRadius: 20,
-        margin: '10px 50px',
+        margin: '0px 40px',
         display: 'flex',
         color: '#ffffff',
         justifyContent: 'space-around'
@@ -89,8 +89,8 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
     const rewardsLabel = {
         fontWeight: "bolder" as "bolder",
         fontFamily: 'Sawarabi Gothic',
-        fontSize: '1.45rem',
-        width: '50%',
+        fontSize: '1.15rem',
+        width: '40%',
         letterSpacing: '2px',
         textAlign: "center" as "center"
     }
@@ -98,7 +98,7 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
     const smallerRewardsLabel = {
         fontWeight: "bolder" as "bolder",
         fontFamily: 'Sawarabi Gothic',
-        fontSize: '0.85rem',
+        fontSize: '0.55rem',
         width: '50%',
         letterSpacing: '1px',
         textAlign: "center" as "center"

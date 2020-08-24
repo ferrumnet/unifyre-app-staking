@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useEffect} from 'react';
 import { connect } from 'react-redux';
 import {
     Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
@@ -8,19 +8,23 @@ import { formatter } from "../../common/Utils";
 import { LoaderContainer } from '../../components/Loader';
 import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './UnstakeToken';
 import Big from 'big.js';
+import { useHistory } from 'react-router-dom';
+import {ThemeContext} from 'unifyre-react-helper';
 
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     // const stakeInfo = props.props.stakingData.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol,stakingCap,stakedAmount} = props.contract;   
-
+    const {symbol,stakingCap} = props.contract;   
+    const history = useHistory();
+    const {contract} = props;
+    var utcSeconds = contract.stakingStarts;
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
     return (
         <Page>
             <LoaderContainer />
-            <PageTopPart>
-                <Gap />
-                <Row withPadding centered>
-                    <ThemedText.H3>{`UnStake ${symbol}`}</ThemedText.H3>
-                </Row>
+             <PageTopPart>
+                <Row centered><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
+                <div style={{...styles.divider}}></div>
             </PageTopPart>
             {
                 <>
@@ -42,11 +46,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-<<<<<<< HEAD
-                              new Big(stakingCap).minus(new Big(stakedBalance)).toFixed(),true)} ${symbol}`}
-=======
                               new Big(stakingCap).minus(new Big(props.amount)).toFixed(),true)} ${symbol}`}
->>>>>>> redesigned dashboard
                           inputMode={'decimal'}
                           disabled={true}
                       />
@@ -60,6 +60,24 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
         </Page>
     );
 }
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+    divider: {
+        height: '3px',
+        borderTopStyle: "solid" as "solid",
+        borderTopColor: 'rgba(249, 64, 43, 1)',
+        width: '10%',
+        margin: '0px auto',
+    },
+    stakingInfoHeader: { 
+        justifyContent: 'center',  
+        fontSize: '19px',
+        fontWeight: 'bold',
+        letterspacing: 1,
+        lineHeight: '1.2'
+    },
+})
 
 export const UnstakeTokenContainer = connect(
   UnstakeToken.mapStateToProps, UnstakeToken.mapDispatchToProps)(UnstakeTokenComponent);

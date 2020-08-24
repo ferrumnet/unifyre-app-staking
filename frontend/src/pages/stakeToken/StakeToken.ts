@@ -5,6 +5,7 @@ import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
+import {Utils} from '../../common/Utils';
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -34,7 +35,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     return {
         ...state.ui.stakeToken,
         symbol: address.symbol,
-        contract: Utils.selectedContrat(state, (state.data.stakingData.selected ?? window.location.href.split('?')[1]) || '') || {} as any,
+        contract: Utils.selectedContrat(state, (window.location.href.split(':')[3]) || '') || {} as any,
         balance: address.balance,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,
@@ -48,6 +49,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeToken' }));
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
+            
             const data = await client.stakeSignAndSend(
                 dispatch, props.amount,
                 props.contract.network,
@@ -66,7 +68,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         }
     },
     onAmountToStakeChanged: async (v:number) => {
-        console.log(v);
         dispatch(addAction(Actions.AMOUNT_TO_STAKE_CHANGED, { amount: v }));
     },
 } as StakeTokenDispatch);

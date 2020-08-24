@@ -1,5 +1,6 @@
 import React, {useContext} from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import {
     Page,PageTopPart,  Row, ThemedText, Gap, InputCurrency, ThemedButton, ErrorMessage,
     InputGroupAddon,
@@ -14,7 +15,8 @@ import { LoaderContainer } from '../../components/Loader';
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-    const {symbol,stakingCap,stakedAmount} = props.contract;   
+    const history = useHistory();
+    const {symbol,stakingCap,stakedTotal,stakedAmount} = props.contract;   
     const {balance} = props;
     const error = props.error ? (
         <Row withPadding>
@@ -51,7 +53,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                   </Row>
                   <Row withPadding>
                       <InputGroupAddon
-                          value={`${formatter.format(balance,false)} ${symbol}`}
+                          value={`${formatter.format(balance,false)} ${props.symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />
@@ -63,7 +65,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-                              new Big(stakingCap || '0').minus(new Big(props.stakedAmount || '0')).toFixed(),true)} ${symbol}`}
+                              new Big(props.contract.stakingCap || '0').minus(new Big(props.contract.stakedAmount || '0')).toFixed(),true)} ${props.symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />
@@ -75,7 +77,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                             highlight={true}
                             text={`Sign and Submit Stake`}
                             onClick={()=>{
-                                props.onStakeToken(props)}}
+                                props.onStakeToken(history,props)}}
                             textStyle={styles.btnText}/>
                   </Row>
               </>

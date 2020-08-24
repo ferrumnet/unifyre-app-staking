@@ -28,11 +28,61 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.example {
+  opacity: 0.01;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
+.container{
+  animation-name: example;
+  animation-duration: 1s;
+  height: 190px;
+}
+
+.collapsed {
+  animation-name: collapse;
+  animation-duration: 1s;
+  height: 50px;
+}
+
+.container-text {
+  opacity: 1;
+  animation-name: opac;
+  animation-duration: 4s;
+}
+
+.more {
+  height: 0px;
+}
+
+.opacitBefore {
+  display: 0;
+}
+
+@keyframes example {
+  from {height: 50px;}
+  to {height: 190px;}
+}
+
+@keyframes collapse {
+  from {height: 190px;}
+  to {height: 50px;}
+}
+
+@keyframes opac {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }

@@ -9,97 +9,93 @@ import { Main, MainDispatch, MainProps } from './Main';
 import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import logo from './../../images/left-arrow.png'; // Tell webpack this JS file uses this image
-import right from './../../images/right-arrow.png'; // Tell webpack this JS file uses this image
-import {RewardsBar,ProgressBar} from "./../../components/ProgressBar";
-import {Textnav} from "./../../components/textNav";
+import {RewardsBar} from "./../../components/ProgressBar";
+import {CategoryBtn} from "./../../components/Categories";
+import {TransitionGroup} from 'react-transition-group'; // ES6
+import { StakingApp } from "../../common/Types";
 
 function MainComponent(props: MainProps&MainDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const history = useHistory();
     let [index,setindex] = useState(0);
+    const selected = true;
+    const {stakings,symbol} = props;
+    console.log(props,stakings,'=====');
     
     return (
         <Page>
             <PageTopPart>
-                <Row centered><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
+                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
                 <div style={{...styles.divider}}></div>
-                <Gap/>
-                <Row withPadding centered>
-                    <ThemedText.H3 >{`Start staking`}</ThemedText.H3>
-                </Row> 
             </PageTopPart>
-            <Gap size={"small"}/>
-            <Textnav index = {index} onclick = {setindex} stakingPlans = {props.stakings} styles = {styles} tokenName = {props.stakings[index].tokenName.toUpperCase()}/>
-            <Row centered>
-                <Row centered>
-                    <div style={{...styles.stakedText}}>
-                        <Row centered noMarginTop><ThemedText.H2 style={{...styles.stakingInfoHeader}}>{'YOU STAKED'}</ThemedText.H2></Row>
-                        <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{'190.000'}</ThemedText.H1>
-                        <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{props.symbol}</ThemedText.H4></div>
-                    </div>
-                </Row>
-                    <div style={{...styles.percentStake}}>
-                        <CircularProgressbarWithChildren
-                         strokeWidth = {2}
-                         styles={buildStyles({
-                             // Rotation of path and trail, in number of turns (0-1)
-                             rotation: 2.25,
-                         
-                             // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-                             strokeLinecap: 'butt',
-
-                         
-                             // Text size
-                             textSize: '10px',
-                     
-                             // How long animation takes to go from one percentage to another, in seconds
-                             pathTransitionDuration: 50.5,
-                         
-                             // Can specify path transition in more detail, or remove it entirely
-                             // pathTransition: 'none',
-                         
-                             // Colors
-                             pathColor: `rgba(249, 64, 43, 1)`,
-                             textColor: '#ffffff',
-                             trailColor: 'rgb(214 214 214 / 12%)',
-                             backgroundColor: 'rgb(214 214 214 / 12%)',
-                         })} 
-                        value={66}
-                        >
-                            <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'REMAINING'}</ThemedText.H2></Row>
-                            <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'190,000'}</ThemedText.H2>
-                            <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{'CAPACITY'}</ThemedText.H4>
-                        </CircularProgressbarWithChildren>;
-                    </div>
-                </Row>
-                <Gap size={'small'}/>
-                <Row centered><ThemedText.H4 style={{...styles.DurText,...styles.commonText,...styles.smallerMediumText}}>{'REMAINING TIME'}</ThemedText.H4></Row>
-                <ProgressBar bgcolor={'rgba(249, 64, 43, 1)'} completed={60}/>
-                <Gap size={'small'}/>
-                <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
-                <Row centered>
-                    <div style={{...styles.stakedText}}>
-                        <Row noMarginTop><ThemedText.H3 style={{...styles.commonText,...styles.DurText}}>{'MATURITY PERIOD'}</ThemedText.H3></Row>
-                        <ThemedText.H4 style={styles.littleText}>{'12 MONTHS'}</ThemedText.H4>
-                    </div>
-                </Row>
-                <Gap size={'small'}/>
-                <Row withPadding>
-                    <ThemedButton
-                        highlight={true}
-                        text={`Start Winning`}
-                        onClick={() => props.onContractSelected(history,props.stakings[index].contractAddress)}
-                        textStyle={{...styles.mediumText,...styles.btnText}}
-                    />
-                </Row>
+            {
+                stakings.map((e:StakingApp) => {
+                    return (
+                        <CategoryBtn
+                            symbol={symbol}
+                            stakingCap={e.stakingCap}
+                            name={e.name}
+                            currency={e.currency}
+                            startDate={e.stakingStarts}
+                            history={history}
+                            staking={e}
+                            userAddress={props.userAddress}
+                            onStakeNow={()=>props.onContractSelected(history,e,props.userAddress)}
+                        />
+                    )
+                })
+            }
+            <Gap size={'small'}/>
+            <Row withPadding>
+                <ThemedText.H4>{'Recent Transactions'}</ThemedText.H4>
+            </Row>
+            <Row withPadding>
+                <div style={styles.btnContainer}>
+                    You Have Made No Recent Transactions 
+                </div>
+            </Row>
         </Page>
     );
 }
 
 //@ts-ignore
 const themedStyles = (theme) => ({
+    btnContainer: {
+        display: 'flex',
+        color: 'black',
+        justifyContent: 'center',
+        width: '100%',
+        backgroundColor: 'white',
+        borderRadius: '15px',
+        padding: '15px',
+        fontSize: '15px'
+    },
+    miniText: {
+        fontSize: '14px',
+    },
+    symb:{
+        fontSize: '17px',
+    },
+    rewards:{
+        backgroundColor: 'white',
+        color: '#c1052a',
+        textAlign: "center" as "center",
+        borderRadius: '5px',
+        fontSize: '17px',
+        fontWeight: "bold" as "bold",
+        margin: '5px 0px',
+        padding: '2px 0px'
+    },
+    tokenInfo: {
+        display: 'flex',
+        color: 'white',
+        justifyContent: 'space-around',
+        alignItems: 'center'
+    },
+    tokenSymbol: {
+        margin: '0px 10px'
+    },
     listContainer: {
         display: 'flex',
         flexDirection: 'column',
@@ -134,29 +130,32 @@ const themedStyles = (theme) => ({
     },
     stakingInfoHeader: { 
         justifyContent: 'center',  
-        fontSize: '19px',
+        fontSize: '14px',
         fontWeight: 'bold',
-        letterspacing: 1,
+        letterSpacing: 1.3,
         lineHeight: '1.2'
     },
     stakingAmountStyle: {
-        fontSize: '33px',
+        color: '#ffff',
+        fontSize: '30px',
         lineHeight: 1,
-        fontWeight: 900,
-        letterSpacing: '2.4px',
-        color:'rgb(255 59 47 / 88%)'
+        fontWeight: '900',
+        letterSpacing: '3px'
     },
     stakingSymbol:{
         paddingTop: '3px',
-        letterSpacing: 1
+        letterSpacing: 1,
+        fontSize:'13px',
+        fontWeight: 200
     },
     unifyreMainTextlineHeight: {
         lineHeight: 0.9
     },
     smallerMediumText:{
-        fontSize: '13px',
+        fontSize: '14px',
         letterSpacing: '1px',
-        lineHeight: '0.8'
+        lineHeight: '0.8',
+        fontWeight: 200
     },
     navHeader: {
         fontSize: '17px',
@@ -165,20 +164,20 @@ const themedStyles = (theme) => ({
     mediumText: {
         fontSize: '25px',
         fontWeight: 'bold',
-        letterSpacing: '1px',
-        lineHeight: '1.2'
+        letterSpacing: '2px',
+        lineHeight: '1.3'
     },
     littleText: {
         fontSize: '12.5px',
-        fontWeight: 'bold'
+        fontWeight: '200'
     },
     percentStake: {
         textAlign: "center" as "center",
         marginTop: '15px',
         marginRight: '0px',
-        marginLeft: '40px',
+        marginLeft: '20px',
         marginBottom: '2px',
-        width:'40%',
+        width:'45%',
         display: 'flex',
         flexDirection: "row" as "row",
     },
@@ -191,7 +190,7 @@ const themedStyles = (theme) => ({
         height: '3px',
         borderTopStyle: "solid" as "solid",
         borderTopColor: 'rgba(249, 64, 43, 1)',
-        width: '10%',
+        width: '5%',
         margin: '0px auto',
     },
     highlight:{
@@ -202,8 +201,18 @@ const themedStyles = (theme) => ({
     },
     btnText: {
         color: '#ffffff',
-        letterSpacing: 2.5,
-        lineHeight:1.6
+        letterSpacing: '2px',
+        lineHeight: '1.7'
+    },
+    bottomFix:{
+        width: '99%',
+        marginBottom: '1rem'
+    },
+    header: {
+        fontSize: '45px',
+        width: '80%',
+        lineHeight: 0.9,
+        marginLeft: '15pt'
     }
 });
 

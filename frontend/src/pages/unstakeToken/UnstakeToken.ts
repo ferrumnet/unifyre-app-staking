@@ -23,7 +23,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     return {
         ...(StakeToken.mapStateToProps(state)),
         ...state.ui.stakeToken,
-        contract: Utils.selectedContrat(state, (state.data.stakingData.selected ?? window.location.href.split('?')[1]) || '') || {} as any,
+        contract: Utils.selectedContrat(state, (window.location.href.split('?')[2]) || '') || {} as any,
     };
 }
 

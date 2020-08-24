@@ -1,7 +1,7 @@
 import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../common/RootState";
-import { StakingApp } from "../../common/Types";
 import { StakingState, Utils } from "../../common/Utils";
+import { StakingApp,UserStake } from "../../common/Types";
 import { addAction } from "../../common/Actions";
 import { StakingAppServiceActions } from "../../services/StakingAppClient";
 import { History } from 'history';
@@ -12,10 +12,13 @@ export interface StakingContractProps {
     contract: StakingApp;
     stakedAmount: string;
     state: StakingState;
+    userStake: UserStake | undefined;
+    //@ts-ignore
+    styles?: any
 }
 
 export interface StakingContractDispatch {
-    onContractSelected: (history: History, address: string) => void;
+    onContractSelected: (history: History, address: string,withdraw:boolean) => void;
 }
 
 function mapStateToProps(state: RootState): StakingContractProps {
@@ -28,13 +31,18 @@ function mapStateToProps(state: RootState): StakingContractProps {
         contract: state.data.stakingData.selectedContract || {} as any,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         state: Utils.stakingState(state.data.stakingData.selectedContract),
+        userStake: state?.data?.stakingData?.userStake
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onContractSelected: (history, address) => {
+    onContractSelected: (history, address,withdraw) => {
         dispatch(addAction(StakingAppServiceActions.CONTRACT_SELECTED, {address}));
-        history.push(`/unstake/?${address}`);
+        if(withdraw){
+            history.push(`/unstake/:${address}`);
+        }else{
+            history.push(`/stake/:${address}`);
+        }
     }
 } as StakingContractDispatch);
 

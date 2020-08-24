@@ -22,6 +22,7 @@ export const StakingAppServiceActions = {
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
     STAKING_FAILED: 'STAKING_FAILED',
     UN_STAKING_FAILED: 'UN_STAKING_FAILED',
+    CONTRACT_SELECTED: 'CONTRACT_SELECTED'
 };
 
 const Actions = StakingAppServiceActions;
@@ -66,7 +67,7 @@ export class StakingAppClient implements Injectable {
     }
 
     async selectStakingContract(dispatch: Dispatch<AnyAction>, network: string,
-            contractAddress: string, userAddress: string): Promise<UserStake|undefined> {
+            contractAddress: string, userAddress: string): Promise<[UserStake,{}]|undefined> {
         const token = this.getToken(dispatch);
         if (!token) { return; }
         try {
@@ -141,9 +142,11 @@ export class StakingAppClient implements Injectable {
             }
             const response = await this.client.getSendTransactionResponse(requestId);
             console.log('RESPONSE FROM SERVER?', response);
+            //@ts-ignore
             if (response.rejected) {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
+            //@ts-ignore
             const transactionIds = (response.response || []).map(r => r.transactionId);  
             console.log('Received transaction IDs', transactionIds);
            

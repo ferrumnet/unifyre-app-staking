@@ -53,7 +53,7 @@ export class Utils {
             `https://etherscan.io/tx/${tid}`;
     }
 
-    static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {
+    static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {        
         return state.data.stakingData.contracts.find(c => c.contractAddress ===  contractAddress);
     }
 
@@ -124,7 +124,7 @@ export class CurrencyFormatter {
 
     icon(currency: string): string {
         const parts = currency.split(':');
-        return LOGO_TEMPLATE.replace('{NETWORk}', parts[0]).replace('{TOKEN}', parts[1]);
+        return LOGO_TEMPLATE.replace('{NETWORK}', parts[0]).replace('{TOKEN}', parts[1]);
     }
 }
 

@@ -17,6 +17,7 @@ export interface StakingApp {
     withdrawEnds: number;
     stakingStarts: number;
     stakingEnds: number;
+    stakedAmount?: string;
 }
 
 export interface StakeEvent {
@@ -33,6 +34,7 @@ export interface StakeEvent {
   amountStaked: string;
   approveTxIds: string[];
   mainTxId: string;
+  stakeTxId: string;
   transactionStatus: 'timedout' | 'failed' | 'pending' | 'successful'
 }
 
