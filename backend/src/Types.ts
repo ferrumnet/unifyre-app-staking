@@ -21,6 +21,7 @@ export interface StakingApp {
 }
 
 export interface StakeEvent {
+  type: 'stake' | 'unstake',
   version: number;
   createdAt: number;
   contractAddress: string;
@@ -32,7 +33,7 @@ export interface StakeEvent {
   userId: string;
   amountStaked: string;
   approveTxIds: string[];
-  stakeTxId: string;
+  mainTxId: string;
   transactionStatus: 'timedout' | 'failed' | 'pending' | 'successful'
 }
 

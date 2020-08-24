@@ -109,10 +109,10 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             const userProfile = client.getUserProfile();
             const txIds = response!.response.map(r => r.transactionId);
             ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
-            const stakeTxId = txIds[txIds.length - 1];
+            const mainTxId = txIds[txIds.length - 1];
             txIds.pop();
             await this.registerOrUpdateUserStake(
-                stakeTxId,
+                mainTxId,
                 txIds,
                 stakingContract,
                 userAddress,
@@ -125,27 +125,27 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     };
 
     private async updateUserStake(
-        stakeTxId: string,
+        mainTxId: string,
     ): Promise<StakeEvent|undefined> {
-        const userStake = await this.getUserStakeEvent(stakeTxId);
+        const userStake = await this.getUserStakeEvent(mainTxId);
         if (!userStake) {
             return undefined;
         }
         const [network, _] = EthereumSmartContractHelper.parseCurrency(userStake!.currency);
         const status = await this.contract.helper.getTransactionStatus(
-            network, stakeTxId, userStake!.createdAt);
+            network, mainTxId, userStake!.createdAt);
         if (status !== userStake.transactionStatus) {
             const upUserStake = {
                 ...userStake,
                 transactionStatus: status,
             } as StakeEvent;
             await this.updateStakeEvent(upUserStake);
-            return await this.getUserStakeEvent(stakeTxId);
+            return await this.getUserStakeEvent(mainTxId);
         }
     }
 
     private async registerOrUpdateUserStake(
-        stakeTxId: string,
+        mainTxId: string,
         approveTxIds: string[],
         contrat: StakingApp,
         userAddress: string,
@@ -154,9 +154,9 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         amountStaked: string,
         ) {
         const [network, _] = EthereumSmartContractHelper.parseCurrency(contrat.currency);
-        const userStake = await this.getUserStakeEvent(stakeTxId);
+        const userStake = await this.getUserStakeEvent(mainTxId);
         const status = await this.contract.helper.getTransactionStatus(
-            network, stakeTxId, userStake?.createdAt || 0);
+            network, mainTxId, userStake?.createdAt || 0);
         if (!!userStake && userStake!.transactionStatus !== status) {
             const upUserStake = {
                 ...userStake,
@@ -170,7 +170,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
                 contractName: contrat.name,
                 currency: contrat.currency,
                 symbol: contrat.symbol,
-                stakeTxId,
+                mainTxId,
                 approveTxIds,
                 userAddress,
                 userId,
@@ -188,7 +188,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const version = stakeEvent.version;
         newPd.version = version + 1;
         const updated = await this.stakeEventModel!.findOneAndUpdate({
-            "$and": [{ stakeTxId: stakeEvent.stakeTxId }, { version }] },
+            "$and": [{ mainTxId: stakeEvent.mainTxId }, { version }] },
         { '$set': { ...newPd } }).exec();
         ValidationUtils.isTrue(!!updated, 'Error updating StakeEvent. Update returned empty. Retry');
         return updated?.toJSON();
@@ -201,9 +201,9 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return saved?.toJSON();
     }
 
-    private async getUserStakeEvent(stakeTxId: string): Promise<StakeEvent | undefined> {
+    private async getUserStakeEvent(mainTxId: string): Promise<StakeEvent | undefined> {
         this.verifyInit();
-        const stakes = await this.stakeEventModel!.findOne({stakeTxId}).exec();
+        const stakes = await this.stakeEventModel!.findOne({mainTxId}).exec();
         return stakes?.toJSON();
     }
 
