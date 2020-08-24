@@ -20,6 +20,22 @@ export interface StakingApp {
     stakingEnds: number;
 }
 
+export interface StakeEvent {
+  version: number;
+  createdAt: number;
+  contractAddress: string;
+  contractName: string;
+  currency: string;
+  symbol: string;
+  userAddress: string;
+  email: string;
+  userId: string;
+  amountStaked: string;
+  approveTxIds: string[];
+  stakeTxId: string;
+  transactionStatus: 'timedout' | 'failed' | 'pending' | 'successful'
+}
+
 export interface UserStake {
     userId: string;
     network: string;

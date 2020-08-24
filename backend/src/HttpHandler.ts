@@ -5,6 +5,7 @@ import {
     ValidationUtils
 } from "ferrum-plumbing";
 import { StakingAppService } from "./StakingAppService";
+import { StakeEvent } from "./Types";
 
 function handlePreflight(request: any) {
     if (request.method === 'OPTIONS' || request.httpMethod === 'OPTIONS') {
@@ -63,6 +64,9 @@ export class HttpHandler implements LambdaHttpHandler {
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.stakeTokenSignAndSend(req);
                     break;
+                case 'updateStakingEvents':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.updateStakingEvents(req);
                 case 'unstakeTokenSignAndSend':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.unstakeTokenSignAndSend(req);
@@ -142,6 +146,13 @@ export class HttpHandler implements LambdaHttpHandler {
         const requestId = await this.userSvc.stakeTokenSignAndSend(network, contractAddress, userAddress, amount);
         return {requestId};
     }
+
+    async updateStakingEvents(req: JsonRpcRequest): Promise<StakeEvent[]> {
+        const {txIds} = req.data;
+        ValidationUtils.isTrue(!!txIds, '"txIds" must be provided');
+        return await this.userSvc.updateStakingEvents(txIds);
+    }
+
 
     async unstakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
         const {amount, network, contractAddress, userAddress} = req.data;
