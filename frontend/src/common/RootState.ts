@@ -1,5 +1,5 @@
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { StakingApp, UserStake } from "./Types";
+import { StakeEvent, StakingApp, UserStake } from "./Types";
 
 export interface UserPreference {
     lastRedirectLink?: string;
@@ -25,6 +25,7 @@ export interface ClaimState {
 
 export interface StakingDataState {
     contracts: StakingApp[];
+    stakeEvents: StakeEvent[];
     selectedContract?: StakingApp;
     userStake?: UserStake;
 }

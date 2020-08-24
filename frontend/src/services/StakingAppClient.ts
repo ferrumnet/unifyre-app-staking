@@ -5,7 +5,7 @@ import { Utils } from "../common/Utils";
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { UserStake } from "../common/Types";
+import { StakeEvent, UserStake } from "../common/Types";
 import { Big } from 'big.js';
 
 export const StakingAppServiceActions = {
@@ -16,6 +16,8 @@ export const StakingAppServiceActions = {
     STAKING_CONTACT_RECEIVED: 'STAKING_CONTACT_RECEIVED',
     USER_STAKE_RECEIVED: 'USER_STAKE_RECEIVED',
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
+    USER_STAKE_EVENTS_RECEIVED: 'USER_STAKE_EVENTS_RECEIVED',
+    USER_STAKE_EVENTS_UPDATED: 'USER_STAKE_EVENTS_UPDATED',
     GET_STAKING_CONTRACT_FAILED: 'GET_STAKING_CONTRACT_FAILED',
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
     STAKING_FAILED: 'STAKING_FAILED',
@@ -71,19 +73,37 @@ export class StakingAppClient implements Injectable {
             dispatch(addAction(CommonActions.WAITING, { source: 'selectStakingContract' }));
             const res = await this.api({
                 command: 'getStakingContractForUser', data: {network, contractAddress, userAddress}, params: [] } as JsonRpcRequest);
-            const [ userStake, stakingContract ] = res;
+            const [ userStake, stakingContract, stakeEvents ] = res;
             if (!userStake) {
                 dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could not get the staking contract data' }));
                 return;
             }
             dispatch(addAction(Actions.STAKING_CONTACT_RECEIVED, { stakingContract }));
             dispatch(addAction(Actions.USER_STAKE_RECEIVED, { userStake }));
+            dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents }));
+            setTimeout(() => this.refreshStakeEvents(dispatch, stakeEvents), 1000);
             return userStake;
         } catch (e) {
             console.error('Error sigining in', e);
             dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could get the staking contract data' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'selectStakingContract' }));
+        }
+    }
+
+    private async refreshStakeEvents(dispatch: Dispatch<AnyAction>, events: StakeEvent[]) {
+        try {
+            const pendingTxs = events.filter(e => e.transactionStatus !== 'pending')
+                .map(tx => tx.stakeTxId);
+            if (!!pendingTxs.length) {
+                const { updtedEvents } = await this.api({
+                    command: 'updateStakingEvents', data: { txIds: pendingTxs }, params: []});
+                if (updtedEvents || updtedEvents.length) {
+                    dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updtedEvents }));
+                }
+            }
+        } catch (e) {
+            console.error('Error updating staking events', e);
         }
     }
 

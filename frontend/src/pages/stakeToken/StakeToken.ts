@@ -3,7 +3,7 @@ import { IocModule, inject } from "../../common/IocModule";
 import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
-import { StakingApp } from "../../common/Types";
+import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
 
 const StakeTokenActions = {
@@ -18,6 +18,7 @@ export interface StakeTokenProps extends StakeTokenState {
     balance: string;
     stakedAmount: string;
     userAddress: string;
+    stakeEvents: StakeEvent[];
 }
 
 export interface StakeTokenDispatch {
@@ -36,6 +37,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
         balance: address.balance,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,
+        stakeEvents: state.data.stakingData.stakeEvents,
     };
 }
 

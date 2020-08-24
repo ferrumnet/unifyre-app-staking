@@ -7,6 +7,7 @@ import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserP
 import { StakeToken } from "../pages/stakeToken/StakeToken";
 import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import { StakingDataState } from "./RootState";
+import { StakeEvent } from "./Types";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -29,7 +30,7 @@ function userData(state: { profile: AppUserProfile } = {} as any, action: AnyAct
     }
 }
 
-function stakingData(state: StakingDataState = { contracts: []}, action: AnyAction) {
+function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}, action: AnyAction) {
     switch(action.type) {
         case StakingAppServiceActions.STAKING_DATA_RECEIVED:
             const {stakingData} = action.payload;
@@ -40,6 +41,17 @@ function stakingData(state: StakingDataState = { contracts: []}, action: AnyActi
         case StakingAppServiceActions.USER_STAKE_RECEIVED:
             const {userStake} = action.payload;
             return {...state, userStake};
+        case StakingAppServiceActions.USER_STAKE_EVENTS_RECEIVED:
+            const {stakeEvents} = action.payload;
+            return {...state, stakeEvents: stakeEvents || []};
+        case StakingAppServiceActions.USER_STAKE_EVENTS_UPDATED:
+            const {updatedEvents} = action.payload;
+            const tidMap: any = {};
+            (updatedEvents || []).forEach((e: StakeEvent) => {
+                tidMap[e.stakeTxId] = e;
+            });
+            return {...state, stakeEvents: state.stakeEvents.map(se =>
+                tidMap[se.stakeTxId] || se)};
         default:
             return state;
     }
