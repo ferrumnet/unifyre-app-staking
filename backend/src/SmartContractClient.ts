@@ -87,6 +87,7 @@ export class SmartContratClient implements Injectable {
         const rewardBalanceRaw = (await contractInstance.rewardBalance().call()).toString();
         const stakingCapRaw = (await contractInstance.stakingCap().call()).toString();
         const stakedTotalRaw = (await contractInstance.stakedTotal().call()).toString();
+        const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
         console.log('STAKED NUMBER', {stakedBalanceRaw, rewardBalanceRaw, stakingCapRaw, stakedTotalRaw})
         const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
         const withdrawStarts = (await contractInstance.withdrawStarts().call());
@@ -104,6 +105,7 @@ export class SmartContratClient implements Injectable {
             rewardBalance: await this.helper.amountToHuman(currency, rewardBalanceRaw),
             stakingCap: await this.helper.amountToHuman(currency, stakingCapRaw),
             stakedTotal: await this.helper.amountToHuman(currency, stakedTotalRaw),
+            earlyWithdrawReward: await this.helper.amountToHuman(currency, earlyWithdrawRewardRaw),
             totalReward: await this.helper.amountToHuman(currency, totalRewardRaw),
             withdrawStarts,
             withdrawEnds,
