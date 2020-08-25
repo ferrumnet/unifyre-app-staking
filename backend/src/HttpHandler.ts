@@ -60,6 +60,10 @@ export class HttpHandler implements LambdaHttpHandler {
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.getStakingContractForUser(userId!, req);
                     break;
+                case 'getAllStakingEventsForUser':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.getStakingEventsForUser(userId!, req);
+                    break;
                 case 'stakeTokenSignAndSend':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.stakeTokenSignAndSend(req);
@@ -137,6 +141,10 @@ export class HttpHandler implements LambdaHttpHandler {
         return await this.userSvc.getStakingContractForUser(network, contractAddress, userAddress, userId);
     }
 
+    async getStakingEventsForUser(userId: string, req: JsonRpcRequest) {
+        return await this.userSvc.getUserStakingEvents(userId);
+    }
+
     async stakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
         const {amount, network, contractAddress, userAddress} = req.data;
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
@@ -152,7 +160,6 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(!!txIds, '"txIds" must be provided');
         return await this.userSvc.updateStakingEvents(txIds);
     }
-
 
     async unstakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
         const {amount, network, contractAddress, userAddress} = req.data;

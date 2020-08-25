@@ -13,8 +13,6 @@ module.exports = {
                 cacheDirectory: true,
             },
         });
-        console.log('======>>>>>>>>>>>>>>>>>>>>>>>');
-
         console.log('Current watch op', config)
         return config
     },

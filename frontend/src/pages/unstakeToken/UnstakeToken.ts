@@ -3,6 +3,7 @@ import { addAction } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeToken, StakeTokenProps } from "../stakeToken/StakeToken";
+import { Utils } from "../../common/Utils";
 
 const UnstakeTokenActions = {
     AMOUNT_TO_UN_STAKE_CHANGED: 'AMOUNT_TO_UN_STAKE_CHANGED',
@@ -22,6 +23,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     return {
         ...(StakeToken.mapStateToProps(state)),
         ...state.ui.stakeToken,
+        contract: Utils.selectedContrat(state, (window.location.href.split('?')[2]) || '') || {} as any,
     };
 }
 

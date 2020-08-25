@@ -1,110 +1,100 @@
 import React, {useContext, useState} from 'react';
-import { connect } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, ThemedButton
+    Row,Gap
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Main, MainDispatch, MainProps } from './Main';
-import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import {RewardsBar} from "./../../components/ProgressBar";
-import {CategoryBtn} from "./../../components/Categories";
-import {TransitionGroup} from 'react-transition-group'; // ES6
-import { StakingApp } from "../../common/Types";
-import {Transactions} from '../../components/transactions';
-function MainComponent(props: MainProps&MainDispatch) {
+import { relative } from 'path';
+import {formatter,dataFormat} from '../common/Utils';
+import { StakingApp } from "./../common/Types";
+import stakeImg from "../images/next.png"
+import unstakeImg from "../images/out.png"
+
+interface transactionsProps {
+    type: "stake" | "unstake",
+    amount: number ,
+    status: string,
+    symbol: string
+}
+export const Transactions = (props:transactionsProps) => {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-    const history = useHistory();
-    let [index,setindex] = useState(0);
-    const selected = true;
-    const {stakings,symbol} = props;
-    console.log(props);
-    
-    
+    const [expand,setExpand] = useState(false);
     return (
-        <Page>
-            <PageTopPart>
-                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
-                <div style={{...styles.divider}}></div>
-            </PageTopPart>
-            <Gap size={'small'}/>
-            {
-                stakings.map((e:StakingApp) => {
-                    return (
-                        <CategoryBtn
-                            symbol={symbol}
-                            stakingCap={e.stakingCap}
-                            name={e.name}
-                            currency={e.currency}
-                            startDate={e.stakingStarts}
-                            history={history}
-                            staking={e}
-                            userAddress={props.userAddress}
-                            onStakeNow={()=>props.onContractSelected(history,e,props.userAddress)}
-                        />
-                    )
-                })
-            }
-            <Gap/>
-            <Row withPadding>
-                <ThemedText.H4>{'Recent Transactions'}</ThemedText.H4>
-            </Row>
-            <Gap size={'small'}/>
-            {
-                props.stakeEvents.length > 0 &&
-                    props.stakeEvents.map((e:any)=>(
-                        <Transactions
-                        type={'stake'}
-                        amount={e.amountStaked}
-                        symbol={e.symbol}
-                        status={e.transactionStatus}
-                        />
-
-                    ))
-            }
-            {
-                props.stakeEvents.length === 0 && 
-                <Row withPadding>
+        <Row withPadding noMarginTop>
+            <div style={styles.Container} className={`${expand ? 'container' : 'collapsed'}`}>
                 <div style={styles.btnContainer}>
-                    You Have Made No Recent Transactions 
+                    <div style={styles.tokenInfo}>
+                        <div style={styles.tokenSymbol}>
+                            <img style={{"width":'30px'}} src={props.type==="stake"?stakeImg:unstakeImg}/>
+                        </div>
+                        <div style={{"lineHeight": "1.4"}}>
+                            <div style={styles.categoryText}>
+                                {`${props.type} ${props.amount} ${props.symbol}`} 
+                            </div>
+                        </div>
+                    </div> 
+                    <div style={{"marginRight":"15px","display":"flex","alignItems":"center"}} onClick={()=>{}}>
+                        <div style={styles.symb}>
+                            {props.status}
+                        </div>
+                    </div>
                 </div>
-                </Row>
-            }
-            
-        </Page>
-    );
+            </div>
+        </Row>
+    )
 }
 
 //@ts-ignore
 const themedStyles = (theme) => ({
+    Container: {
+        display: 'relative',
+        borderRadius: '15px',
+        width: '100%',
+        padding: '1px',
+        marginTop: '5px'
+    },
+    moreInfo: {
+        display: 'flex',
+        color: 'white',
+        justifyContent: 'space-between',
+        margin: '10px 30px',
+        marginRight: '0px',
+        width: '90%',
+        letterSpacing: 1.5,
+        fontWeight: 500,
+        fontSize: '7px'
+    },
     btnContainer: {
         display: 'flex',
-        color: 'black',
-        justifyContent: 'center',
+        color: 'white',
+        justifyContent: 'space-between',
         width: '100%',
-        backgroundColor: 'white',
         borderRadius: '15px',
-        padding: '15px',
-        fontSize: '15px'
+        paddingBottom: '2px'
     },
     miniText: {
-        fontSize: '14px',
+        fontSize: '11px',
+    },
+    categoryText:{
+        letterSpacing: 1,
+        fontSize: '13px'
     },
     symb:{
-        fontSize: '17px',
+        fontSize: '13px',
+        textAlign: 'center' as 'center',
+        fontWeight: 'bold' as 'bold',
+        letterSpacing: 1
     },
     rewards:{
         backgroundColor: 'white',
         color: '#c1052a',
         textAlign: "center" as "center",
         borderRadius: '5px',
-        fontSize: '17px',
+        fontSize: '10px',
         fontWeight: "bold" as "bold",
-        margin: '5px 0px',
-        padding: '2px 0px'
+        margin: '3px 0px',
+        padding: '5px 20px'
     },
     tokenInfo: {
         display: 'flex',
@@ -113,7 +103,10 @@ const themedStyles = (theme) => ({
         alignItems: 'center'
     },
     tokenSymbol: {
-        margin: '0px 10px'
+        margin: '0px 10px',
+        display: 'flex',
+        alignItems: 'center',
+        marginLeft: '0px'
     },
     listContainer: {
         display: 'flex',
@@ -192,7 +185,7 @@ const themedStyles = (theme) => ({
     },
     percentStake: {
         textAlign: "center" as "center",
-        marginTop: '15px',
+        marginTop: '0px',
         marginRight: '0px',
         marginLeft: '20px',
         marginBottom: '2px',
@@ -234,6 +227,3 @@ const themedStyles = (theme) => ({
         marginLeft: '15pt'
     }
 });
-
-export const MainContainer = connect(
-  Main.mapStateToProps, Main.mapDispatchToProps)(MainComponent);

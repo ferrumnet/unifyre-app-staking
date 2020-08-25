@@ -22,6 +22,8 @@ export const StakingAppServiceActions = {
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
     STAKING_FAILED: 'STAKING_FAILED',
     UN_STAKING_FAILED: 'UN_STAKING_FAILED',
+    CONTRACT_SELECTED: 'CONTRACT_SELECTED',
+    STAKING_SUCCESS: 'STAKING_SUCCESS'
 };
 
 const Actions = StakingAppServiceActions;
@@ -53,6 +55,9 @@ export class StakingAppClient implements Injectable {
             const stakingData = await this.api({
                     command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
+            const events = await this.api({
+                command: 'getAllStakingEventsForUser', data: {}, params: [] } as JsonRpcRequest);
+            dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
             dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
             dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
             dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
@@ -66,7 +71,7 @@ export class StakingAppClient implements Injectable {
     }
 
     async selectStakingContract(dispatch: Dispatch<AnyAction>, network: string,
-            contractAddress: string, userAddress: string): Promise<UserStake|undefined> {
+            contractAddress: string, userAddress: string): Promise<[UserStake,{}]|undefined> {
         const token = this.getToken(dispatch);
         if (!token) { return; }
         try {
@@ -141,9 +146,11 @@ export class StakingAppClient implements Injectable {
             }
             const response = await this.client.getSendTransactionResponse(requestId);
             console.log('RESPONSE FROM SERVER?', response);
+            //@ts-ignore
             if (response.rejected) {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
+            //@ts-ignore
             const transactionIds = (response.response || []).map(r => r.transactionId);  
             console.log('Received transaction IDs', transactionIds);
            

@@ -1,0 +1,153 @@
+import React from 'react';
+import logo from '../images/icon.png';
+
+export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
+    const { bgcolor, completed } = props;
+  
+    const containerStyles = {
+      height: 2.5,
+      width: 'auto',
+      backgroundColor: "#1a1a1a",
+      borderRadius: 50,
+      margin: '10px 50px',
+    }
+  
+    const fillerStyles = {
+      height: '100%',
+      width: `${completed}%`,
+      backgroundColor: bgcolor,
+      borderRadius: 'inherit',
+      textAlign: 'right' as "right"
+    }
+  
+    const labelStyles = {
+      padding: 5,
+      color: 'white',
+      fontWeight: "bold" as "bold"
+    }
+  
+    return (
+      <div style={containerStyles}>
+        <div style={fillerStyles}>
+        </div>
+      </div>
+    );
+  };
+  
+
+export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
+    const { bgcolor, completed } = props;
+  
+    const containerStyles = {
+      height: 43,
+      width: '80%',
+      backgroundColor: "#1a1a1a",
+      borderRadius: 10,
+      margin: '10px auto',
+      display: 'flex'
+    }
+
+    const labelContainer = {
+        height: 25,
+        width: '80%',
+        borderRadius: 20,
+        margin: '0px 40px',
+        display: 'flex',
+        color: '#ffffff',
+        justifyContent: 'space-around'
+      }
+  
+    const fillerStyles = {
+      height: '100%',
+      width: `${50}%`,
+      backgroundColor: bgcolor,
+      borderRadius: 'inherit',
+      textAlign: 'center' as "center",
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex'
+    }
+
+    const img = {
+      textAlign: 'center' as 'center',
+      justifyContent: 'center' as 'center',
+      alignItems: 'center' as 'center',
+      display: 'flex',
+      width: 'auto',
+      backgroundColor: 'transparent',
+      borderRadius: '50%'
+    }
+
+    const fillersStyles = {
+        height: '100%',
+        width: `${50}%`,
+        backgroundColor: "#1a1a1a",
+        borderRadius: 'inherit',
+        textAlign: 'center' as "center",
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'flex'
+      }
+  
+    const labelStyles = {
+      padding: 5,
+      color: 'white',
+      fontWeight: "bold" as "bold",
+      fontSize: '30px',
+      letterSpacing: '2px'
+    }
+
+    const rewardsLabel = {
+        fontWeight: "bolder" as "bolder",
+        fontFamily: 'Sawarabi Gothic',
+        fontSize: '1.15rem',
+        width: '40%',
+        letterSpacing: '2px',
+        textAlign: "center" as "center"
+    }
+
+    const smallerRewardsLabel = {
+        fontWeight: "bolder" as "bolder",
+        fontFamily: 'Sawarabi Gothic',
+        fontSize: '0.55rem',
+        width: '50%',
+        letterSpacing: '1px',
+        textAlign: "center" as "center"
+    }
+
+    const miniLabel = {
+        fontSize: '0.75rem',
+    }
+
+    const miniContainer = {
+        marginTop: '0rem',
+    }
+  
+    return (
+    <>
+        <div style={labelContainer}>
+            <div style={rewardsLabel}>REWARD</div>
+            <div style={smallerRewardsLabel}>
+                EARLY <br/> WITHDRAW
+            </div>
+        </div>
+        <div style={containerStyles}>
+            <div style={fillerStyles}>
+            <span style={labelStyles}>{`${completed}%`}</span>
+            </div>
+            <div style={{...fillerStyles,...img}}>
+            <img style={{"width":'60px','position':'absolute','borderRadius':'50%',backgroundColor: 'black'}} src={logo}/>
+            </div>
+            <div style={fillersStyles}>
+                <span style={labelStyles}>{`${completed}%`}</span>
+            </div>
+        </div>
+        <div style={{...labelContainer,...miniContainer}}>
+            <div style={miniLabel}>ANNUALIZED</div>
+            <div style={miniLabel}>
+                ANNUALIZED
+            </div>
+        </div>
+    </>
+    );
+  };
