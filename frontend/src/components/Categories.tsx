@@ -5,7 +5,7 @@ import {
 } from 'unifyre-web-components';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
 import { relative } from 'path';
-import {formatter,dataFormat} from '../common/Utils';
+import {formatter,dataFormat,Utils} from '../common/Utils';
 import { StakingApp } from "./../common/Types";
 
 interface categoryBtnProps {
@@ -23,6 +23,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const [expand,setExpand] = useState(false);
+    const rewards = Utils.stakingRewards(props.staking);
     return (
         <Row withPadding noMarginTop>
             <div style={styles.Container} className={`${expand ? 'container' : 'collapsed'}`}>
@@ -42,7 +43,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                     </div> 
                     <div style={{"marginRight":"15px"}} onClick={()=>props.onStakeNow(props.history,props.staking,props.userAddress)}>
                         <div style={styles.symb}>
-                            +11.5%
+                            {`${Utils.stakingRewards(props.staking).maturityAnnual }%`}
                         </div>
                         <div style={styles.rewards}>
                             Stack Now
@@ -57,7 +58,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Estimated Annual Yield
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                11.5%
+                                {Utils.stakingRewards(props.staking).maturityMaxAmount}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
@@ -65,7 +66,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Early Withdraw
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                7%
+                                {Utils.stakingRewards(props.staking).earlyWithdrawAnnual}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>

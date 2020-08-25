@@ -4,7 +4,7 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { useHistory } from 'react-router-dom';
-import { formatter,dataFormat } from "../../common/Utils";
+import { formatter,dataFormat,dateFromNow } from "../../common/Utils";
 import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from './StakingContract';
 import { LoaderContainer } from '../../components/Loader';
@@ -24,12 +24,13 @@ function PreStakingView(props: StakingContractProps&StakingContractDispatch) {
         <>
              <>
                 <Row withPadding>
-                    <ThemedText.H1 style={{...styles.preStakingheader}}>{'Starting Soon..'}</ThemedText.H1>
+                    <ThemedText.H1 style={{...styles.preStakingheader}}>{'Starting Soon.'}</ThemedText.H1>
 
                 </Row>
                 <Row withPadding>
-                    <ThemedText.H3 style={{width: '70%',fontSize:'13px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
+                    <ThemedText.H3 style={{width: '100%',fontSize:'13px'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
                 </Row>
+                <Gap/>
                     <Row centered>
                         <Row centered>
                             <div style={{...styles.stakedText}}>
@@ -67,7 +68,8 @@ function PreStakingView(props: StakingContractProps&StakingContractDispatch) {
                                 value={66}
                                 >
                                     <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'Staking Starts in'}</ThemedText.H2></Row>
-                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'20 days.'}</ThemedText.H2>
+                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{dateFromNow(props.contract.stakingStarts) ? `${dateFromNow(props.contract.stakingStarts) }` : ''}</ThemedText.H2>
+                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'days'}</ThemedText.H2></Row>
                                 </CircularProgressbarWithChildren>;
                             </div>
                         </Row>
@@ -96,6 +98,7 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
     return (
             <>
                 <>
+                    <Gap size={'small'}/>
                     {
                         (props.userStake?.amountInStake === '0') && 
                         (
@@ -104,7 +107,6 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                             </Row>
                         )
                     }
-                   
                     <Row withPadding>
                         <ThemedText.H3 style={{width: '80%',fontSize:'15px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
                     </Row>
@@ -669,7 +671,7 @@ export const StakingContractContainer = connect(
         width: '99%',
     },
     header: {
-        fontSize: '40px',
+        fontSize: '35px',
         width: '80%',
         lineHeight: 0.9,
         marginLeft: '15pt',
@@ -677,179 +679,10 @@ export const StakingContractContainer = connect(
     },
     preStakingheader: {
         fontSize: '40px',
-        width: '80%',
-        lineHeight: 0.5,
+        width: '100%',
+        lineHeight: 0.7,
         marginLeft: '15pt',
-        marginTop: '20pt'
+        marginTop: '20pt',
+        textAlign:'center'
     }
 });
-
-    // var utcSeconds = contract.stakingStarts;
-    // const theme = useContext(ThemeContext);
-    // const styles = themedStyles(theme);
-    // var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    // d.setUTCSeconds(utcSeconds);
-    // useEffect(() => {
-    //     if (!contract.contractAddress) {
-    //       history.replace(`/`);
-    //     }
-    //   },);
-    // const navigateToInfoPage = (address:string) => {
-    //     history.replace(`/stake/?${address}`);
-    // }
-    // const hasStake = true;
-    
-    // return (
-    //     <Page>
-    //         <LoaderContainer/>
-    //        <PageTopPart>
-    //             <Row centered><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`${contract.tokenName} Staking`}</ThemedText.H2></Row>
-    //             <div style={{...styles.divider}}></div>
-    //             <Gap/>
-    //         </PageTopPart>
-    //         { hasStake &&
-    //             <>
-    //             <div style={{...styles.list}}>
-    //                 <Row>
-    //                     <ThemedText.SMALL style={styles.listText}>{`Value of your Stake in Platinum`}</ThemedText.SMALL>
-    //                 </Row>
-    //                 <div style={styles.listValue}>
-    //                     <ThemedText.SMALL style={styles.listText}>{'11 FRM'}</ThemedText.SMALL>
-    //                 </div>
-    //             </div>
-    //             <Gap size={'small'}/>
-    //             <div style={{...styles.list}}>
-    //                 <Row>
-    //                     <ThemedText.SMALL style={styles.listText}>{`Rewards Accumulated so far`}</ThemedText.SMALL>
-    //                 </Row>
-    //                 <div style={styles.listValue}>
-    //                     <ThemedText.SMALL style={styles.listText}>{'0.2 FRM'}</ThemedText.SMALL>
-    //                 </div>
-    //             </div>
-    //             <Gap size={'small'}/>
-    //             <div style={{...styles.list}}>
-    //                 <Row>
-    //                     <ThemedText.SMALL style={styles.listText}>{`Early Withdraw Starts`}</ThemedText.SMALL>
-    //                 </Row>
-    //                 <div style={styles.dateValue}>
-    //                     <ThemedText.SMALL style={styles.listText}>{dataFormat(contract.withdrawStarts)}</ThemedText.SMALL>
-    //                 </div>
-    //             </div>
-    //             <Gap size={'small'}/>
-    //             <div style={{...styles.list}}>
-    //                 <Row>
-    //                     <ThemedText.SMALL style={styles.listText}>{`Maturity Start Date`}</ThemedText.SMALL>
-    //                 </Row>
-    //                 <div style={styles.dateValue}>
-    //                     <ThemedText.SMALL style={styles.listText}>{dataFormat(contract.withdrawStarts)}</ThemedText.SMALL>
-    //                 </div>
-    //             </div>
-    //             <Gap/>
-    //             <Row withPadding>
-    //                 <ThemedButton
-    //                     text={`Stake More ${symbol}`}
-    //                     onClick={()=>{navigateToInfoPage(contract.contractAddress)}}
-    //                     highlight={true}
-    //                     textStyle={styles.btnText}
-    //                     />
-    //             </Row>
-    //             <Row withPadding>
-    //                  <ThemedText.SMALL>{'*Unstake is only active, after early withdraw duration as elapsed'}</ThemedText.SMALL>
-    //             </Row>
-    //             <Row withPadding>
-    //                 <ThemedButton
-    //                     text={`UnStake ${symbol}`}
-    //                     onClick={()=>{props.onContractSelected(history,contract.contractAddress)}}
-    //                     />
-    //             </Row>
-    //             </>
-    //         }
-    //         <>
-    //             {
-    //                 !hasStake &&
-    //                 <>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{'Total staking Amount'}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={`${contract.stakingCap} ${symbol}`}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{'Staked so far:'}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={`${contract.stakedAmount}`}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{`Your Available ${symbol} balance :`}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={`${formatter.format(props.balance,false)} ${symbol}`}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{'Staking Starts'}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                     <InputGroupAddon
-    //                         value={dataFormat(contract.stakingStarts)}
-    //                         inputMode={'decimal'}
-    //                         disabled={true}
-    //                     />
-    //                 </Row>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{'Staking Ends'}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={dataFormat(contract.stakingEnds)}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                     <ThemedText.SMALL>{'Early Withdrawal Starts'}</ThemedText.SMALL>
-    //                 </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={dataFormat(contract.withdrawStarts)}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedText.SMALL>{'Withdrawal Ends'}</ThemedText.SMALL>
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <InputGroupAddon
-    //                             value={dataFormat(contract.withdrawEnds)}
-    //                             inputMode={'decimal'}
-    //                             disabled={true}
-    //                         />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedButton
-    //                             text={`Stake ${symbol}`}
-    //                             onClick={()=>{navigateToInfoPage(contract.contractAddress)}}
-    //                             highlight={true}
-    //                             textStyle={styles.btnText}
-    //                             />
-    //                     </Row>
-    //                     <Row withPadding>
-    //                         <ThemedButton text={'Cancel'}/>
-    //                     </Row>
-    //                     <Gap size={'small'}/>
-    //                 </>
-    //             }
-    //         </>

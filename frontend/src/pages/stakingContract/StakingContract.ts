@@ -41,7 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         if(withdraw){
             history.push(`/unstake/:${address}`);
         }else{
-            history.push(`/stake/:${address}`);
+            history.push(`/stake/${address}`);
         }
     }
 } as StakingContractDispatch);

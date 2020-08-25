@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
     Page,PageTopPart,  Row, ThemedText, Gap, InputCurrency, ThemedButton, ErrorMessage,
-    InputGroupAddon,
+    InputGroupAddon, ThemedLink
     // @ts-ignore
 } from 'unifyre-web-components';
 import { formatter } from "../../common/Utils";
@@ -11,6 +11,7 @@ import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
+import check from '../../images/right.png';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const theme = useContext(ThemeContext);
@@ -32,6 +33,39 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
             </PageTopPart>
             {
                 <>
+                {
+                    props.transactionId != '' && 
+                    <>
+                        <Gap size={'small'}/>
+                        <Row withPadding centered>
+                                <ThemedText.H2>{`Congratulations`}</ThemedText.H2>
+                        </Row>
+                        <Row withPadding centered>
+                            <img style={{"width":'70px'}} src={check}/>
+                        </Row>
+                        <Row withPadding centered>
+                            <ThemedText.H3>{`You Successfully Staked ${props.amount}`}</ThemedText.H3>
+                        </Row>
+                        <Gap size={'small'}/>
+                        <Row withPadding centered>
+                            <ThemedText.H4>{'Pending TransactionId'}</ThemedText.H4>
+                        </Row>
+                        <Row withPadding centered>
+                            <ThemedLink text={props.transactionId} onClick={() => history.replace('/')} />  
+                        </Row>
+                        <Row withPadding>
+                        <ThemedButton
+                            highlight={true}
+                            text={`Stake More`}
+                            onClick={()=>{
+                                props.refreshStaking()}}
+                            textStyle={styles.btnText}/>
+                  </Row>
+                    </>
+                }
+                {
+                  props.transactionId === '' && 
+                  <>
                   <Row withPadding centered>
                       <ThemedText.H4>{'Amount To Stake'}</ThemedText.H4>
                   </Row>
@@ -80,8 +114,14 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                                 props.onStakeToken(history,props)}}
                             textStyle={styles.btnText}/>
                   </Row>
+                  </>
+                }
               </>
-            }        
+              
+            }  
+            <Row withPadding centered>
+                <ThemedLink text={'Go back'} onClick={() => history.replace('/info/' + props.contract.contractAddress)} />  
+            </Row>      
         </Page>
     );
 }

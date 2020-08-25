@@ -66,6 +66,13 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return [userStake, stakingContract, stakeEvents];
     }
 
+    async getUserStakingEvents(userId: string):
+        Promise<StakeEvent[]> {
+        // Get all user stakeEvents
+        const stakeEvents = await this.userStakeEvents(userId);
+        return stakeEvents;
+    }
+
     async updateStakingEvents(
         txIds: string[],
     ): Promise<StakeEvent[]> {
@@ -87,6 +94,22 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const requestId = await client.sendTransactionAsync(network, txs);
         const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
         if (!!response) {
+            const userProfile = client.getUserProfile();
+            const txIds = response!.response.map(r => r.transactionId);
+            ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
+            const mainTxId = txIds[txIds.length - 1];
+            txIds.pop();
+            console.log(response,'helloooooooo');
+            
+            await this.registerOrUpdateUserStake(
+                mainTxId,
+                txIds,
+                stakingContract,
+                userAddress,
+                userProfile.userId,
+                userProfile.email || '',
+                amount, 
+            );
             // TODO: Process response and save transaction IDs
         }
         return requestId;
@@ -210,6 +233,12 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     private async userStakesForContracts(userId: string, contractAddress: string) {
         this.verifyInit();
         const stakes = await this.stakeEventModel!.find({userId, contractAddress}).exec();
+        return stakes.map(s => s.toJSON());
+    }
+
+    private async userStakeEvents(userId: string) {
+        this.verifyInit();
+        const stakes = await this.stakeEventModel!.find({userId}).exec();
         return stakes.map(s => s.toJSON());
     }
 

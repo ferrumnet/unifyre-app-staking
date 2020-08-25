@@ -4,14 +4,14 @@ import { StakingApp } from "../../common/Types";
 import { History } from 'history';
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { inject } from "../../common/IocModule";
-import { addAction } from "./../../common/Actions";
-import { StakingAppServiceActions } from "./../../services/StakingAppClient";
+import { StakeEvent } from "../../common/Types";
 
 export interface MainProps {
     symbol: string;
     userAddress: string;
     stakings: StakingApp[];
-    currency: string
+    currency: string,
+    stakeEvents: StakeEvent[]
 }
 
 export interface MainDispatch {
@@ -26,7 +26,8 @@ function mapStateToProps(state: RootState): MainProps {
         symbol: address.symbol,
         userAddress: address.address,
         stakings: state.data.stakingData.contracts,
-        currency: address.currency
+        currency: address.currency,
+        stakeEvents: state.data.stakingData.stakeEvents
     };
 }
 

@@ -6,6 +6,7 @@ import { StakingAppClient, StakingAppServiceActions } from "../../services/Staki
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
 import {Utils} from '../../common/Utils';
+import { ConsoleLogger } from "ferrum-plumbing";
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -25,6 +26,7 @@ export interface StakeTokenProps extends StakeTokenState {
 export interface StakeTokenDispatch {
     onStakeToken: (history: History, props: StakeTokenProps) => Promise<void>;
     onAmountToStakeChanged: (v:number) => Promise<void>;
+    refreshStaking: () => void
 }
 
 function mapStateToProps(state: RootState): StakeTokenProps {
@@ -35,7 +37,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     return {
         ...state.ui.stakeToken,
         symbol: address.symbol,
-        contract: Utils.selectedContrat(state, (window.location.href.split(':')[3]) || '') || {} as any,
+        contract: Utils.selectedContrat(state, (window.location.href.split('/')[4]) || '') || {} as any,
         balance: address.balance,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,
@@ -48,8 +50,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         try{
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeToken' }));
             await IocModule.init(dispatch);
-            const client = inject<StakingAppClient>(StakingAppClient);
-            
+            const client = inject<StakingAppClient>(StakingAppClient);            console.log(props.contract.contractAddress);        
             const data = await client.stakeSignAndSend(
                 dispatch, props.amount,
                 props.contract.network,
@@ -58,7 +59,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                history.replace('/info/' + props.contract.contractAddress);
+                dispatch(addAction(StakingAppServiceActions.STAKING_SUCCESS, { transactionData: data }));
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);
@@ -70,10 +71,14 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onAmountToStakeChanged: async (v:number) => {
         dispatch(addAction(Actions.AMOUNT_TO_STAKE_CHANGED, { amount: v }));
     },
+    refreshStaking: () => {
+        dispatch(addAction(StakingAppServiceActions.STAKING_SUCCESS, { transactionData: [''] }));
+    }
 } as StakeTokenDispatch);
 
 const defaultStakeTokenState = {
     amount: '0',
+    transactionId: ''
 }
 
 function reduce(state: StakeTokenState = defaultStakeTokenState, action: AnyAction) {    
@@ -82,6 +87,9 @@ function reduce(state: StakeTokenState = defaultStakeTokenState, action: AnyActi
             return {...state, error: action.payload.message};
         case Actions.AMOUNT_TO_STAKE_CHANGED:
             return {...state, error: undefined, amount: action.payload.amount}
+        case StakingAppServiceActions.STAKING_SUCCESS:
+            console.log(action.payload,'000000')
+            return {...state,transactionId: action.payload.transactionData[0]}
         default:
         return state;
     }

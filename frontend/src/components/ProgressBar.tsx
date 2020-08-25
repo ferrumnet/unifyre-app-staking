@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../images/icon.png';
 
 export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
     const { bgcolor, completed } = props;
@@ -67,6 +68,16 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
       display: 'flex'
     }
 
+    const img = {
+      textAlign: 'center' as 'center',
+      justifyContent: 'center' as 'center',
+      alignItems: 'center' as 'center',
+      display: 'flex',
+      width: 'auto',
+      backgroundColor: 'transparent',
+      borderRadius: '50%'
+    }
+
     const fillersStyles = {
         height: '100%',
         width: `${50}%`,
@@ -123,6 +134,9 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
         <div style={containerStyles}>
             <div style={fillerStyles}>
             <span style={labelStyles}>{`${completed}%`}</span>
+            </div>
+            <div style={{...fillerStyles,...img}}>
+            <img style={{"width":'60px','position':'absolute','borderRadius':'50%',backgroundColor: 'black'}} src={logo}/>
             </div>
             <div style={fillersStyles}>
                 <span style={labelStyles}>{`${completed}%`}</span>

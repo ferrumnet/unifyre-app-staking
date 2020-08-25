@@ -22,7 +22,8 @@ export const StakingAppServiceActions = {
     STAKING_DATA_RECEIVED: 'STAKING_DATA_RECEIVED',
     STAKING_FAILED: 'STAKING_FAILED',
     UN_STAKING_FAILED: 'UN_STAKING_FAILED',
-    CONTRACT_SELECTED: 'CONTRACT_SELECTED'
+    CONTRACT_SELECTED: 'CONTRACT_SELECTED',
+    STAKING_SUCCESS: 'STAKING_SUCCESS'
 };
 
 const Actions = StakingAppServiceActions;
@@ -54,6 +55,9 @@ export class StakingAppClient implements Injectable {
             const stakingData = await this.api({
                     command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
+            const events = await this.api({
+                command: 'getAllStakingEventsForUser', data: {}, params: [] } as JsonRpcRequest);
+            dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
             dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
             dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
             dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));

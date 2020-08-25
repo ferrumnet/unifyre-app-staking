@@ -131,4 +131,11 @@ export class CurrencyFormatter {
 export const dataFormat = (data:number) =>  {
     return new Date(Number(data * 1000)).toLocaleString()}
 
+export const dateFromNow = (data:number) => {
+    let today = new Date();
+    let proposedDate = new Date(Number(data * 1000));
+    var timeinmilisec = proposedDate.getTime() - today.getTime() 
+    return Math.floor(timeinmilisec / (1000 * 60 * 60 * 24));
+}
+
 export const formatter = new CurrencyFormatter();
