@@ -6,12 +6,9 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { Main, MainDispatch, MainProps } from './Main';
-import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import {RewardsBar} from "./../../components/ProgressBar";
 import {CategoryBtn} from "./../../components/Categories";
-import {TransitionGroup} from 'react-transition-group'; // ES6
 import { StakingApp } from "../../common/Types";
 import {Transactions} from '../../components/transactions';
 function MainComponent(props: MainProps&MainDispatch) {
@@ -20,35 +17,10 @@ function MainComponent(props: MainProps&MainDispatch) {
     const history = useHistory();
     let [index,setindex] = useState(0);
     const selected = true;
-    const {stakings,symbol} = props;
-    console.log(props);
-    
-    
-    return (
-        <Page>
-            <PageTopPart>
-                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
-                <div style={{...styles.divider}}></div>
-            </PageTopPart>
-            <Gap size={'small'}/>
-            {
-                stakings.map((e:StakingApp) => {
-                    return (
-                        <CategoryBtn
-                            symbol={symbol}
-                            stakingCap={e.stakingCap}
-                            name={e.name}
-                            currency={e.currency}
-                            startDate={e.stakingStarts}
-                            history={history}
-                            staking={e}
-                            userAddress={props.userAddress}
-                            onStakeNow={()=>props.onContractSelected(history,e,props.userAddress)}
-                        />
-                    )
-                })
-            }
-            <Gap/>
+    const {stakings} = props;
+
+    const recentTx = props.stakeEvents && props.stakeEvents.length ? (
+        <>
             <Row withPadding>
                 <ThemedText.H4>{'Recent Transactions'}</ThemedText.H4>
             </Row>
@@ -73,7 +45,28 @@ function MainComponent(props: MainProps&MainDispatch) {
                 </div>
                 </Row>
             }
-            
+        </>
+    ) : undefined;
+
+    
+    return (
+        <Page>
+            <PageTopPart>
+                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
+                <div style={{...styles.divider}}></div>
+            </PageTopPart>
+            <Gap size={'small'}/>
+            {
+                stakings.map((e:StakingApp, i: number) => 
+                        <CategoryBtn
+                            key={i}
+                            staking={e}
+                            userAddress={props.userAddress}
+                            onStakeNow={()=>props.onContractSelected(history, e, props.userAddress)}
+                        />)
+            }
+            <Gap/>
+            {recentTx}
         </Page>
     );
 }

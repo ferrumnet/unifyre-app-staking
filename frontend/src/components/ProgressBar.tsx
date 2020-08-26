@@ -1,5 +1,18 @@
 import React from 'react';
 import logo from '../images/icon.png';
+//@ts-ignore
+import ReactProgressBar from '@ramonak/react-progress-bar';
+
+export function StakeCompletionProgress(props: {completion: number, thin?: boolean}) {
+  return (
+    <ReactProgressBar 
+        completed={10}
+        bgcolor={props.thin ? 'rgb(57, 57, 62)' : "rgb(255, 59, 47)"}
+        height={props.thin ? '3px' : '20px'}
+        labelSize={props.thin ? '0px' : '14px'}
+        />
+  );
+}
 
 export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
     const { bgcolor, completed } = props;
@@ -35,8 +48,9 @@ export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
   };
   
 
-export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
-    const { bgcolor, completed } = props;
+export const RewardsBar = (props:{bgcolor:string,
+    rewardPercent: string, earlyWithdrawPercent: string}) => {
+    const { bgcolor } = props;
   
     const containerStyles = {
       height: 43,
@@ -133,13 +147,13 @@ export const RewardsBar = (props:{bgcolor:string,completed: number}) => {
         </div>
         <div style={containerStyles}>
             <div style={fillerStyles}>
-            <span style={labelStyles}>{`${completed}%`}</span>
+            <span style={labelStyles}>{`${props.rewardPercent}%+`}</span>
             </div>
             <div style={{...fillerStyles,...img}}>
             <img style={{"width":'60px','position':'absolute','borderRadius':'50%',backgroundColor: 'black'}} src={logo}/>
             </div>
             <div style={fillersStyles}>
-                <span style={labelStyles}>{`${completed}%`}</span>
+                <span style={labelStyles}>{`${props.earlyWithdrawPercent}%`}</span>
             </div>
         </div>
         <div style={{...labelContainer,...miniContainer}}>

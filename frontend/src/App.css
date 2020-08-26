@@ -49,13 +49,12 @@
 .container{
   animation-name: example;
   animation-duration: 1s;
-  height: 190px;
 }
 
 .collapsed {
   animation-name: collapse;
   animation-duration: 1s;
-  height: 50px;
+  min-height: 55px;
 }
 
 .container-text {
@@ -73,13 +72,13 @@
 }
 
 @keyframes example {
-  from {height: 50px;}
-  to {height: 190px;}
+  from {max-height: 80px;}
+  to {max-height: 390px;}
 }
 
 @keyframes collapse {
-  from {height: 190px;}
-  to {height: 50px;}
+  from {min-height: 190px;}
+  to {min-height: 50px;}
 }
 
 @keyframes opac {

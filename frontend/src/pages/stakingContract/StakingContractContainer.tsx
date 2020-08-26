@@ -1,100 +1,66 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, InputGroupAddon, ThemedButton, ThemedLink,
+    Page,PageTopPart,  Row, ThemedText, Gap, ThemedButton, ThemedLink, InputGroupAddon,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { useHistory } from 'react-router-dom';
-import { formatter,dataFormat,dateFromNow } from "../../common/Utils";
+import { dataFormat, Utils } from "../../common/Utils";
 import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from './StakingContract';
 import { LoaderContainer } from '../../components/Loader';
 import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import {RewardsBar} from "./../../components/ProgressBar";
-import {CategoryBtn} from "./../../components/Categories";
-import {TransitionGroup} from 'react-transition-group'; // ES6
-import { StakingApp } from "../../common/Types";
+import {RewardsBar, StakeCompletionProgress} from "./../../components/ProgressBar";
+import { StakingApp } from '../../common/Types';
 
-//@ts-ignore
 function PreStakingView(props: StakingContractProps&StakingContractDispatch) {
-    const history = useHistory();
-    const {styles} = props;
+    return (
+        <Row withPadding>
+            <ThemedText.H3>{'Starting Soon.'}</ThemedText.H3>
+            <ThemedText.H3>
+                {'Staking starts at ' + dataFormat(props.contract.stakingStarts)}
+            </ThemedText.H3>
+        </Row>
+    );
+}
+
+function MoreStakingDetails(props: {contract: StakingApp}) {
     return (
         <>
-             <>
-                <Row withPadding>
-                    <ThemedText.H1 style={{...styles.preStakingheader}}>{'Starting Soon.'}</ThemedText.H1>
-
-                </Row>
-                <Row withPadding>
-                    <ThemedText.H3 style={{width: '100%',fontSize:'13px'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
-                </Row>
-                <Gap/>
-                    <Row centered>
-                        <Row centered>
-                            <div style={{...styles.stakedText}}>
-                                <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.contract.stakingCap}</ThemedText.H1>
-                                <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`Staking Capacity`}</ThemedText.H4></div>
-                                <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`Available.`}</ThemedText.H4></div>
-                            </div>
-                        </Row>
-                            <div style={{...styles.percentStake}}>
-                                <CircularProgressbarWithChildren
-                                strokeWidth = {2}
-                                styles={buildStyles({
-                                    // Rotation of path and trail, in number of turns (0-1)
-                                    rotation: 2.25,
-                                
-                                    // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-                                    strokeLinecap: 'butt',
-
-                                
-                                    // Text size
-                                    textSize: '10px',
-                            
-                                    // How long animation takes to go from one percentage to another, in seconds
-                                    pathTransitionDuration: 50.5,
-                                
-                                    // Can specify path transition in more detail, or remove it entirely
-                                    // pathTransition: 'none',
-                                
-                                    // Colors
-                                    pathColor: `rgba(249, 64, 43, 1)`,
-                                    textColor: '#ffffff',
-                                    trailColor: 'rgb(214 214 214 / 12%)',
-                                    backgroundColor: 'rgb(214 214 214 / 12%)',
-                                })} 
-                                value={66}
-                                >
-                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'Staking Starts in'}</ThemedText.H2></Row>
-                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{dateFromNow(props.contract.stakingStarts) ? `${dateFromNow(props.contract.stakingStarts) }` : ''}</ThemedText.H2>
-                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'days'}</ThemedText.H2></Row>
-                                </CircularProgressbarWithChildren>;
-                            </div>
-                        </Row>
-                        <Gap/>
-                        <Gap size={"small"}/>
-
-                            <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
-                        <Gap size={"small"}/>
-                        <Row centered>
-                        <div style={{...styles.stakedText}}>
-                            <Row noMarginTop><ThemedText.H3 style={{...styles.commonText,...styles.DurText}}>{'MATURITY PERIOD'}</ThemedText.H3></Row>
-                            <ThemedText.H4 style={styles.littleText}>{'12 MONTHS'}</ThemedText.H4>
-                        </div>
-                    </Row>
-                </>
+        <Row withPadding>
+            <ThemedText.SMALL>STAKING ENDS</ThemedText.SMALL>
+        </Row>
+        <Row withPadding>
+            <ThemedText.P>{dataFormat(props.contract.stakingEnds)}</ThemedText.P>
+        </Row>
+        <Row withPadding>
+            <ThemedText.SMALL>EARLY WITHDRAW STARTS</ThemedText.SMALL>
+        </Row>
+        <Row withPadding>
+            <ThemedText.P>{dataFormat(props.contract.withdrawStarts)}</ThemedText.P>
+        </Row>
+        <Row withPadding>
+            <ThemedText.SMALL>MATURITY</ThemedText.SMALL>
+        </Row>
+        <Row withPadding>
+            <ThemedText.P>{dataFormat(props.contract.withdrawEnds)}</ThemedText.P>
+        </Row>
+        <Row withPadding>
+            <ThemedText.P>+ Maturity rewards will usually be MORE than the advertised number.
+                This is because any rewards left due to early withrawals will be distributed to the 
+                people waited until maturity. By staying until maturity you will be usually pleasently surprised.
+            </ThemedText.P>
+        </Row>
         </>
-    )
+    );
 }
 
 function StakingView(props: StakingContractProps&StakingContractDispatch) {
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
     const history = useHistory();
-    const {contract, symbol,styles} = props;
-    const navigateToStakePage = (address:string) => {
-        history.replace(`/stake/${address}`);
-    }
+    const {symbol} = props;
     return (
             <>
                 <>
@@ -103,7 +69,7 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                         (props.userStake?.amountInStake === '0') && 
                         (
                             <Row withPadding>
-                                <ThemedText.H1 style={{...styles.header}}>{'Start staking right now'}</ThemedText.H1>
+                                <ThemedText.H1 style={{...styles.header}}>{`Start staking ${props.symbol} right now`}</ThemedText.H1>
                             </Row>
                         )
                     }
@@ -128,7 +94,7 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                      <div style={{...styles.stakedText}}>
                                         <Row centered noMarginTop><ThemedText.H2 style={{...styles.stakingInfoHeader}}>{'You Have'}</ThemedText.H2></Row>
                                         <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.balance}</ThemedText.H1>
-                                        <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`${props.symbol} available for staking`}</ThemedText.H4></div>
+                                        <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`${props.symbol} available to stake`}</ThemedText.H4></div>
                                     </div>
                                 </>
                             }
@@ -160,19 +126,24 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                     trailColor: 'rgb(214 214 214 / 12%)',
                                     backgroundColor: 'rgb(214 214 214 / 12%)',
                                 })} 
-                                value={66}
+                                value={props.stakeCompletionRate}
                                 >
                                     <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'REMAINING'}</ThemedText.H2></Row>
-                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'190,000'}</ThemedText.H2>
+                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{props.remaining}</ThemedText.H2>
                                     <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{'CAPACITY'}</ThemedText.H4>
                                 </CircularProgressbarWithChildren>;
                             </div>
                         </Row>
                         <Gap/>
                         <Gap/>
-                            <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
+                            <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} {...props} />
                         <Gap/>
-                    <div style={styles.bottomFix}>
+                        <Row withPadding>
+                            <ThemedText.SMALL>Time until staking is open</ThemedText.SMALL>
+                        </Row>
+                        <Row withPadding>
+                            <StakeCompletionProgress completion={props.stakingTimeProgress} />
+                        </Row>
                         <Row withPadding>
                             <ThemedButton
                                 highlight={true}
@@ -181,122 +152,23 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
                         </Row>
-                    </div>
+                        <Gap />
+                        <MoreStakingDetails contract={props.contract} />
                 </>
             </>
     )
 }
 
-function PreWithdrawView(props: StakingContractProps&StakingContractDispatch) {
-    const history = useHistory();
-    const {contract, symbol,styles} = props;
-    const navigateToStakePage = (address:string) => {
-        history.replace(`/stake/${address}`);
-    }
-    return (
-        <>
-            <>
-                <Gap/>
-                {
-                    (props.userStake?.amountInStake === '0') && 
-                    (
-                        <Row withPadding>
-                            <ThemedText.H1 style={{...styles.header}}>{'Start staking right now'}</ThemedText.H1>
-                        </Row>
-                    )
-                }
-                <Row withPadding>
-                    <ThemedText.H3 style={{width: '80%',fontSize:'15px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
-                </Row>
-                <Row centered>
-                    <Row centered>
-                        {
-                            props.userStake?.amountInStake != '0' && 
-                            <>
-                                 <div style={{...styles.stakedText}}>
-                                    <Row centered noMarginTop><ThemedText.H4 style={{...styles.stakingInfoHeader}}>{'You Staked'}</ThemedText.H4></Row>
-                                    <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.userStake?.amountInStake}</ThemedText.H1>
-                                    <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{props.symbol}</ThemedText.H4></div>
-                                </div>
-                            </>
-                        }
-                        {
-                            props.userStake?.amountInStake === '0' && 
-                            <>
-                                 <div style={{...styles.stakedText}}>
-                                    <Row centered noMarginTop><ThemedText.H2 style={{...styles.stakingInfoHeader}}>{'You Have'}</ThemedText.H2></Row>
-                                    <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.balance}</ThemedText.H1>
-                                    <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`${props.symbol} available for staking`}</ThemedText.H4></div>
-                                </div>
-                            </>
-                        }  
-                    </Row>
-                    <div style={{...styles.percentStake}}>
-                        <CircularProgressbarWithChildren
-                        strokeWidth = {2}
-                        styles={buildStyles({
-                            // Rotation of path and trail, in number of turns (0-1)
-                            rotation: 2.25,
-                        
-                            // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-                            strokeLinecap: 'butt',
-
-                        
-                            // Text size
-                            textSize: '10px',
-                        
-                                // How long animation takes to go from one percentage to another, in seconds
-                                pathTransitionDuration: 50.5,
-                            
-                                // Can specify path transition in more detail, or remove it entirely
-                                // pathTransition: 'none',
-                            
-                                // Colors
-                                pathColor: `rgba(249, 64, 43, 1)`,
-                                textColor: '#ffffff',
-                                trailColor: 'rgb(214 214 214 / 12%)',
-                                backgroundColor: 'rgb(214 214 214 / 12%)',
-                            })} 
-                            value={66}
-                            >
-                            <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'REMAINING'}</ThemedText.H2></Row>
-                            <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'190,000'}</ThemedText.H2>
-                            <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{'CAPACITY'}</ThemedText.H4>
-                        </CircularProgressbarWithChildren>;
-                    </div>
-                </Row>
-                <Gap/>
-                <Gap/>
-                    <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
-                <Gap/>
-                
-            </>
-        </>
-    )
-}
 
 function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
     const history = useHistory();
-    const {contract, symbol,styles} = props;
-    const navigateToStakePage = (address:string) => {
-        history.replace(`/stake/${address}`);
-    }
+    const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
     return (
         <>
             <>
                 <>
-                    {
-                        (props.userStake?.amountInStake === '0') && 
-                        (
-                            <Row withPadding>
-                                <ThemedText.H1 style={{...styles.header}}>{'Start staking right now'}</ThemedText.H1>
-                            </Row>
-                        )
-                    }
-                   
-                    <Row withPadding>
-                        <ThemedText.H3 style={{width: '80%',fontSize:'15px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
-                    </Row>
                     <Row centered>
                         <Row centered>
                             <>
@@ -322,7 +194,7 @@ function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
                                     textSize: '10px',
                             
                                     // How long animation takes to go from one percentage to another, in seconds
-                                    pathTransitionDuration: 50.5,
+                                    pathTransitionDuration: 1,
                                 
                                     // Can specify path transition in more detail, or remove it entirely
                                     // pathTransition: 'none',
@@ -333,23 +205,58 @@ function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
                                     trailColor: 'rgb(214 214 214 / 12%)',
                                     backgroundColor: 'rgb(214 214 214 / 12%)',
                                 })} 
-                                value={66}
+                                value={props.maturityProgress}
                                 >
-                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'REMAINING'}</ThemedText.H2></Row>
-                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'190,000'}</ThemedText.H2>
-                                    <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{'CAPACITY'}</ThemedText.H4>
+                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'MATURITY'}</ThemedText.H2></Row>
+                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{tillMon + ' months'}</ThemedText.H2>
+                                    <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{tillDay + ' days'}</ThemedText.H4>
                                 </CircularProgressbarWithChildren>;
                             </div>
                         </Row>
                         <Gap/>
-                        <Gap/>
-                            <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
-                        <Gap/>
+                    <Row withPadding>
+                        <ThemedText.H4>Rewards if un-staked today</ThemedText.H4>
+                    </Row>
+                    <Row withPadding>
+                      <InputGroupAddon
+                          value={props.unstakeRewardsNow}
+                          disabled={true}
+                      />
+                    </Row>
+                    <Row withPadding>
+                        <ThemedText.H4>Rewards at maturity</ThemedText.H4>
+                    </Row>
+                    <Row withPadding>
+                      <InputGroupAddon
+                          value={props.unstakeRewardsMaturity}
+                          disabled={true}
+                      />
+                    </Row>
+                    <Row withPadding>
+                        <ThemedText.H4>Early withdraw starts</ThemedText.H4>
+                    </Row>
+                    <Row withPadding>
+                      <InputGroupAddon
+                          value={dataFormat(props.contract.withdrawStarts)}
+                          disabled={true}
+                      />
+                    </Row>
+                    <Row withPadding>
+                        <ThemedText.H4>Maturity</ThemedText.H4>
+                    </Row>
+                    <Row withPadding>
+                      <InputGroupAddon
+                          value={dataFormat(props.contract.withdrawEnds)}
+                          disabled={true}
+                      />
+                    </Row>
+
                     <div style={styles.bottomFix}>
                         <Row withPadding>
                             <ThemedButton
                                 highlight={true}
-                                text={`Withdraw (Early)`}
+                                disabled={props.state !== 'withdraw' && props.state !== 'maturity'}
+                                text={`Un stake`}
                                 onClick={() => props.onContractSelected(history,props.contract.contractAddress,true)}
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
@@ -357,116 +264,24 @@ function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
                     </div>
                 </>
             </>
-        </>
-    )
-}
-
-function MaturityView(props: StakingContractProps&StakingContractDispatch) {
-    const history = useHistory();
-    const {contract, symbol,styles} = props;
-    const navigateToStakePage = (address:string) => {
-        history.replace(`/stake/${address}`);
-    }
-    return (
-        <>
-                <>
-                    {
-                        (props.userStake?.amountInStake === '0') && 
-                        (
-                            <Row withPadding>
-                                <ThemedText.H1 style={{...styles.header}}>{'Start staking right now'}</ThemedText.H1>
-                            </Row>
-                        )
-                    }
-                   
-                    <Row withPadding>
-                        <ThemedText.H3 style={{width: '80%',fontSize:'15px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
-                    </Row>
-                    <Row centered>
-                        <Row centered>
-                            <>
-                                    <div style={{...styles.stakedText}}>
-                                    <Row centered noMarginTop><ThemedText.H4 style={{...styles.stakingInfoHeader}}>{'You Staked'}</ThemedText.H4></Row>
-                                    <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.userStake?.amountInStake}</ThemedText.H1>
-                                    <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{props.symbol}</ThemedText.H4></div>
-                                </div>
-                            </>
-                        </Row>
-                            <div style={{...styles.percentStake}}>
-                                <CircularProgressbarWithChildren
-                                strokeWidth = {2}
-                                styles={buildStyles({
-                                    // Rotation of path and trail, in number of turns (0-1)
-                                    rotation: 2.25,
-                                
-                                    // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-                                    strokeLinecap: 'butt',
-
-                                
-                                    // Text size
-                                    textSize: '10px',
-                            
-                                    // How long animation takes to go from one percentage to another, in seconds
-                                    pathTransitionDuration: 50.5,
-                                
-                                    // Can specify path transition in more detail, or remove it entirely
-                                    // pathTransition: 'none',
-                                
-                                    // Colors
-                                    pathColor: `rgba(249, 64, 43, 1)`,
-                                    textColor: '#ffffff',
-                                    trailColor: 'rgb(214 214 214 / 12%)',
-                                    backgroundColor: 'rgb(214 214 214 / 12%)',
-                                })} 
-                                value={66}
-                                >
-                                    <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'REMAINING'}</ThemedText.H2></Row>
-                                    <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{'190,000'}</ThemedText.H2>
-                                    <ThemedText.H4 style={{...styles.unifyreTextColor,...styles.littleText}}>{'CAPACITY'}</ThemedText.H4>
-                                </CircularProgressbarWithChildren>;
-                            </div>
-                        </Row>
-                        <Gap/>
-                        <Gap/>
-                            <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} completed={50}/>
-                        <Gap/>
-                    <div style={styles.bottomFix}>
-                        <Row withPadding>
-                            <ThemedButton
-                                highlight={true}
-                                text={`Withdraw`}
-                                onClick={() => props.onContractSelected(history,props.contract.contractAddress,true)}
-                                textStyle={{...styles.mediumText,...styles.btnText}}
-                            />
-                        </Row>
-                    </div>
-                </>
         </>
     )
 }
 
 function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
-    const theme = useContext(ThemeContext);
-    const styles = themedStyles(theme);
     const history = useHistory();
-    console.log(props);
-
     let mainPart = (<> </>);
     switch (props.state) {
         case 'pre-stake':
-            mainPart = (<PreStakingView {...props} styles={styles}/>);
+            mainPart = (<PreStakingView {...props}/>);
             break;
         case 'stake':
-            mainPart = (<StakingView {...props} styles={styles}/>);
+            mainPart = (<StakingView {...props}/>);
             break;
         case 'pre-withdraw':
-            mainPart = (<PreWithdrawView {...props} styles={styles}/>);
-            break;
-        case 'withdraw':
-            mainPart = (<WithdrawView {...props} styles={styles}/>);
-            break;
         case 'maturity':
-            mainPart = (<MaturityView {...props} styles={styles}/>);
+        case 'withdraw':
+            mainPart = (<WithdrawView {...props}/>);
             break;
     }
 
@@ -475,11 +290,9 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
             <LoaderContainer />
             <PageTopPart>
                 <Row withPadding centered>
-                    <ThemedText.H3>{`Unifyre ${props.symbol} Staking`}</ThemedText.H3>
-                </Row>
-                <Row withPadding centered>
                     <ThemedText.H2>{props.contract.name}</ThemedText.H2>
                 </Row>
+                <Gap />
             </PageTopPart>
             {mainPart}
             <Row withPadding centered>

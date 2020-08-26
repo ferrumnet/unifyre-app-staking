@@ -6,7 +6,6 @@ import { StakingAppClient, StakingAppServiceActions } from "../../services/Staki
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
 import {Utils} from '../../common/Utils';
-import { ConsoleLogger } from "ferrum-plumbing";
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -15,6 +14,7 @@ const StakeTokenActions = {
 const Actions = StakeTokenActions;
 
 export interface StakeTokenProps extends StakeTokenState {
+    network: string;
     symbol: string;
     contract: StakingApp;
     balance: string;
@@ -36,6 +36,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
 
     return {
         ...state.ui.stakeToken,
+        network: address.network,
         symbol: address.symbol,
         contract: Utils.selectedContrat(state, (window.location.href.split('/')[4]) || '') || {} as any,
         balance: address.balance,

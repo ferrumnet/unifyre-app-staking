@@ -2,7 +2,8 @@ import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
 import { StakingApp } from './Types';
 import { Big } from 'big.js';
-import { earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
+import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
+import moment from 'moment';
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  
@@ -34,6 +35,11 @@ export class Utils {
         if (iOs) { return 'iOS'; };
         if (android) { return 'android'; };
         return 'desktop';
+    }
+
+    static ellipsis(s: string, len: number) {
+        if (s.length <= len) { return s; }
+        return `${s.substr(0, len - 3)}...`;
     }
 
     static shorten(s: string) {
@@ -86,23 +92,67 @@ export class Utils {
             } as StakingRewards;
         }
         // Percentage rewards
-        const stakedTotal = new Big(contract.stakedTotal || '0');
+        const stakingCap = new Big(contract.stakingCap || '0');
         const earlyWithdrawReward = new Big(contract.earlyWithdrawReward || '0');
         const totalReward = new Big(contract.totalReward || '0');
         return {
             earlyWithdrawAnnual: earlyWithdrawAnnualRate(
-                stakedTotal,
+                stakingCap,
                 earlyWithdrawReward,
                 contract.withdrawEnds,
                 contract.stakingEnds).times(100).toFixed(2),
             maturityAnnual: maturityAnnualRate(
-                stakedTotal,
+                stakingCap,
                 totalReward,
                 contract.withdrawEnds,
                 contract.stakingEnds,
             ).times(100).toFixed(2),
             maturityMaxAmount: totalReward.toFixed(),
         } as StakingRewards;
+    }
+
+    static unstakeRewardsAt(contract: StakingApp, stakeOf: string, time: number) {
+        if (!contract || !contract.stakingStarts) { return '0'; }
+        return calculateReward(
+            new Big(stakeOf || '0'),
+            time / 1000,
+            new Big(contract!.earlyWithdrawReward),
+            new Big(contract.totalReward),
+            contract.withdrawEnds,
+            contract.stakingEnds,
+            new Big(contract.stakedTotal),
+            0
+        ).toFixed();
+    }
+
+    static icon(currency: string): string {
+        const parts = currency.split(':');
+        return LOGO_TEMPLATE.replace('{NETWORK}', parts[0]).replace('{TOKEN}', parts[1]);
+    }
+
+    static stakeProgress(contract: StakingApp): number {
+        if (!contract || !contract.stakingEnds) {
+            return 0;
+        }
+        return (Date.now() - contract.stakingStarts) / (contract.stakingEnds - contract.stakingStarts);
+    }
+
+    static tillDate(date: number) {
+        var endDate = new Date(date * 1000);
+        var now = new Date();
+      
+        var m = moment(endDate);
+        const d2 = moment(now);
+        var years = m.diff(d2, 'years');
+        m.add(-years, 'years');
+        var months = m.diff(d2, 'months');
+        m.add(-months, 'months');
+        var days = m.diff(d2, 'days');
+        m.add(-days, 'days');
+        var hours = m.diff(d2, 'hours');
+      
+        return [years*12 + months,
+          days, hours];
     }
 }
 
@@ -120,11 +170,6 @@ export class CurrencyFormatter {
             return;
         }
         return LocaleManager.formatDecimalString(canonical, decimals);
-    }
-
-    icon(currency: string): string {
-        const parts = currency.split(':');
-        return LOGO_TEMPLATE.replace('{NETWORK}', parts[0]).replace('{TOKEN}', parts[1]);
     }
 }
 

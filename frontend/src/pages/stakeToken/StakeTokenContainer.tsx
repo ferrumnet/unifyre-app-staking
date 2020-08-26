@@ -6,10 +6,10 @@ import {
     InputGroupAddon, ThemedLink
     // @ts-ignore
 } from 'unifyre-web-components';
-import { formatter } from "../../common/Utils";
+import { formatter, Utils } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
-import {ThemeContext, Theme} from 'unifyre-react-helper';
+import {ThemeContext} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
 import check from '../../images/right.png';
 
@@ -17,7 +17,6 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const history = useHistory();
-    const {symbol,stakingCap,stakedTotal,stakedAmount} = props.contract;   
     const {balance} = props;
     const error = props.error ? (
         <Row withPadding>
@@ -34,7 +33,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
             {
                 <>
                 {
-                    props.transactionId != '' && 
+                    !!props.transactionId && 
                     <>
                         <Gap size={'small'}/>
                         <Row withPadding centered>
@@ -51,7 +50,9 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                             <ThemedText.H4>{'Pending TransactionId'}</ThemedText.H4>
                         </Row>
                         <Row withPadding centered>
-                            <ThemedLink text={props.transactionId} onClick={() => history.replace('/')} />  
+                            <ThemedLink text={Utils.shorten(props.transactionId)}
+                                onClick={() => window.open(Utils.linkForTransaction(props.network, props.transactionId!))}
+                            />  
                         </Row>
                         <Row withPadding>
                         <ThemedButton
@@ -60,11 +61,11 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                             onClick={()=>{
                                 props.refreshStaking()}}
                             textStyle={styles.btnText}/>
-                  </Row>
+                        </Row>
                     </>
                 }
                 {
-                  props.transactionId === '' && 
+                  !props.transactionId && 
                   <>
                   <Row withPadding centered>
                       <ThemedText.H4>{'Amount To Stake'}</ThemedText.H4>
@@ -74,7 +75,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                         currencies={[{ label: props.symbol, key: props.symbol }]}
                         amountStr={props.amount}
                         onAmountChanged={props.onAmountToStakeChanged}
-                        curreny={symbol}
+                        curreny={props.symbol}
                         onCurrencyChanged={() => { }}
                         autoFocus={true}
                         formatter={formatter}

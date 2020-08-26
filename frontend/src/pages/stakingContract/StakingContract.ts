@@ -1,10 +1,12 @@
 import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../common/RootState";
-import { StakingState, Utils } from "../../common/Utils";
+import { formatter, StakingState, Utils } from "../../common/Utils";
 import { StakingApp,UserStake } from "../../common/Types";
 import { addAction } from "../../common/Actions";
 import { StakingAppServiceActions } from "../../services/StakingAppClient";
 import { History } from 'history';
+import { Big } from 'big.js';
+import { calculateReward } from "../../common/RewardCalculator";
 
 export interface StakingContractProps {
     balance: string;
@@ -13,8 +15,14 @@ export interface StakingContractProps {
     stakedAmount: string;
     state: StakingState;
     userStake: UserStake | undefined;
-    //@ts-ignore
-    styles?: any
+    stakeCompletionRate: number;
+    remaining: string;
+    rewardPercent: string;
+    earlyWithdrawPercent: string;
+    stakingTimeProgress: number;
+    maturityProgress: number;
+    unstakeRewardsNow: string;
+    unstakeRewardsMaturity: string;
 }
 
 export interface StakingContractDispatch {
@@ -25,13 +33,25 @@ function mapStateToProps(state: RootState): StakingContractProps {
     const userProfile = state.data.userData?.profile;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
+    const contract = state.data.stakingData.selectedContract || {} as any as StakingApp;
+    const rewards = Utils.stakingRewards(contract);
+    const stakeOf = state?.data?.stakingData?.userStake || {} as any as UserStake;
     return {
         balance: address.balance,
         symbol: address.symbol,
-        contract: state.data.stakingData.selectedContract || {} as any,
+        contract,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
-        state: Utils.stakingState(state.data.stakingData.selectedContract),
-        userStake: state?.data?.stakingData?.userStake
+        state: Utils.stakingState(contract),
+        userStake: stakeOf,
+        stakeCompletionRate: Number(new Big(contract.stakedTotal || '0').times(new Big(100)).div(new Big(contract.stakingCap || '1')).toFixed()),
+        remaining: formatter.format(new Big(contract.stakingCap || '0').minus(new Big(contract.stakedTotal || '0')).toFixed(0), true)!,
+        rewardPercent: formatter.format(rewards.maturityAnnual, true) || '0',
+        earlyWithdrawPercent: formatter.format(rewards.earlyWithdrawAnnual, true) || '0',
+        stakingTimeProgress: Utils.stakeProgress(contract),
+        maturityProgress: !contract.withdrawEnds ? 0 : 
+            (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
+        unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
+        unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
     };
 }
 
