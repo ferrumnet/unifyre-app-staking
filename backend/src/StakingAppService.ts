@@ -157,10 +157,11 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const status = await this.contract.helper.getTransactionStatus(
             network, mainTxId, userStake!.createdAt);
         if (status !== userStake.transactionStatus) {
-            const upUserStake = {
+            let upUserStake = {
                 ...userStake,
                 transactionStatus: status,
             } as StakeEvent;
+            upUserStake = await this.updateStakeEventWithLogs(upUserStake);
             await this.updateStakeEvent(upUserStake);
             return await this.getUserStakeEvent(mainTxId);
         }
@@ -180,14 +181,16 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const status = await this.contract.helper.getTransactionStatus(
             network, mainTxId, userStake?.createdAt || 0);
         if (!!userStake && userStake!.transactionStatus !== status) {
-            const upUserStake = {
+            let upUserStake = {
                 ...userStake,
                 transactionStatus: status,
             } as StakeEvent;
+            upUserStake = await this.updateStakeEventWithLogs(upUserStake);
             return this.updateStakeEvent(upUserStake);
         } else {
-            const stakeEvent = {
+            let stakeEvent = {
                 version: 0,
+                network: network,
                 contractAddress: contrat.contractAddress,
                 contractName: contrat.name,
                 currency: contrat.currency,
@@ -200,6 +203,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
                 amountStaked,
                 transactionStatus: status,
             } as StakeEvent;
+            stakeEvent = await this.updateStakeEventWithLogs(stakeEvent)
             return this.saveNewStakeEvent(stakeEvent);
         }
     }
@@ -214,6 +218,20 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         { '$set': { ...newPd } }).exec();
         ValidationUtils.isTrue(!!updated, 'Error updating StakeEvent. Update returned empty. Retry');
         return updated?.toJSON();
+    }
+
+    private async updateStakeEventWithLogs(stakeEvent: StakeEvent): Promise<StakeEvent> {
+        if (stakeEvent.transactionStatus !== 'successful') { return stakeEvent; }
+        const upEvent = {...stakeEvent};
+        const [staked, paidOut] = await this.contract.transactionLog(stakeEvent.network, stakeEvent.mainTxId);
+        if (staked) {
+            upEvent.amountStaked = staked.stakedAmount;
+        }
+        if (paidOut) {
+            upEvent.amountUnstaked = paidOut.amount;
+            upEvent.amountOfReward = paidOut.reward;
+        }
+        return upEvent;
     }
 
     private async saveNewStakeEvent(se: StakeEvent) {

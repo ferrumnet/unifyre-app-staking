@@ -34,6 +34,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "abi-decoder": "^2.3.0",
     "aws-lambda-helper": "git+https://github.com/ferrumnet/aws-lambda-helper.git",
     "aws-sdk": "^2.572.0",
     "big.js": "^5.2.2",

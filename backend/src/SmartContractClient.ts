@@ -4,14 +4,33 @@ import Big from 'big.js';
 import { StakingApp } from "./Types";
 import { EthereumSmartContractHelper } from 'aws-lambda-helper/dist/blockchain';
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
+//@ts-ignore
+import abiDecoder from 'abi-decoder';
+import { Eth } from 'web3-eth';
 const Helper = EthereumSmartContractHelper;
 
 const STAKE_GAS = 200000;
+
+export interface StakedEvent {
+    token: string;
+    staker: string;
+    requestedAmount: string;
+    stakedAmount: string;
+}
+
+export interface PaidOutEvent {
+    token: string;
+    staker: string;
+    amount: string;
+    reward: string;
+}
+
 
 export class SmartContratClient implements Injectable {
     constructor(
         public helper: EthereumSmartContractHelper,
     ) {
+        abiDecoder.addABI(stakingAbi);
     }
 
     __name__() { return 'SmartContratClient'; }
@@ -119,6 +138,13 @@ export class SmartContratClient implements Injectable {
         return this.helper.amountToHuman(currency, val.toString());
     }
 
+    async transactionLog(network: string, transactionId: string): Promise<[StakedEvent|undefined, PaidOutEvent|undefined]> {
+        const web3 = this.helper.web3(network) as Eth;
+        const rec = await web3.getTransactionReceipt(transactionId);
+        if (!rec) { return [undefined, undefined]};
+        return this.processLog(network, rec.logs);
+    }
+
     private stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
         return new web3.Contract(stakingAbi, contractAddress);
@@ -148,5 +174,40 @@ export class SmartContratClient implements Injectable {
         const m = this.stakingApp(network, contractAddress).methods.withdraw(amountRaw);
         const gas = await m.estimateGas({from: userAddress});
         return [m.encodeABI(), gas];
+    }
+
+    private async processLog(network: string, logs: any[]): Promise<[StakedEvent|undefined, PaidOutEvent|undefined]> {
+        const decoded = abiDecoder.decodeLogs(logs);
+        const stakedRaw = decoded.find((l: any) => l?.name === 'Staked');
+        const paidOutRaw = decoded.find((l: any) => l?.name === 'PaidOut');
+        let staked: StakedEvent | undefined = undefined;
+        let paidOut: PaidOutEvent | undefined = undefined;
+        if (stakedRaw) {
+            const events = stakedRaw.events;
+            const token  = events[0].value.toString().toLowerCase();
+            const currency = Helper.toCurrency(network, token);
+            const requestedAmount = await this.helper.amountToHuman(currency, events[2].value.toString());
+            const stakedAmount = await this.helper.amountToHuman(currency, events[3].value.toString());
+            staked = {
+                token: events[0].value.toString(),
+                staker: events[1].value.toString(),
+                requestedAmount,
+                stakedAmount,
+            } as StakedEvent;
+        }
+        if (paidOutRaw) {
+            const events = paidOutRaw.events;
+            const token  = events[0].value.toString().toLowerCase();
+            const currency = Helper.toCurrency(network, token);
+            const amount = await this.helper.amountToHuman(currency, events[2].value.toString());
+            const reward = await this.helper.amountToHuman(currency, events[3].value.toString());
+            paidOut = {
+                token,
+                staker: events[1].value.toString(),
+                amount,
+                reward,
+            } as PaidOutEvent;
+        }
+        return [staked, paidOut];
     }
 }

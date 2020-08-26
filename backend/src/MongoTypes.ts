@@ -24,6 +24,7 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
   type: String,
+  network: String,
   version: Number,
   createdAt: Number,
   contractAddress: String,
@@ -34,6 +35,8 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
   email: String,
   userId: String,
   amountStaked: String,
+  amountUnstaked: String,
+  amountOfReward: String,
   approveTxIds: [String],
   mainTxId: String,
   transactionStatus: String,
