@@ -18,6 +18,8 @@ export interface StakingApp {
     withdrawEnds: number;
     stakingStarts: number;
     stakingEnds: number;
+    logo?: string;
+    color?: string;
 }
 
 export interface StakeEvent {

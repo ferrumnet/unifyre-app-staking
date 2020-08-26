@@ -18,6 +18,8 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     withdrawEnds: Number,
     stakingStarts: Number,
     stakingEnds: Number,
+    logo: String,
+    color: String,
 });
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
