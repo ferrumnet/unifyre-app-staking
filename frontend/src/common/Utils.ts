@@ -42,6 +42,10 @@ export class Utils {
         return `${s.substr(0, len - 3)}...`;
     }
 
+    static strLength(s: string) {
+        return s.length
+    }
+
     static shorten(s: string) {
         if (s.length <= 25) { return s; }
         return `${s.substr(0, 10)}...${s.substr(s.length - 10)}`;

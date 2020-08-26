@@ -202,6 +202,9 @@ const themedStyles = (theme) => ({
     },
     btnText: {
         color: '#ffffff',
-        lineHeight:1.6
+        lineHeight:1.6,
+        fontSize: '15px',
+        fontWeight: 'bold',
+        letterSpacing: '1px',
     }
 });
