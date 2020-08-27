@@ -6,6 +6,7 @@ import {  StakingAppServiceActions } from "../services/StakingAppClient";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { StakeToken } from "../pages/stakeToken/StakeToken";
 import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
+import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { StakingDataState } from "./RootState";
 import { StakeEvent } from "./Types";
 
@@ -48,10 +49,10 @@ function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}
             const {updatedEvents} = action.payload;
             const tidMap: any = {};
             (updatedEvents || []).forEach((e: StakeEvent) => {
-                tidMap[e.stakeTxId] = e;
+                tidMap[e.mainTxId] = e;
             });
             return {...state, stakeEvents: state.stakeEvents.map(se =>
-                tidMap[se.stakeTxId] || se)};
+                tidMap[se.mainTxId] || se)};
         default:
             return state;
     }
@@ -68,6 +69,7 @@ const ui = combineReducers({
     dashboard: Dashboard.reduce,
     stakeToken: StakeToken.reduce,
     unstakeToken: UnstakeToken.reduce,
+    confirmationToken: ConfirmTxn.reduce
 });
 
 export const rootReducer = combineReducers({ data, ui });

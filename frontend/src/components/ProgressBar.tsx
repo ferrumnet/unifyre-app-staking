@@ -8,8 +8,10 @@ export function StakeCompletionProgress(props: {completion: number, thin?: boole
     <ReactProgressBar 
         completed={10}
         bgcolor={props.thin ? 'rgb(57, 57, 62)' : "rgb(255, 59, 47)"}
-        height={props.thin ? '3px' : '20px'}
-        labelSize={props.thin ? '0px' : '14px'}
+        height={props.thin ? '3.5px' : '12px'}
+        labelAlignment={'center'}
+        baseBgColor={props.thin ? 'rgb(224, 224, 222)' : '#1b1d1d'}
+        labelSize={props.thin ? '0px' : '10px'}
         />
   );
 }
@@ -53,7 +55,7 @@ export const RewardsBar = (props:{bgcolor:string,
     const { bgcolor } = props;
   
     const containerStyles = {
-      height: 43,
+      height: 40,
       width: '80%',
       backgroundColor: "#1a1a1a",
       borderRadius: 10,
@@ -107,17 +109,18 @@ export const RewardsBar = (props:{bgcolor:string,
       padding: 5,
       color: 'white',
       fontWeight: "bold" as "bold",
-      fontSize: '30px',
-      letterSpacing: '2px'
+      fontSize: '25px',
+      letterSpacing: '1.3px'
     }
 
     const rewardsLabel = {
         fontWeight: "bolder" as "bolder",
         fontFamily: 'Sawarabi Gothic',
         fontSize: '1.15rem',
-        width: '40%',
+        width: '60%',
         letterSpacing: '2px',
-        textAlign: "center" as "center"
+        textAlign: "start" as "start",
+        paddingLeft: '5%'
     }
 
     const smallerRewardsLabel = {
@@ -125,7 +128,7 @@ export const RewardsBar = (props:{bgcolor:string,
         fontFamily: 'Sawarabi Gothic',
         fontSize: '0.55rem',
         width: '50%',
-        letterSpacing: '1px',
+        letterSpacing: '.5px',
         textAlign: "center" as "center"
     }
 
@@ -146,14 +149,14 @@ export const RewardsBar = (props:{bgcolor:string,
             </div>
         </div>
         <div style={containerStyles}>
-            <div style={fillerStyles}>
-            <span style={labelStyles}>{`${props.rewardPercent}%+`}</span>
+            <div style={{...fillerStyles,"justifyContent": 'start','paddingLeft': '7%'}}>
+            <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.rewardPercent}%+`}</span>
             </div>
             <div style={{...fillerStyles,...img}}>
             <img style={{"width":'60px','position':'absolute','borderRadius':'50%',backgroundColor: 'black'}} src={logo}/>
             </div>
             <div style={fillersStyles}>
-                <span style={labelStyles}>{`${props.earlyWithdrawPercent}%`}</span>
+                <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.earlyWithdrawPercent}%`}</span>
             </div>
         </div>
         <div style={{...labelContainer,...miniContainer}}>

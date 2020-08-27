@@ -73,8 +73,8 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                             </Row>
                         )
                     }
-                    <Row withPadding>
-                        <ThemedText.H3 style={{width: '80%',fontSize:'15px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
+                    <Row withPadding noMarginTop>
+                        <ThemedText.H3 style={{width: '80%',fontSize:'13px',marginLeft:'15pt'}}>{'Simple, secure and dynamic the way to start Winning Today'}</ThemedText.H3>
                     </Row>
                     <Row centered>
                         <Row centered>
@@ -94,13 +94,13 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                      <div style={{...styles.stakedText}}>
                                         <Row centered noMarginTop><ThemedText.H2 style={{...styles.stakingInfoHeader}}>{'You Have'}</ThemedText.H2></Row>
                                         <ThemedText.H1 style={{...styles.stakingAmountStyle}}>{props.balance}</ThemedText.H1>
-                                        <div><ThemedText.H4 style={{...styles.stakingSymbol}}>{`${props.symbol} available to stake`}</ThemedText.H4></div>
+                                        <div><ThemedText.SMALL style={{...styles.stakingSymbol}}>{`${props.symbol} available to stake`}</ThemedText.SMALL></div>
                                     </div>
                                 </>
                             }
                            
                         </Row>
-                            <div style={{...styles.percentStake}}>
+                        <div style={{...styles.percentStake}}>
                                 <CircularProgressbarWithChildren
                                 strokeWidth = {2}
                                 styles={buildStyles({
@@ -139,7 +139,7 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                             <RewardsBar bgcolor={'rgba(249, 64, 43, 1)'} {...props} />
                         <Gap/>
                         <Row withPadding>
-                            <ThemedText.SMALL>Time until staking is open</ThemedText.SMALL>
+                            <ThemedText.SMALL>Time Elapsed in staking so far</ThemedText.SMALL>
                         </Row>
                         <Row withPadding>
                             <StakeCompletionProgress completion={props.stakingTimeProgress} />
@@ -152,7 +152,8 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
                         </Row>
-                        <Gap />
+                        <Gap size={'small'}/>
+                        <Gap size={'small'}/>
                         <MoreStakingDetails contract={props.contract} />
                 </>
             </>
@@ -322,7 +323,7 @@ export const StakingContractContainer = connect(
     },
     btnText: {
         color: '#ffffff',
-        lineHeight:1.6
+        lineHeight:1.3
     },
     divider: {
         height: '3px',
@@ -433,7 +434,7 @@ export const StakingContractContainer = connect(
     stakingSymbol:{
         paddingTop: '3px',
         letterSpacing: 1,
-        fontSize:'13px',
+        fontSize:'11px',
         fontWeight: 200
     },
     unifyreMainTextlineHeight: {
@@ -455,6 +456,11 @@ export const StakingContractContainer = connect(
         letterSpacing: '2px',
         lineHeight: '1.4'
     },
+    mediumTextRow: {
+        fontSize: '18px',
+        fontWeight: 'bold',
+        letterSpacing: '2px',
+    },
     littleText: {
         fontSize: '10.5px',
         fontWeight: '200'
@@ -468,6 +474,13 @@ export const StakingContractContainer = connect(
         width:'50%',
         display: 'flex',
         flexDirection: "row" as "row",
+    },
+    percentStakeRow: {
+        width: '60%',
+        display: 'flex',
+        flexDirection: 'row' as 'row',
+        margin: '25px auto',
+        marginBottom: '10px'
     },
     arrows: {
         marginRight: '10px',
@@ -484,9 +497,9 @@ export const StakingContractContainer = connect(
         width: '99%',
     },
     header: {
-        fontSize: '35px',
+        fontSize: '33px',
         width: '80%',
-        lineHeight: 0.9,
+        lineHeight: 1.1,
         marginLeft: '15pt',
         fontWeight: 'bold'
     },
@@ -497,5 +510,18 @@ export const StakingContractContainer = connect(
         marginLeft: '15pt',
         marginTop: '20pt',
         textAlign:'center'
+    },
+    summaryContainerFlex: {
+        marginTop: '15px',
+        display: 'flex',
+        flexDirection: 'row' as 'row',
+        justifyContent: 'center' as 'center',
+        alignItems: 'center' as 'center'
+    },
+    summaryContainerRow: {
+        marginTop: '15px',
+        flexDirection: 'row' as 'row',
+        justifyContent: 'center'  as 'center',
+        alignItems: 'center' as 'center'
     }
 });

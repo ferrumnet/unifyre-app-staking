@@ -13,7 +13,7 @@ import { MainContainer } from '../main/MainContainer';
 import { StakingContractContainer } from '../stakingContract/StakingContractContainer';
 import { StakeTokenContainer } from '../stakeToken/StakeTokenContainer';
 import { UnstakeTokenContainer } from '../unstakeToken/UnstakeTokenContainer';
-
+import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onLoad} = props;
     useEffect(() => {
@@ -26,6 +26,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         return (
             <>
               <Switch>
+                  <Route path='/confirm/:transactionId'>
+                        <ConfirmTxnContainer/>
+                  </Route>
                   <Route path='/unstake/:contractAddress'>
                         <UnstakeTokenContainer/>
                   </Route>

@@ -96,10 +96,10 @@ export class StakingAppClient implements Injectable {
         }
     }
 
-    private async refreshStakeEvents(dispatch: Dispatch<AnyAction>, events: StakeEvent[]) {
+    async refreshStakeEvents(dispatch: Dispatch<AnyAction>, events: StakeEvent[]) {
         try {
-            const pendingTxs = events.filter(e => e.transactionStatus !== 'pending')
-                .map(tx => tx.stakeTxId);
+            const pendingTxs = events.filter(e => e.transactionStatus === 'pending')
+                .map(tx => tx.mainTxId);
             if (!!pendingTxs.length) {
                 const { updtedEvents } = await this.api({
                     command: 'updateStakingEvents', data: { txIds: pendingTxs }, params: []});
