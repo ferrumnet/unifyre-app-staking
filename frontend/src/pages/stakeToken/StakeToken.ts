@@ -60,7 +60,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                dispatch(addAction(StakingAppServiceActions.STAKING_SUCCESS, { transactionData: data }));
+                history.push(`/confirm/${data[0]}`);
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);
@@ -79,7 +79,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
 
 const defaultStakeTokenState = {
     amount: '0',
-    transactionId: ''
+    transactionId: '',
+    showConfirmation: false
 }
 
 function reduce(state: StakeTokenState = defaultStakeTokenState, action: AnyAction) {    
@@ -89,8 +90,7 @@ function reduce(state: StakeTokenState = defaultStakeTokenState, action: AnyActi
         case Actions.AMOUNT_TO_STAKE_CHANGED:
             return {...state, error: undefined, amount: action.payload.amount}
         case StakingAppServiceActions.STAKING_SUCCESS:
-            console.log(action.payload,'000000')
-            return {...state,transactionId: action.payload.transactionData[0]}
+            return {...state,transactionId: action.payload.transactionData[0],showConfirmation:!state.showConfirmation}
         default:
         return state;
     }

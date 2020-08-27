@@ -31,42 +31,8 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                 <div style={{...styles.divider}}></div>
             </PageTopPart>
             {
+
                 <>
-                {
-                    !!props.transactionId && 
-                    <>
-                        <Gap size={'small'}/>
-                        <Row withPadding centered>
-                                <ThemedText.H2>{`Congratulations`}</ThemedText.H2>
-                        </Row>
-                        <Row withPadding centered>
-                            <img style={{"width":'70px'}} src={check}/>
-                        </Row>
-                        <Row withPadding centered>
-                            <ThemedText.H3>{`You Successfully Staked ${props.amount}`}</ThemedText.H3>
-                        </Row>
-                        <Gap size={'small'}/>
-                        <Row withPadding centered>
-                            <ThemedText.H4>{'Pending TransactionId'}</ThemedText.H4>
-                        </Row>
-                        <Row withPadding centered>
-                            <ThemedLink text={Utils.shorten(props.transactionId)}
-                                onClick={() => window.open(Utils.linkForTransaction(props.network, props.transactionId!))}
-                            />  
-                        </Row>
-                        <Row withPadding>
-                        <ThemedButton
-                            highlight={true}
-                            text={`Stake More`}
-                            onClick={()=>{
-                                props.refreshStaking()}}
-                            textStyle={styles.btnText}/>
-                        </Row>
-                    </>
-                }
-                {
-                  !props.transactionId && 
-                  <>
                   <Row withPadding centered>
                       <ThemedText.H4>{'Amount To Stake'}</ThemedText.H4>
                   </Row>
@@ -115,10 +81,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                                 props.onStakeToken(history,props)}}
                             textStyle={styles.btnText}/>
                   </Row>
-                  </>
-                }
-              </>
-              
+                </>
             }  
             <Row withPadding centered>
                 <ThemedLink text={'Go back'} onClick={() => history.replace('/info/' + props.contract.contractAddress)} />  
@@ -202,6 +165,9 @@ const themedStyles = (theme) => ({
     },
     btnText: {
         color: '#ffffff',
-        lineHeight:1.6
+        lineHeight:1.6,
+        fontSize: '15px',
+        fontWeight: 'bold',
+        letterSpacing: '1px',
     }
 });

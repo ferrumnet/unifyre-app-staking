@@ -44,7 +44,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
     }
     const progressBar = state === 'stake' ? (
         <>
-        <div style={styles.miniText}>
+        <div style={{...styles.miniText,"marginBottom":"5px"}}>
             staking is open
         </div>
         <StakeCompletionProgress thin={true} completion={Utils.stakeProgress(props.staking)} />
@@ -105,7 +105,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Size
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {props.staking.stakingCap}
+                                {Utils.ellipsis(props.staking.stakingCap, 11)}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
@@ -155,6 +155,9 @@ const themedStyles = (theme) => ({
     },
     miniText: {
         fontSize: '11px',
+        margin: '5px 0px',
+        marginTop: '0px',
+        marginBottom: '0px'
     },
     categoryText:{
         letterSpacing: 1.5,

@@ -1,6 +1,6 @@
 import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
-import { StakingApp } from './Types';
+import { StakingApp, StakeEvent } from './Types';
 import { Big } from 'big.js';
 import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 import moment from 'moment';
@@ -42,6 +42,10 @@ export class Utils {
         return `${s.substr(0, len - 3)}...`;
     }
 
+    static strLength(s: string) {
+        return s.length
+    }
+
     static shorten(s: string) {
         if (s.length <= 25) { return s; }
         return `${s.substr(0, 10)}...${s.substr(s.length - 10)}`;
@@ -61,6 +65,10 @@ export class Utils {
 
     static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {        
         return state.data.stakingData.contracts.find(c => c.contractAddress ===  contractAddress);
+    }
+
+    static selectedTransaction(state: RootState, transactionId: string): StakeEvent | undefined {        
+        return state.data.stakingData.stakeEvents.find(c => c.mainTxId ===  transactionId);
     }
 
     static stakingState(contract?: StakingApp): StakingState {
