@@ -51,7 +51,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         try{
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeToken' }));
             await IocModule.init(dispatch);
-            const client = inject<StakingAppClient>(StakingAppClient);            console.log(props.contract.contractAddress);        
+            const client = inject<StakingAppClient>(StakingAppClient);
             const data = await client.stakeSignAndSend(
                 dispatch, props.amount,
                 props.contract.network,
@@ -60,7 +60,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                history.push(`/confirm/${data[0]}`);
+                history.replace(`/confirm/${data}`);
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);

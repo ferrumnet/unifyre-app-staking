@@ -11,7 +11,6 @@ import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
 import {ThemeContext} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
-import check from '../../images/right.png';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const theme = useContext(ThemeContext);

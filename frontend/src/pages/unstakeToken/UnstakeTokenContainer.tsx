@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import { connect } from 'react-redux';
 import {
     Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
@@ -46,7 +46,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-                              new Big(stakingCap).minus(new Big(props.amount)).toFixed(),true)} ${symbol}`}
+                              new Big(stakingCap || '0').minus(new Big(props.amount || '0')).toFixed(),true)} ${symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />

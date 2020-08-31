@@ -56,7 +56,7 @@ export class StakingAppClient implements Injectable {
                     command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
             const events = await this.api({
-                command: 'getAllStakingEventsForUser', data: {}, params: [] } as JsonRpcRequest);
+                command: 'getAllStakingEventsForUser', data: {currency}, params: [] } as JsonRpcRequest);
             dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
             dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
             dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
@@ -101,10 +101,11 @@ export class StakingAppClient implements Injectable {
             const pendingTxs = events.filter(e => e.transactionStatus === 'pending')
                 .map(tx => tx.mainTxId);
             if (!!pendingTxs.length) {
-                const { updtedEvents } = await this.api({
+                const updatedEvents = await this.api({
                     command: 'updateStakingEvents', data: { txIds: pendingTxs }, params: []});
-                if (updtedEvents || updtedEvents.length) {
-                    dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updtedEvents }));
+                console.log('UPDATED EVENTS', updatedEvents)
+                if (!!updatedEvents && updatedEvents.length) {
+                    dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updatedEvents }));
                 }
             }
         } catch (e) {
@@ -139,33 +140,30 @@ export class StakingAppClient implements Injectable {
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeSignAndSend' }));
             const token = this.getToken(dispatch);
             if (!token) { return; }
-            const {requestId} = await this.api({
-                command: 'stakeTokenSignAndSend', data: {amount, network, contractAddress, userAddress}, params: []} as JsonRpcRequest) as {requestId: string};
+            let {requestId, stakeEvent} = (await this.api({
+                command: 'stakeTokenSignAndSend', data: {token, amount, network, contractAddress, userAddress},
+                params: []}as JsonRpcRequest)) as {requestId: string, stakeEvent?: StakeEvent};
             if (!requestId) {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not send a sign request.' }));
             }
-            const response = await this.client.getSendTransactionResponse(requestId);
-            console.log('RESPONSE FROM SERVER?', response);
-            //@ts-ignore
-            if (response.rejected) {
-                throw new Error((response as any).reason || 'Request was rejected');
-            }
-            //@ts-ignore
-            const transactionIds = (response.response || []).map(r => r.transactionId);  
-            console.log('Received transaction IDs', transactionIds);
-           
-            /* TODO: Add functionality to record transaction IDs and staking attempts.
-            if (transactionIds) {
+            if (!stakeEvent) {
+                const response = await this.client.getSendTransactionResponse(requestId);
+                if (response.rejected) {
+                    throw new Error((response as any).reason || 'Request was rejected');
+                }
+                const txIds = (response.response || []).map(r => r.transactionId);  
                 const res = await this.api({
-                    command: 'saveStakingTransactions', data: { transactionIds }, params: []
-                } as JsonRpcRequest) as {requestId: string};
-                ValidationUtils.isTrue(!!res, 'Error updating user staking data');
-                return //userstakedata
-            } else {
-                // failed
-            }      
-             */
-            return transactionIds;
+                    command: 'stakeEventProcessTransactions', data: {token, amount, eventType: 'stake',
+                        contractAddress, txIds},
+                    params: []}as JsonRpcRequest) as {stakeEvent?: StakeEvent};
+                stakeEvent = res.stakeEvent;
+            }
+
+            ValidationUtils.isTrue(!!stakeEvent, 'Error while getting the stake transaction! Your stake might have been executed. Please check etherscan for a pending stake transation');
+            dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updatedEvents: [stakeEvent] }));
+            console.log('RETURING STAKE EVENT!', stakeEvent)
+            console.log('RETURING STAKE EVENT MAIN TX!', stakeEvent!.mainTxId)
+            return stakeEvent!.mainTxId;
         } catch (e) {
             console.error('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));

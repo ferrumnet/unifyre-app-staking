@@ -1,18 +1,11 @@
 import { AnyAction, Dispatch } from "redux";
-import { IocModule, inject } from "../../common/IocModule";
-import { addAction, CommonActions } from "../../common/Actions";
+import { inject } from "../../common/IocModule";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeEvent, StakingApp } from "../../common/Types";
-import { History } from 'history';
 import {Utils} from '../../common/Utils';
 
-const confirmationActions = {
-};
-
-const Actions = confirmationActions;
-
-export interface confirmationProps extends StakeTokenState {
+export interface ConfirmationProps extends StakeTokenState {
     network: string;
     symbol: string;
     userAddress: string;
@@ -20,15 +13,14 @@ export interface confirmationProps extends StakeTokenState {
     stakeEvent: StakeEvent;
 }
 
-export interface confirmationDispatch {
-    refreshStaking: (props: confirmationProps) => Promise<void>
+export interface ConfirmationDispatch {
+    refreshStaking: (props: ConfirmationProps) => Promise<void>
 }
 
-function mapStateToProps(state: RootState): confirmationProps {
+function mapStateToProps(state: RootState): ConfirmationProps {
     const userProfile = state.data.userData?.profile;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
-    let eventLength = state.data.stakingData.stakeEvents.length;
     return {
         ...state.ui.stakeToken,
         network: address.network,
@@ -40,12 +32,11 @@ function mapStateToProps(state: RootState): confirmationProps {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    refreshStaking: async (props:confirmationProps) => {
+    refreshStaking: async (props:ConfirmationProps) => {
         const client = inject<StakingAppClient>(StakingAppClient);            
-        console.log('called');        
         await client.refreshStakeEvents(dispatch, props.stakeEvents);
     }
-} as confirmationDispatch);
+} as ConfirmationDispatch);
 
 const defaultconfirmationState = {
     amount: '0',

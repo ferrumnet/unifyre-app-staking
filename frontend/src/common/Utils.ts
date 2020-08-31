@@ -162,10 +162,18 @@ export class Utils {
         return [years*12 + months,
           days, hours];
     }
+
+    static union<T>(a1: T[], a2: T[], keyFun: (v: T) => string): T[] {
+        const rv = new Map<string, T>();
+        a1.forEach(a => { rv.set(keyFun(a), a); });
+        a2.forEach(a => { rv.set(keyFun(a), a); });
+        return Array.from(rv.keys()).map(k => rv.get(k)!);
+    }
 }
 
 export class CurrencyFormatter {
     unFormat(num: string): string | undefined {
+        if (num === '') { return '0';}
         if (!num) return num;
         return LocaleManager.unFormatDecimalString(num);
     }

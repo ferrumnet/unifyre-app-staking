@@ -1,20 +1,21 @@
 import React, {useContext, useState} from 'react';
 import {
-    Row,Gap
+    Row,
     // @ts-ignore
 } from 'unifyre-web-components';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import { relative } from 'path';
-import {formatter,dataFormat} from '../common/Utils';
-import { StakingApp } from "./../common/Types";
 import stakeImg from "../images/next.png"
 import unstakeImg from "../images/out.png"
+import moment from 'moment';
 
 interface transactionsProps {
     type: "stake" | "unstake",
-    amount: number ,
+    amount: string,
     status: string,
-    symbol: string
+    symbol: string,
+    contractName: string,
+    createdAt: number,
+    url: string,
 }
 export const Transactions = (props:transactionsProps) => {
     const theme = useContext(ThemeContext);
@@ -22,25 +23,40 @@ export const Transactions = (props:transactionsProps) => {
     const [expand,setExpand] = useState(false);
     return (
         <Row withPadding noMarginTop>
-            <div style={styles.Container} className={`${expand ? 'container' : 'collapsed'}`}>
+            <a
+            style={styles.Container} className={`${expand ? 'container' : 'collapsed'}`}
+            onClick={() => window.open(props.url, '_blank')}
+            >
                 <div style={styles.btnContainer}>
                     <div style={styles.tokenInfo}>
                         <div style={styles.tokenSymbol}>
                             <img style={{"width":'30px'}} src={props.type==="stake"?stakeImg:unstakeImg}/>
                         </div>
-                        <div style={{"lineHeight": "1.4"}}>
-                            <div style={styles.categoryText}>
-                                {`${props.type} ${props.amount} ${props.symbol}`} 
+                        <div style={{display:'flex', flexDirection: 'column', alignItems:'stretch', flex: 1}}>
+                            <div 
+                            style={{"lineHeight": "1.4", display: 'flex', flexDirection: 'row', width:'100%',
+                                    justifyContent: 'space-between'}}>
+                                <div style={styles.categoryText}>
+                                    {`${props.type} ${props.amount} ${props.symbol}`} 
+                                </div>
+                                <div style={styles.symb}>
+                                    {props.status}
+                                </div>
+                            </div>
+                            <div 
+                            style={{"lineHeight": "1.4", display: 'flex', flexDirection: 'row', width:'100%',
+                                    justifyContent: 'space-between'}}>
+                                <div style={styles.categoryText}>
+                                    {props.contractName} 
+                                </div>
+                                <div style={styles.categoryText}>
+                                    {moment(props.createdAt).fromNow()} 
+                                </div>
                             </div>
                         </div>
                     </div> 
-                    <div style={{"marginRight":"15px","display":"flex","alignItems":"center"}} onClick={()=>{}}>
-                        <div style={styles.symb}>
-                            {props.status}
-                        </div>
-                    </div>
                 </div>
-            </div>
+            </a>
         </Row>
     )
 }
@@ -98,6 +114,7 @@ const themedStyles = (theme) => ({
     },
     tokenInfo: {
         display: 'flex',
+        flex: 1,
         color: 'white',
         justifyContent: 'space-around',
         alignItems: 'center'

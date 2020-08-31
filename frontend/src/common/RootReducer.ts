@@ -8,7 +8,7 @@ import { StakeToken } from "../pages/stakeToken/StakeToken";
 import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { StakingDataState } from "./RootState";
-import { StakeEvent } from "./Types";
+import { Utils } from "./Utils";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -31,6 +31,10 @@ function userData(state: { profile: AppUserProfile } = {} as any, action: AnyAct
     }
 }
 
+function sortByCreatedAt(objs: {createdAt: number}[]) {
+    return objs.sort((o1, o2) => o2.createdAt - o1.createdAt);
+}
+
 function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}, action: AnyAction) {
     switch(action.type) {
         case StakingAppServiceActions.STAKING_DATA_RECEIVED:
@@ -44,15 +48,11 @@ function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}
             return {...state, userStake};
         case StakingAppServiceActions.USER_STAKE_EVENTS_RECEIVED:
             const {stakeEvents} = action.payload;
-            return {...state, stakeEvents: stakeEvents || []};
+            return {...state, stakeEvents: sortByCreatedAt(stakeEvents || [])};
         case StakingAppServiceActions.USER_STAKE_EVENTS_UPDATED:
             const {updatedEvents} = action.payload;
-            const tidMap: any = {};
-            (updatedEvents || []).forEach((e: StakeEvent) => {
-                tidMap[e.mainTxId] = e;
-            });
-            return {...state, stakeEvents: state.stakeEvents.map(se =>
-                tidMap[se.mainTxId] || se)};
+            return {...state, stakeEvents: 
+                sortByCreatedAt(Utils.union(state.stakeEvents, updatedEvents, e => e.mainTxId))};
         default:
             return state;
     }

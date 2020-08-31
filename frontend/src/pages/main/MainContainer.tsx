@@ -11,12 +11,11 @@ import {ThemeContext, Theme} from 'unifyre-react-helper';
 import {CategoryBtn} from "./../../components/Categories";
 import { StakingApp } from "../../common/Types";
 import {Transactions} from '../../components/transactions';
+import { Utils } from '../../common/Utils';
 function MainComponent(props: MainProps&MainDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const history = useHistory();
-    let [index,setindex] = useState(0);
-    const selected = true;
     const {stakings} = props;
 
     const recentTx = props.stakeEvents && props.stakeEvents.length ? (
@@ -27,12 +26,15 @@ function MainComponent(props: MainProps&MainDispatch) {
             <Gap size={'small'}/>
             {
                 props.stakeEvents.length > 0 &&
-                    props.stakeEvents.map((e:any)=>(
+                    props.stakeEvents.map(e => (
                         <Transactions
                         type={'stake'}
                         amount={e.amountStaked}
                         symbol={e.symbol}
                         status={e.transactionStatus}
+                        contractName={e.contractName}
+                        createdAt={e.createdAt}
+                        url={Utils.linkForTransaction(e.network, e.mainTxId)}
                         />
 
                     ))

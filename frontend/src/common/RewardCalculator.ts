@@ -59,6 +59,10 @@ export function calculateReward (
   stakedTotal: Big,
   percentEarlyUnstake: number,
 ) {
+  const zero = new Big(0);
+  if (amount.eq(zero) || stakedTotal.eq(zero)) {
+    return zero;
+  }
   if (convertedDate > Number(deployedWithdrawEnd)) {
     const others = stakedTotal.minus(amount).times(new Big(1 - percentEarlyUnstake / 100));
     const remainingReward = totalReward.minus(earlyWithdrawReward)

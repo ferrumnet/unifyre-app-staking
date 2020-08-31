@@ -8,14 +8,13 @@ import {
 } from 'unifyre-web-components';
 import logo from '../../images/loading.gif';
 import {  Utils } from "../../common/Utils";
-import { ConfirmTxn, confirmationDispatch, confirmationProps } from './ConfirmTxn';
+import { ConfirmTxn, ConfirmationDispatch, ConfirmationProps } from './ConfirmTxn';
 import {ThemeContext} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
 import check from '../../images/right.png';
 import failed from '../../images/failed.png';
-import { intl } from "unifyre-react-helper";
 
-function PendingTransactionView(props: confirmationProps&confirmationDispatch) {
+function PendingTransactionView(props: ConfirmationProps&ConfirmationDispatch) {
     return (
         <>
             <Gap/>
@@ -28,7 +27,7 @@ function PendingTransactionView(props: confirmationProps&confirmationDispatch) {
                 </Row>
                 <Row withPadding centered>
                         <ThemedLink text={Utils.shorten(props.stakeEvent.mainTxId)}
-                            onClick={() => window.open(Utils.linkForTransaction(props.network, props.transactionId!))}
+                            onClick={() => window.open(Utils.linkForTransaction(props.network, props.stakeEvent.mainTxId), '_blank')}
                         />  
                 </Row>
                 <Gap size={'small'}/>
@@ -51,9 +50,11 @@ function PendingTransactionView(props: confirmationProps&confirmationDispatch) {
     );
 }
 
-function SuccessfulTransactionView(props: confirmationProps&confirmationDispatch) {
+function SuccessfulTransactionView(props: ConfirmationProps&ConfirmationDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
+    const history = useHistory();
+    console.log('PROPSA REA ",', props)
     
     return (
         <>
@@ -74,7 +75,7 @@ function SuccessfulTransactionView(props: confirmationProps&confirmationDispatch
                 </Row>
                 <Row withPadding centered>
                     <ThemedLink text={Utils.shorten(props.stakeEvent.mainTxId)}
-                        onClick={() => window.open(Utils.linkForTransaction(props.network, props.transactionId!))}
+                        onClick={() => window.open(Utils.linkForTransaction(props.network, props.stakeEvent.mainTxId))}
                     /> 
                 </Row> 
             <Gap/>
@@ -82,15 +83,14 @@ function SuccessfulTransactionView(props: confirmationProps&confirmationDispatch
                 <ThemedButton
                     highlight={true}
                     text={`Stake More`}
-                    onClick={()=>{
-                        props.refreshStaking(props)}}
+                    onClick={() => history.replace(!props.stakeEvent ? `/` : `/info/${props.stakeEvent.contractAddress}`)}
                     textStyle={styles.btnText}/>
             </Row>
         </>
     );
 }
 
-function FailedTransactionView(props: confirmationProps&confirmationDispatch) {    
+function FailedTransactionView(props: ConfirmationProps&ConfirmationDispatch) {    
     return (
         <>
             <Gap/>
@@ -109,7 +109,7 @@ function FailedTransactionView(props: confirmationProps&confirmationDispatch) {
                 </Row>
                 <Row withPadding centered>
                     <ThemedLink text={Utils.shorten(props.stakeEvent.mainTxId)}
-                        onClick={() => window.open(Utils.linkForTransaction(props.network, props.transactionId!))}
+                        onClick={() => window.open(Utils.linkForTransaction(props.network, props.stakeEvent.mainTxId))}
                     /> 
                 </Row> 
             <Gap/>
@@ -117,19 +117,21 @@ function FailedTransactionView(props: confirmationProps&confirmationDispatch) {
     );
 }
 
-function ConfirmationComponent(props: confirmationProps&confirmationDispatch) {
+function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const history = useHistory();
+    const transactionStatus = props.stakeEvent.transactionStatus;
+    const {refreshStaking} = props;
     
     useEffect(() => {
-        if(props.stakeEvent && props.stakeEvent?.transactionStatus === 'pending'){
+        if (transactionStatus === 'pending'){
             const interval = setInterval(async () => {
-                await props.refreshStaking(props)
+                await refreshStaking(props)
               }, 15000);
-              return () => clearInterval(interval);
+            return () => clearInterval(interval);
         }
-      }, []);
+      }, [transactionStatus, refreshStaking]);
 
     let transaction = props.stakeEvent;
 
@@ -170,7 +172,9 @@ function ConfirmationComponent(props: confirmationProps&confirmationDispatch) {
             {fatalError}
             {mainPart}
             <Row withPadding centered>
-                <ThemedLink text={'Go back'} onClick={() => history.replace(!props.stakeEvent ? `/` : `/info/${props.stakeEvent.contractAddress}`)} />  
+                <ThemedLink text={'Go back'}
+                    onClick={() => history.replace(!props.stakeEvent ? `/` : `/info/${props.stakeEvent.contractAddress}`)}
+                />  
             </Row>
         </Page>
     );

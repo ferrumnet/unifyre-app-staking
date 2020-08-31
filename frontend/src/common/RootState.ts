@@ -17,7 +17,6 @@ export interface DashboardProps {
 export interface StakeTokenState {
     error?: string;
     amount: string;
-    transactionId?: string,
     showConfirmation?: boolean
 }
 

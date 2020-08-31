@@ -59,7 +59,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onContractSelected: (history, address,withdraw) => {
         dispatch(addAction(StakingAppServiceActions.CONTRACT_SELECTED, {address}));
         if(withdraw){
-            history.push(`/unstake/:${address}`);
+            history.push(`/unstake/${address}`);
         }else{
             history.push(`/stake/${address}`);
         }
