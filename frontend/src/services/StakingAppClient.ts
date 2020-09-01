@@ -28,6 +28,11 @@ export const StakingAppServiceActions = {
 
 const Actions = StakingAppServiceActions;
 
+function openUnifyre() {
+    const w = window.open('https://app.unifyre.io', '_blank');
+    setTimeout(() => { if (w) { w.close(); } }, 4000);
+}
+
 export class StakingAppClient implements Injectable {
     private jwtToken: string = '';
     constructor(
@@ -146,6 +151,7 @@ export class StakingAppClient implements Injectable {
             if (!requestId) {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not send a sign request.' }));
             }
+            openUnifyre();
             if (!stakeEvent) {
                 const response = await this.client.getSendTransactionResponse(requestId);
                 if (response.rejected) {

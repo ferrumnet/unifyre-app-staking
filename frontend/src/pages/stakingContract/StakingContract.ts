@@ -6,7 +6,6 @@ import { addAction } from "../../common/Actions";
 import { StakingAppServiceActions } from "../../services/StakingAppClient";
 import { History } from 'history';
 import { Big } from 'big.js';
-import { calculateReward } from "../../common/RewardCalculator";
 
 export interface StakingContractProps {
     balance: string;
@@ -23,6 +22,7 @@ export interface StakingContractProps {
     maturityProgress: number;
     unstakeRewardsNow: string;
     unstakeRewardsMaturity: string;
+    filled: boolean;
 }
 
 export interface StakingContractDispatch {
@@ -36,6 +36,8 @@ function mapStateToProps(state: RootState): StakingContractProps {
     const contract = state.data.stakingData.selectedContract || {} as any as StakingApp;
     const rewards = Utils.stakingRewards(contract);
     const stakeOf = state?.data?.stakingData?.userStake || {} as any as UserStake;
+    const totB = new Big(contract.stakedTotal || '0');
+    const capB = new Big(contract.stakingCap || '0');
     return {
         balance: address.balance,
         symbol: address.symbol,
@@ -43,7 +45,8 @@ function mapStateToProps(state: RootState): StakingContractProps {
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         state: Utils.stakingState(contract),
         userStake: stakeOf,
-        stakeCompletionRate: Number(new Big(contract.stakedTotal || '0').times(new Big(100)).div(new Big(contract.stakingCap || '1')).toFixed()),
+        stakeCompletionRate: capB.gt(new Big(0)) ?
+            Number(totB.times(new Big(100)).div(capB).toFixed()) : 0,
         remaining: formatter.format(new Big(contract.stakingCap || '0').minus(new Big(contract.stakedTotal || '0')).toFixed(0), true)!,
         rewardPercent: formatter.format(rewards.maturityAnnual, true) || '0',
         earlyWithdrawPercent: formatter.format(rewards.earlyWithdrawAnnual, true) || '0',
@@ -52,6 +55,7 @@ function mapStateToProps(state: RootState): StakingContractProps {
             (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
         unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
         unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
+        filled: capB.minus(totB).lte(new Big(0)),
     };
 }
 

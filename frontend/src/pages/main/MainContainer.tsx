@@ -1,8 +1,8 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, ThemedButton
+    Page,PageTopPart,  Row, ThemedText, Gap,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { Main, MainDispatch, MainProps } from './Main';
@@ -54,7 +54,7 @@ function MainComponent(props: MainProps&MainDispatch) {
     return (
         <Page>
             <PageTopPart>
-                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`Staking`}</ThemedText.H2></Row>
+                <Row centered noMarginTop><ThemedText.H2 styles={{...styles.stakingInfoHeader}}>{`${props.symbol} Staking`}</ThemedText.H2></Row>
                 <div style={{...styles.divider}}></div>
             </PageTopPart>
             <Gap size={'small'}/>

@@ -147,8 +147,11 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                         <Row withPadding>
                             <ThemedButton
                                 highlight={true}
-                                text={props.userStake?.amountInStake === '0' ? `Start Winning` : `Stake More ${symbol}`}
+                                text={
+                                    props.filled ? 'Filled' :
+                                        props.userStake?.amountInStake === '0' ? `Start Winning` : `Stake More ${symbol}`}
                                 onClick={() => props.onContractSelected(history,props.contract.contractAddress,false)}
+                                disabled={props.filled}
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
                         </Row>
@@ -159,7 +162,6 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
             </>
     )
 }
-
 
 function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
     const theme = useContext(ThemeContext);
