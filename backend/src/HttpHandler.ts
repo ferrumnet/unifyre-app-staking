@@ -64,6 +64,9 @@ export class HttpHandler implements LambdaHttpHandler {
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.getStakingEventsForUser(userId!, req);
                     break;
+                case 'stakeEventProcessTransactions':
+                    body = await this.stakeEventProcessTransactions(req);
+                    break;
                 case 'stakeTokenSignAndSend':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.stakeTokenSignAndSend(req);
@@ -71,6 +74,7 @@ export class HttpHandler implements LambdaHttpHandler {
                 case 'updateStakingEvents':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.updateStakingEvents(req);
+                    break;
                 case 'unstakeTokenSignAndSend':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.unstakeTokenSignAndSend(req);
@@ -142,17 +146,29 @@ export class HttpHandler implements LambdaHttpHandler {
     }
 
     async getStakingEventsForUser(userId: string, req: JsonRpcRequest) {
-        return await this.userSvc.getUserStakingEvents(userId);
+        const {currency} = req.data;
+        ValidationUtils.isTrue(!!currency, '"currency" must be provided');
+        return await this.userSvc.getUserStakingEvents(userId, currency);
     }
 
-    async stakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
-        const {amount, network, contractAddress, userAddress} = req.data;
+    async stakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string, stakeEvent?: StakeEvent}> {
+        const {token, amount, network, contractAddress, userAddress} = req.data;
+        ValidationUtils.isTrue(!!token, '"token" must be provided');
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
-        const requestId = await this.userSvc.stakeTokenSignAndSend(network, contractAddress, userAddress, amount);
-        return {requestId};
+        const {requestId, stakeEvent} = await this.userSvc.stakeTokenSignAndSend(token, network, contractAddress, userAddress, amount);
+        return {requestId, stakeEvent};
+    }
+
+    async stakeEventProcessTransactions(req: JsonRpcRequest): Promise<{stakeEvent: StakeEvent}> {
+        const {token, amount, eventType, contractAddress, txIds} = req.data;
+        ValidationUtils.isTrue(!!token, '"token" must be provided');
+        ValidationUtils.isTrue(!!amount, '"amount" must be provided');
+        const stakeEvent = await this.userSvc.stakeEventProcessTransactions(token, eventType, contractAddress,
+            amount, txIds);
+        return {stakeEvent};
     }
 
     async updateStakingEvents(req: JsonRpcRequest): Promise<StakeEvent[]> {

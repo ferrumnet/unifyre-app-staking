@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../unifyre-extension-sdk"
+		},
+		{
+			"path": "../../unifyre-web-components"
 		}
 	],
 	"settings": {}

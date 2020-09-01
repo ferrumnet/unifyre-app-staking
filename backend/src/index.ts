@@ -17,7 +17,7 @@ import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 
 const global = { init: false };
-const STAKING_APP_ID = 'STAKING_APP';
+const STAKING_APP_ID = 'STAKING';
 
 async function init() {
     if (global.init) {
@@ -82,7 +82,6 @@ export class stakingAppModule implements Module {
         //   c.get(LoggerFactory),
         // ));
 
-
         // This will register sdk modules. Good for client-side, for server-side we also need the next
         // step
         await container.registerModule(new ClientModule(stakingAppConfig.backend, STAKING_APP_ID));
@@ -96,7 +95,6 @@ export class stakingAppModule implements Module {
             const jsonKey = stakingAppConfig.signingKey!;
             signingKeyHex = await container.get<KmsCryptor>(KmsCryptor).decryptToHex(jsonKey);
         }
-
 
         // Note: we register UnifyreBackendProxyModule for the backend applications
         // this will ensure that the ExtensionClient does not cache the token between different

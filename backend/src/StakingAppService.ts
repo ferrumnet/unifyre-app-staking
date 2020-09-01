@@ -41,8 +41,15 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     async getStakingsForToken(currency: string): Promise<StakingApp[]> {
-        const apps = await this.stakingModel?.find({currency}).exec() || [];
+        this.verifyInit();
+        const apps = await this.stakingModel!.find({currency}).exec() || [];
         return apps.map(a => a.toJSON());
+    }
+
+    async getStaking(contractAddress: string): Promise<StakingApp|undefined> {
+        this.verifyInit();
+        const apps = await this.stakingModel!.findOne({contractAddress}).exec();
+        return apps?.toJSON();
     }
 
     async getStakingContractForUser(
@@ -65,10 +72,10 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return [userStake, stakingContract, stakeEvents];
     }
 
-    async getUserStakingEvents(userId: string):
+    async getUserStakingEvents(userId: string, currency: string):
         Promise<StakeEvent[]> {
         // Get all user stakeEvents
-        const stakeEvents = await this.userStakeEvents(userId);
+        const stakeEvents = await this.userStakeEvents(userId, currency);
         return stakeEvents;
     }
 
@@ -81,7 +88,9 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     async stakeTokenSignAndSend(
-            network: Network, contractAddress: string, userAddress: string, amount: string): Promise<string> {
+            token: string,
+            network: Network, contractAddress: string, userAddress: string, amount: string):
+            Promise<{ requestId: string, stakeEvent?: StakeEvent }> {
         const stakingContract = await this.contract.contractInfo(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         const txs = await this.contract.checkAllowanceAndStake(
@@ -90,29 +99,68 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             amount
         );
         const client = this.uniClientFac();
+        await client.signInWithToken(token);
         const requestId = await client.sendTransactionAsync(network, txs);
-        const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
-        if (!!response) {
-            const userProfile = client.getUserProfile();
-            const txIds = response!.response.map(r => r.transactionId);
-            ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
-            const mainTxId = txIds[txIds.length - 1];
-            txIds.pop();
-            console.log(response,'helloooooooo');
-            
-            await this.registerOrUpdateUserStake(
-                mainTxId,
-                txIds,
-                stakingContract,
-                userAddress,
-                userProfile.userId,
-                userProfile.email || '',
-                amount, 
-            );
-            // TODO: Process response and save transaction IDs
-        }
-        return requestId;
+        // Disabling the response for Lambda. AWS API kill the connection after a few seconds
+        // const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
+        // if (!!response) {
+        //     ValidationUtils.isTrue(!response!.rejected, 'Request rejected: ' + response!.reason || '');
+        //     const txIds = response!.response.map(r => r.transactionId);
+        //     ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
+        //     const mainTxId = txIds[txIds.length - 1];
+        //     txIds.pop();
+        //     const userProfile = client.getUserProfile();
+        //     const stakeEvent = await this.processTransaction(
+        //         'stake', mainTxId, txIds, stakingContract, userAddress,
+        //         amount, userProfile.userId, userProfile.email || '');
+        //     return {requestId, stakeEvent};
+        // }
+        return {requestId};
     };
+
+    async stakeEventProcessTransactions(token: string,
+        eventType: 'stake'|'unstake', contractAddress: string, amount: string, txIds: string[], ) {
+        const client = this.uniClientFac();
+        await client.signInWithToken(token);
+        const userProfile = client.getUserProfile();
+        const addr = userProfile.accountGroups[0]?.addresses[0];
+        ValidationUtils.isTrue(!!txIds && !!txIds.length, 'txids must be provided');
+        ValidationUtils.isTrue(!!addr, 'Error accessing unifyre. Cannot access user address');
+        const stakingContract = (await this.getStaking(contractAddress))!;
+        const mainTxId = txIds.pop()!;
+        return await this.processTransaction(
+            eventType,
+            mainTxId,
+            txIds,
+            stakingContract,
+            addr.address,
+            amount,
+            userProfile.userId,
+            userProfile.email || '',
+        )
+    }
+
+    private async processTransaction(
+        eventType: 'stake' | 'unstake',
+        mainTxId: string,
+        allocationTxIds: string[],
+        stakingContract: StakingApp,
+        userAddress: string,
+        amount: string,
+        userId: string,
+        email: string,
+        ) {
+        return await this.registerOrUpdateUserStake(
+            eventType,
+            mainTxId,
+            allocationTxIds,
+            stakingContract,
+            userAddress,
+            userId,
+            email || '',
+            amount, 
+        );
+    }
 
     async unstakeTokenSignAndSend(
             network: Network, contractAddress: string, userAddress: string, amount: string): Promise<string> {
@@ -134,6 +182,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             const mainTxId = txIds[txIds.length - 1];
             txIds.pop();
             await this.registerOrUpdateUserStake(
+                'unstake',
                 mainTxId,
                 txIds,
                 stakingContract,
@@ -168,6 +217,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     private async registerOrUpdateUserStake(
+        eventType: 'stake' | 'unstake',
         mainTxId: string,
         approveTxIds: string[],
         contrat: StakingApp,
@@ -189,6 +239,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             return this.updateStakeEvent(upUserStake);
         } else {
             let stakeEvent = {
+                createdAt: Date.now(),
+                type: eventType,
                 version: 0,
                 network: network,
                 contractAddress: contrat.contractAddress,
@@ -253,15 +305,9 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return stakes.map(s => s.toJSON());
     }
 
-    private async userStakeEvents(userId: string) {
+    private async userStakeEvents(userId: string, currency: string) {
         this.verifyInit();
-        const stakes = await this.stakeEventModel!.find({userId}).exec();
-        return stakes.map(s => s.toJSON());
-    }
-
-    private async userStakes(userId: string) {
-        this.verifyInit();
-        const stakes = await this.stakeEventModel!.find({userId}).exec();
+        const stakes = await this.stakeEventModel!.find({'$and': [{userId}, {currency}]}).exec();
         return stakes.map(s => s.toJSON());
     }
 
