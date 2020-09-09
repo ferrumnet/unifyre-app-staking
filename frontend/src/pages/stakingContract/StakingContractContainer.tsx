@@ -49,7 +49,7 @@ function MoreStakingDetails(props: {contract: StakingApp}) {
         <Row withPadding>
             <ThemedText.P>+ Maturity rewards will usually be MORE than the advertised number.
                 This is because any rewards left due to early withrawals will be distributed to the 
-                people waited until maturity. By staying until maturity you will be usually pleasently surprised.
+                people who waited until maturity. By staying until maturity you will be usually pleasantly surprised.
             </ThemedText.P>
         </Row>
         </>

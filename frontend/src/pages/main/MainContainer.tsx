@@ -26,8 +26,9 @@ function MainComponent(props: MainProps&MainDispatch) {
             <Gap size={'small'}/>
             {
                 props.stakeEvents.length > 0 &&
-                    props.stakeEvents.map(e => (
+                    props.stakeEvents.map((e, idx) => (
                         <Transactions
+                        key={idx}
                         type={'stake'}
                         amount={e.amountStaked}
                         symbol={e.symbol}

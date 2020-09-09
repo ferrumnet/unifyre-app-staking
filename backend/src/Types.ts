@@ -4,6 +4,7 @@ import { MongooseConfig } from "aws-lambda-helper";
 export interface StakingApp {
     network: Network;
     currency: string;
+    groupId: string;
     symbol: string;
     contractAddress: string;
     name: string;
@@ -20,6 +21,7 @@ export interface StakingApp {
     stakingEnds: number;
     logo?: string;
     color?: string;
+    backgroundImage?: string;
 }
 
 export interface StakeEvent {

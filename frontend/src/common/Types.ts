@@ -2,10 +2,11 @@ import { Network } from "ferrum-plumbing";
 
 export interface StakingApp {
     network: Network;
-    name: string;
     currency: string;
+    groupId: string;
     symbol: string;
     contractAddress: string;
+    name: string;
     tokenAddress: string;
     stakedBalance: string;
     rewardBalance: string;
@@ -20,6 +21,7 @@ export interface StakingApp {
     stakedAmount?: string;
     logo?: string;
     color?: string;
+    backgroundImage?: string;
 }
 
 export interface StakeEvent {

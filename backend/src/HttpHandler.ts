@@ -124,11 +124,12 @@ export class HttpHandler implements LambdaHttpHandler {
     }
 
     async adminSaveStakingContactInfo(req: JsonRpcRequest) {
-        const {network, contractAddress, color, logo, adminSecret} = req.data;
+        const {network, contractAddress, color, logo, backgroundImage, groupId,
+            adminSecret} = req.data;
         ValidationUtils.isTrue(adminSecret === this.adminSecret, 'Not authorized');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
-        return await this.userSvc.saveStakeInfo(network, contractAddress, color, logo)
+        return await this.userSvc.saveStakeInfo(network, contractAddress, groupId, color, logo, backgroundImage)
     }
 
     async getStakingsForToken(req: JsonRpcRequest) {

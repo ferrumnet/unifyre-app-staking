@@ -27,7 +27,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
     switch (state) {
         case 'stake':
             btn = (
-                <a style={styles.rewards}  onClick={() => props.onStakeNow()}>
+                <a  style={styles.rewards}  onClick={() => props.onStakeNow()}>
                     Stake Now
                 </a>
             );
@@ -50,10 +50,13 @@ export const CategoryBtn = (props:categoryBtnProps) => {
         <StakeCompletionProgress thin={true} completion={Utils.stakeProgress(props.staking)} />
         </>
     ) : undefined;
+    const backgroundStyle = props.staking.backgroundImage ? {...styles.containerBackgroundImage,
+        backgroundImage: `url("${props.staking.backgroundImage}")`} : {};
     return (
         <Row withPadding noMarginTop>
             <div style={
-                    Object.assign(styles.Container, staking.color ? { backgroundColor: staking.color } : {})}
+                    Object.assign({...styles.Container}, staking.color ? { backgroundColor: staking.color, }
+                        : {}, backgroundStyle)}
                     className={`${expand ? 'container' : 'collapsed'}`}
             >
                 <div style={styles.btnContainer}>
@@ -89,7 +92,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Annual yield
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {Utils.stakingRewards(props.staking).maturityMaxAmount}
+                                {rewards.maturityAnnual} %
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
@@ -97,7 +100,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Early withdraw
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {Utils.stakingRewards(props.staking).earlyWithdrawAnnual}
+                                {rewards.earlyWithdrawAnnual}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
@@ -105,15 +108,15 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Size
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {Utils.ellipsis(props.staking.stakingCap, 11)}
+                                {Utils.ellipsis(props.staking.stakingCap, 11)} {props.staking.symbol}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
                             <div style={{"width":'50%','textAlign':'start',fontSize: '13px'}}>
-                                Start Date
+                                Staking closes
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {dataFormat(props.staking.stakingStarts)}
+                                {dataFormat(props.staking.stakingEnds)}
                             </div>
                         </div>
                     </>
@@ -133,6 +136,11 @@ const themedStyles = (theme) => ({
         width: '100%',
         padding: '8px',
         marginTop: '15px'
+    },
+    containerBackgroundImage: {
+        backgroundImage: '',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
     },
     moreInfo: {
         display: 'flex',
