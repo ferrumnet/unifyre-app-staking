@@ -7,6 +7,7 @@ import {ThemeContext, Theme} from 'unifyre-react-helper';
 import {formatter,dataFormat,Utils} from '../common/Utils';
 import { StakingApp } from "./../common/Types";
 import { StakeCompletionProgress } from './ProgressBar';
+import moment from 'moment';
 
 interface categoryBtnProps {
     staking: StakingApp,
@@ -116,7 +117,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Staking closes
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {dataFormat(props.staking.stakingEnds)}
+                                {moment(props.staking.stakingEnds * 1000).fromNow()}
                             </div>
                         </div>
                     </>

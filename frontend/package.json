@@ -43,7 +43,13 @@
     "typescript": "~3.7.2",
     "unifyre-extension-sdk": "git+https://github.com/ferrumnet/unifyre-extension-sdk.git",
     "unifyre-react-helper": "git+https://github.com/ferrumnet/unifyre-react-helper.git",
-    "unifyre-web-components": "git+https://github.com/ferrumnet/unifyre-web-components.git"
+    "unifyre-web-components": "git+https://github.com/ferrumnet/unifyre-web-components.git",
+    "web3": "^1.2.11",
+    "got": "^11.3.0",
+    "swarm-js": "^0.1.40"
+  },
+  "resolutions": {
+    "got": "^11.3.0"
   },
   "scripts": {
     "start": "react-app-rewired start react-scripts start",

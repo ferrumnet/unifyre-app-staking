@@ -6,6 +6,8 @@ import { StakingAppClient, StakingAppServiceActions } from "../../services/Staki
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
 import {Utils} from '../../common/Utils';
+import { ValidationUtils } from "ferrum-plumbing";
+import { Big } from 'big.js';
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -50,6 +52,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onStakeToken: async (history, props) => {
         try{
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeToken' }));
+            ValidationUtils.isTrue(
+                new Big(props.amount || '0').gte(new Big(props.contract.minContribution || '0')),
+                `Minimum contribution is ${props.contract.minContribution} ${props.contract.symbol}`);
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
             const data = await client.stakeSignAndSend(
@@ -64,7 +69,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);
-            dispatch(addAction(StakingAppServiceActions.STAKING_FAILED, { error: e.toString() }));
+            dispatch(addAction(StakingAppServiceActions.STAKING_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'stakeToken' }));
         }
