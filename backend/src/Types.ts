@@ -19,6 +19,7 @@ export interface StakingApp {
     withdrawEnds: number;
     stakingStarts: number;
     stakingEnds: number;
+    minContribution?: string;
     logo?: string;
     color?: string;
     backgroundImage?: string;

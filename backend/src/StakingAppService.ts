@@ -34,12 +34,13 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
     
     async saveStakeInfo(network: string, contractAddress: string,
-        groupId: string, color?: string, logo?: string, backgroundImage?: string): Promise<StakingApp> {
+        groupId: string, color?: string, logo?: string, backgroundImage?: string,
+        minContribution?: string): Promise<StakingApp> {
         let response = await this.contract.contractInfo(network, contractAddress.toLowerCase());
         console.log('Got contract info to save', response); 
         ValidationUtils.isTrue(!!response && !!response.currency, 'Staking contract not found: ' + contractAddress)
         return await this.saveStakingApp({...response,
-            color, logo, backgroundImage, groupId,
+            color, logo, backgroundImage, groupId, minContribution,
         });
     }
 
