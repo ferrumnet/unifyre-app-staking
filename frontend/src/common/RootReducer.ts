@@ -9,6 +9,7 @@ import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
+import { Continuation } from "../pages/continuation/ContinuationContainer";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -69,7 +70,7 @@ const ui = combineReducers({
     dashboard: Dashboard.reduce,
     stakeToken: StakeToken.reduce,
     unstakeToken: UnstakeToken.reduce,
-    confirmationToken: ConfirmTxn.reduce
+    continuation: ConfirmTxn.reduce,
 });
 
 export const rootReducer = combineReducers({ data, ui });

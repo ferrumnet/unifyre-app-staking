@@ -4,6 +4,8 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, DashboardProps } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient } from "../../services/StakingAppClient";
+import { BackendMode } from "../../common/Utils";
+import { ContinuationDispatch } from "../../components/Continutaion";
 
 const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
@@ -12,7 +14,7 @@ const DashboardActions = {
 
 const Actions = DashboardActions;
 
-export interface DashboardDispatch {
+export interface DashboardDispatch extends ContinuationDispatch {
     onLoad: () => Promise<void>;
  }
 
@@ -27,12 +29,14 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
-            const wyre = inject<StakingAppClient>(StakingAppClient);
-            const userProfile = await wyre.signInToServer(dispatch);
-            if (!!userProfile) {
-                dispatch(addAction(Actions.INIT_SUCCEED, {}));
-            } else {
-                dispatch(addAction(Actions.INIT_FAILED, { error: intl('fatal-error-details') }));
+            const client = inject<StakingAppClient>(StakingAppClient);
+            if (BackendMode.mode === 'unifyre') {
+                const userProfile = await client.signInToServer(dispatch);
+                if (!!userProfile) {
+                    dispatch(addAction(Actions.INIT_SUCCEED, {}));
+                } else {
+                    dispatch(addAction(Actions.INIT_FAILED, { error: intl('fatal-error-details') }));
+                }
             }
         } catch (e) {
             console.error('Dashboard.mapDispatchToProps', e);
@@ -40,7 +44,12 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
-    }
+    },
+    onContinuation: async (history, requestId, page, payload) => {
+        const client = inject<StakingAppClient>(StakingAppClient);
+        await client.processRequest(dispatch, requestId, page as any, payload);
+        history.replace('/continuation');
+    },
 } as DashboardDispatch);
 
 const defaultStakingCreateState = {

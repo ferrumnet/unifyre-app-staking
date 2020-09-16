@@ -31,8 +31,14 @@ export interface StakingDataState {
     userStake?: UserStake;
 }
 
+export interface ContinuationState {
+    action: 'stake' | 'unstake';
+    selectedStakeEvent?: string;
+}
+
 export interface RootState {
     data : {
+        connection: { conneted: boolean, error?: string }
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
         stakingData: StakingDataState,
@@ -44,5 +50,6 @@ export interface RootState {
         dashboard: DashboardProps,
         stakeToken: StakeTokenState,
         unstakeToken: StakeTokenState,
+        continuation: ContinuationState,
     }
 }

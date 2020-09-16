@@ -34,9 +34,10 @@ function openUnifyre() {
 }
 
 export class StakingAppClient implements Injectable {
-    private jwtToken: string = '';
+    protected jwtToken: string = '';
+    private token: string = '';
     constructor(
-        private client: UnifyreExtensionKitClient,
+        protected client: UnifyreExtensionKitClient,
     ) { }
 
     __name__() { return 'StakingAppClient'; }
@@ -44,6 +45,7 @@ export class StakingAppClient implements Injectable {
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
         const token = this.getToken(dispatch);
         if (!token) { return; }
+        this.token = token!;
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
             await this.client.signInWithToken(token);
@@ -55,24 +57,28 @@ export class StakingAppClient implements Injectable {
                 return;
             }
             this.jwtToken = session;
-            let currency = userProfile.accountGroups[0].addresses[0].currency;
-            ValidationUtils.isTrue(!!currency, "Error getting user profile data. You may have no ERC-20 tokens activated in the wallet.");
-            const stakingData = await this.api({
-                    command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
-            ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
-            const events = await this.api({
-                command: 'getAllStakingEventsForUser', data: {currency}, params: [] } as JsonRpcRequest);
-            dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
-            dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
-            dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
-            dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
-            return userProfile;
+            return this.loadDataAfterSignIn(dispatch, userProfile);
         } catch (e) {
             console.error('Error sigining in', e);
             dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
         }
+    }
+
+    protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>, userProfile: AppUserProfile) {
+        let currency = userProfile.accountGroups[0].addresses[0].currency;
+        ValidationUtils.isTrue(!!currency, "Error getting user profile data. You may have no ERC-20 tokens activated in the wallet.");
+        const stakingData = await this.api({
+                command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
+        ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
+        const events = await this.api({
+            command: 'getAllStakingEventsForUser', data: {currency}, params: [] } as JsonRpcRequest);
+        dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
+        dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
+        dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
+        dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
+        return userProfile;
     }
 
     async selectStakingContract(dispatch: Dispatch<AnyAction>, network: string,
@@ -118,11 +124,18 @@ export class StakingAppClient implements Injectable {
         }
     }
 
-    private getToken(dispatch: Dispatch<AnyAction>) {
-        const storedToken = localStorage.getItem('SIGNIN_TOKEN');
-        const token = Utils.getQueryparam('token') || storedToken;
+    protected getToken(dispatch: Dispatch<AnyAction>) {
+        let storedToken: string|null = '';
+        try {
+            storedToken = localStorage.getItem('SIGNIN_TOKEN');
+        } catch (e) { console.error('Reading local storage', e); }
+        const token = Utils.getQueryparam('token') || this.token || storedToken;
         if (!!token && token !== storedToken) {
-            localStorage.setItem('SIGNIN_TOKEN', token!);
+            try {
+                localStorage.setItem('SIGNIN_TOKEN', token!);
+            } catch(e) {
+                console.error('Reading local storage', e);
+            }
         }
         if (!token) {
             dispatch(addAction(Actions.TOKEN_NOT_FOUND_ERROR, {}));
@@ -152,24 +165,8 @@ export class StakingAppClient implements Injectable {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not send a sign request.' }));
             }
             openUnifyre();
-            if (!stakeEvent) {
-                const response = await this.client.getSendTransactionResponse(requestId);
-                if (response.rejected) {
-                    throw new Error((response as any).reason || 'Request was rejected');
-                }
-                const txIds = (response.response || []).map(r => r.transactionId);  
-                const res = await this.api({
-                    command: 'stakeEventProcessTransactions', data: {token, amount, eventType: 'stake',
-                        contractAddress, txIds},
-                    params: []}as JsonRpcRequest) as {stakeEvent?: StakeEvent};
-                stakeEvent = res.stakeEvent;
-            }
-
-            ValidationUtils.isTrue(!!stakeEvent, 'Error while getting the stake transaction! Your stake might have been executed. Please check etherscan for a pending stake transation');
-            dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updatedEvents: [stakeEvent] }));
-            console.log('RETURING STAKE EVENT!', stakeEvent)
-            console.log('RETURING STAKE EVENT MAIN TX!', stakeEvent!.mainTxId)
-            return stakeEvent!.mainTxId;
+            await this.processRequest(dispatch, requestId);
+            return 'success';
         } catch (e) {
             console.error('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
@@ -178,7 +175,36 @@ export class StakingAppClient implements Injectable {
         }
     }
 
-    private async api(req: JsonRpcRequest): Promise<any> {
+    async processRequest(dispatch: Dispatch<AnyAction>, 
+        requestId: string) {
+        const token = this.getToken(dispatch);
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'processRequest' }));
+            const response = await this.client.getSendTransactionResponse(requestId);
+            if (response.rejected) {
+                throw new Error((response as any).reason || 'Request was rejected');
+            }
+            const txIds = (response.response || []).map(r => r.transactionId);
+            const payload = response.requestPayload;
+            const { amount, contractAddress, action } = payload;
+            const res = await this.api({
+                command: 'stakeEventProcessTransactions', data: {token, amount, eventType: 'stake',
+                    contractAddress, txIds},
+                params: []}as JsonRpcRequest) as {stakeEvent?: StakeEvent};
+            const stakeEvent = res.stakeEvent;
+            ValidationUtils.isTrue(!!stakeEvent, 'Error while getting the stake transaction! Your stake might have been executed. Please check etherscan for a pending stake transation');
+            dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updatedEvents: [stakeEvent] }));
+            dispatch(addAction(CommonActions.CONTINUATION_DATA_RECEIVED, {action,
+                mainTxId: stakeEvent!.mainTxId}));
+        } catch(e) {
+            console.error('Error signAndSend', e);
+            dispatch(addAction(CommonActions.CONTINUATION_DATA_FAILED, {message: 'Could send a sign request. ' + e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
+        }
+    }
+
+    protected async api(req: JsonRpcRequest): Promise<any> {
         try {
             const res = await fetch(CONFIG.poolDropBackend, {
                 method: 'POST',

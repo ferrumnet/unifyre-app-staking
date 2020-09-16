@@ -1,55 +1,65 @@
 import { AnyAction, Dispatch } from "redux";
 import { inject } from "../../common/IocModule";
-import { RootState, StakeTokenState } from "../../common/RootState";
+import { ContinuationState, RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
-import { StakeEvent, StakingApp } from "../../common/Types";
-import {Utils} from '../../common/Utils';
+import { StakeEvent } from "../../common/Types";
+import { Big } from 'big.js';
+import { CommonActions } from "../../common/Actions";
 
-export interface ConfirmationProps extends StakeTokenState {
-    network: string;
-    symbol: string;
-    userAddress: string;
-    stakeEvents: StakeEvent[];
-    stakeEvent: StakeEvent;
+export interface ConfirmationProps {
+    stakeEvent?: StakeEvent;
+    action: 'stake' | 'unstake';
+    amount: string;
 }
 
 export interface ConfirmationDispatch {
-    refreshStaking: (props: ConfirmationProps) => Promise<void>
+    onLoad: (requestId: string) => Promise<void>;
+    onRefresh: (props: ConfirmationProps) => Promise<void>
 }
 
 function mapStateToProps(state: RootState): ConfirmationProps {
-    const userProfile = state.data.userData?.profile;
-    const addr = userProfile?.accountGroups[0]?.addresses || {};
-    const address = addr[0] || {};
+    const event = (state.data.stakingData.stakeEvents || [])
+            .find(se => se.mainTxId === state.ui.continuation.selectedStakeEvent)!;
+    if (!event) {
+        return {
+            action: 'stake',
+            amount: '',
+        } as ConfirmationProps;
+    }
+    const amount = state.ui.continuation.action === 'unstake' ? 
+        new Big(event.amountUnstaked).add(new Big(event.amountUnstaked)).toFixed() :
+        event.amountStaked;
     return {
-        ...state.ui.stakeToken,
-        network: address.network,
-        symbol: address.symbol,
-        userAddress: address.address,
-        stakeEvent: Utils.selectedTransaction(state, (window.location.href.split('/')[4]) || '') || {} as any,
-        stakeEvents: state.data.stakingData.stakeEvents
+        stakeEvent: event,
+        action: state.ui.continuation.action,
+        amount,
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    refreshStaking: async (props:ConfirmationProps) => {
+    onLoad: async (requestId: string) => {
         const client = inject<StakingAppClient>(StakingAppClient);            
-        await client.refreshStakeEvents(dispatch, props.stakeEvents);
+        await client.processRequest(dispatch, requestId);
+    },
+    onRefresh: async (props:ConfirmationProps) => {
+        if (!props.stakeEvent) { return; }
+        const client = inject<StakingAppClient>(StakingAppClient);            
+        await client.refreshStakeEvents(dispatch, [props.stakeEvent!]);
     }
 } as ConfirmationDispatch);
 
 const defaultconfirmationState = {
-    amount: '0',
-    transactionId: '',
-    showConfirmation: false
-}
+    action: '' as any,
+} as ContinuationState;
 
-function reduce(state: StakeTokenState = defaultconfirmationState, action: AnyAction) {    
+function reduce(state: ContinuationState = defaultconfirmationState, action: AnyAction) {    
     switch(action.type) {
-        case StakingAppServiceActions.STAKING_FAILED:
+        case StakingAppServiceActions.STAKING_CONTACT_RECEIVED:
+            const {action: continuationAction, mainTxId} = action.payload;
+            return {...state, error: undefined, action: continuationAction,
+                selectedStakeEvent: mainTxId};
+        case CommonActions.CONTINUATION_DATA_FAILED:
             return {...state, error: action.payload.message};
-        case StakingAppServiceActions.STAKING_SUCCESS:
-            return {...state,transactionId: action.payload.transactionData[0],showConfirmation:!state.showConfirmation}
         default:
         return state;
     }

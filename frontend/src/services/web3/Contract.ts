@@ -1,7 +1,6 @@
 import { Injectable, LocalCache, ValidationUtils } from 'ferrum-plumbing';
 import Web3 from 'web3';
 import { StakingApp } from '../../common/Types';
-import { deployContrat } from './DeployContract';
 import FerrumJson from './resources/abi/FerrumToken.json'
 import FestakingJson from './resources/abi/Festaking-abi.json';
 import FestakingBytecode from './resources/abi/Festaking-bytecode.json';
@@ -168,7 +167,7 @@ export class DeployService implements Injectable {
             staking.withdrawEnds,
             tok.amountToRaw(staking.stakingCap),
           ];
-        return await deployContrat(
-            this.web3, FestakingJson, FestakingBytecode.object, constructorArgs);
+        // return await deployContrat(
+        //     this.web3, FestakingJson, FestakingBytecode.object, constructorArgs);
     }
 }

@@ -5,6 +5,9 @@ import { UserPreferenceService } from '../services/UserPreferenceService';
 import { Dispatch, AnyAction } from 'redux';
 import { StakingAppClient } from '../services/StakingAppClient';
 import { UnifyreExtensionKitClient, ClientModule } from 'unifyre-extension-sdk';
+import { BackendMode } from './Utils';
+import { Web3RetrofitModule } from 'unifyre-extension-web3-retrofit/dist/Web3RetrofitModule';
+import { StakingAppClientForWeb3 } from '../services/StakingAppClientForWeb3';
 
 class DummyStorage {}
 
@@ -33,8 +36,10 @@ const PROD_CONF = {
     isProd: true,
 } as Config;
 
+const DEFAULT_TOKEN_FOR_WEB3_MODE = 'RINKEBY:';
+
 const DEV_USES_LOCAL: boolean = true;
-const NODE_ENV = 'production';// process.env.NODE_ENV;
+const NODE_ENV = process.env.NODE_ENV;
 
 export const CONFIG = NODE_ENV === 'production' ? PROD_CONF :
     (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
@@ -50,8 +55,15 @@ export class IocModule {
         c.register(LoggerFactory, () => new LoggerFactory(n => new ConsoleLogger(n)));
         c.register('JsonStorage', () => new DummyStorage());
         await c.registerModule(new ClientModule(CONFIG.unifyreBackend, 'STAKING'));
-        c.registerSingleton(StakingAppClient, c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
-        c.registerSingleton(UserPreferenceService, c => new UserPreferenceService());
+        if (BackendMode.mode === 'unifyre') {
+            c.registerSingleton(StakingAppClient,
+                c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
+        } else {
+            await c.registerModule(new Web3RetrofitModule('STAKING', [DEFAULT_TOKEN_FOR_WEB3_MODE]));
+            c.registerSingleton(StakingAppClientForWeb3, c =>
+                new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
+        }
+        c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());
         IntlManager.instance.load([stringsEn], 'en-US');
         IocModule._container = c;
 

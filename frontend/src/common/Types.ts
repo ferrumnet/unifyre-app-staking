@@ -45,7 +45,6 @@ export interface StakeEvent {
   transactionStatus: 'timedout' | 'failed' | 'pending' | 'successful'
 }
 
-
 export interface UserStake {
     userId: string;
     network: string;

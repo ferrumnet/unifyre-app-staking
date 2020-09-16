@@ -13,8 +13,8 @@ export class UserPreferenceService implements Injectable {
     private pref: UserPreference = defaultUserPreference;
     constructor() {
         // Load
-        const strLoaded = localStorage.getItem(USER_PREFERENCE_STORAGE_KEY);
         try {
+            const strLoaded = localStorage.getItem(USER_PREFERENCE_STORAGE_KEY);
             if (strLoaded) {
                 this.pref = JSON.parse(strLoaded);
             }
@@ -29,7 +29,10 @@ export class UserPreferenceService implements Injectable {
     update(dispatch: Dispatch<AnyAction>, up: Partial<UserPreference>) {
         const userPreference = {...this.pref, ...up};
         this.pref = userPreference;
-        localStorage.setItem(USER_PREFERENCE_STORAGE_KEY, JSON.stringify(this.pref));
+        const perfJ = JSON.stringify(this.pref);
+        try {
+            localStorage.setItem(USER_PREFERENCE_STORAGE_KEY, perfJ);
+        } catch (e) { console.error('Error using localStorage ', e); }
         dispatch(addAction(UserPreferenceActions.USER_PREFERENCE_LOADED, { userPreference }));
     }
 

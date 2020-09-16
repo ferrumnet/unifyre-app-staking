@@ -19,6 +19,7 @@
     "@types/redux-logger": "^3.0.8",
     "big.js": "^5.2.2",
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
+    "got": "^11.3.0",
     "json-parse-better-errors": "^1.0.2",
     "moment": "^2.27.0",
     "rc-progress": "^3.0.0",
@@ -40,13 +41,13 @@
     "react-transition-group": "^4.4.1",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
+    "swarm-js": "^0.1.40",
     "typescript": "~3.7.2",
     "unifyre-extension-sdk": "git+https://github.com/ferrumnet/unifyre-extension-sdk.git",
+    "unifyre-extension-web3-retrofit": "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git",
     "unifyre-react-helper": "git+https://github.com/ferrumnet/unifyre-react-helper.git",
     "unifyre-web-components": "git+https://github.com/ferrumnet/unifyre-web-components.git",
-    "web3": "^1.2.11",
-    "got": "^11.3.0",
-    "swarm-js": "^0.1.40"
+    "web3": "^1.2.11"
   },
   "resolutions": {
     "got": "^11.3.0"

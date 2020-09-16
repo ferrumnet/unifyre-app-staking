@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import { Dashboard, DashboardDispatch } from './Dashboard';
 import { Switch, Route } from 'react-router-dom';
 import {
-    Page, Row, ThemedText, Gap,
+    Row, ThemedText, Gap,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
@@ -14,6 +14,8 @@ import { StakingContractContainer } from '../stakingContract/StakingContractCont
 import { StakeTokenContainer } from '../stakeToken/StakeTokenContainer';
 import { UnstakeTokenContainer } from '../unstakeToken/UnstakeTokenContainer';
 import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
+import { PageWrapper } from '../../components/PageWrapper';
+import { Utils } from '../../common/Utils';
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onLoad} = props;
     useEffect(() => {
@@ -39,7 +41,10 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         <StakingContractContainer />
                   </Route>
                   <Route path='/'>
-                        <MainContainer />
+                        {
+                          Utils.getQueryparam('continuation') ? 
+                            <ConfirmTxnContainer /> : <MainContainer />
+                        }
                   </Route>
               </Switch>
             </>
@@ -62,14 +67,14 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     );
 
     return (
-        <Page>
+        <PageWrapper>
             {testAlert}
             <Gap />
             <Gap />
             <Gap />
             <Gap />
             {fatalError}
-        </Page>
+        </PageWrapper>
     );
 }
 
