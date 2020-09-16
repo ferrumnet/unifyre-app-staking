@@ -1,7 +1,7 @@
 import { MongooseConnection } from "aws-lambda-helper";
 import { Connection, Model, Document } from "mongoose";
 import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
-import { UnifyreExtensionKitClient } from "unifyre-extension-sdk";
+import { CustomTransactionCallRequest, UnifyreExtensionKitClient } from "unifyre-extension-sdk";
 import { StakeEvent, StakingApp, UserStake } from "./Types";
 import { StakeEventModel, StakingAppModel } from "./MongoTypes";
 import { SmartContratClient } from "./SmartContractClient";
@@ -91,20 +91,29 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return updates.filter(Boolean).map(s => s!);
     }
 
-    async stakeTokenSignAndSend(
+    async stakeTokenSignAndSendGetTransactions(
             token: string,
             network: Network, contractAddress: string, userAddress: string, amount: string):
-            Promise<{ requestId: string, stakeEvent?: StakeEvent }> {
+            Promise<CustomTransactionCallRequest[]> {
         const stakingContract = await this.contract.contractInfo(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
-        const txs = await this.contract.checkAllowanceAndStake(
+        return await this.contract.checkAllowanceAndStake(
             stakingContract,
             userAddress,
             amount
         );
+    }
+
+    async stakeTokenSignAndSend(
+            token: string,
+            network: Network, contractAddress: string, userAddress: string, amount: string):
+            Promise<{ requestId: string, stakeEvent?: StakeEvent }> {
+        const txs = await this.stakeTokenSignAndSendGetTransactions(token, network,
+            contractAddress, userAddress, amount);
         const client = this.uniClientFac();
         await client.signInWithToken(token);
-        const requestId = await client.sendTransactionAsync(network, txs);
+        const payload = { network, userAddress, amount, contractAddress, action: 'stake' };
+        const requestId = await client.sendTransactionAsync(network, txs, payload);
         // Disabling the response for Lambda. AWS API kill the connection after a few seconds
         // const response = await undefinedOnTimeout(() => client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
         // if (!!response) {
@@ -126,7 +135,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         eventType: 'stake'|'unstake', contractAddress: string, amount: string, txIds: string[], ) {
         const client = this.uniClientFac();
         await client.signInWithToken(token);
-        const userProfile = client.getUserProfile();
+        const userProfile = await client.getUserProfile();
         const addr = userProfile.accountGroups[0]?.addresses[0];
         ValidationUtils.isTrue(!!txIds && !!txIds.length, 'txids must be provided');
         ValidationUtils.isTrue(!!addr, 'Error accessing unifyre. Cannot access user address');
@@ -166,37 +175,47 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         );
     }
 
-    async unstakeTokenSignAndSend(
-            network: Network, contractAddress: string, userAddress: string, amount: string): Promise<string> {
+    async unstakeTokenSignAndSendGetTransaction(
+            network: Network, contractAddress: string, userAddress: string, amount: string):
+            Promise<CustomTransactionCallRequest[]> {
         const stakingContract = await this.contract.contractInfo(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
-        const txs = await this.contract.unStake(
+        return this.contract.unStake(
             stakingContract,
             userAddress,
             amount
         );
+    }
+
+    async unstakeTokenSignAndSend(
+            network: Network, contractAddress: string, userAddress: string, amount: string):
+            Promise<{requestId: string}> {
+        const txs = await this.unstakeTokenSignAndSendGetTransaction(
+            network, contractAddress, userAddress, amount,
+        );
+        const payload = { network, userAddress, amount, contractAddress, action: 'unstake' };
         const client = this.uniClientFac();
-        const requestId = await client.sendTransactionAsync(network, txs);
-        const response = await undefinedOnTimeout(() =>
-            client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
-        if (!!response && !response.rejected) {
-            const userProfile = client.getUserProfile();
-            const txIds = response!.response.map(r => r.transactionId);
-            ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
-            const mainTxId = txIds[txIds.length - 1];
-            txIds.pop();
-            await this.registerOrUpdateUserStake(
-                'unstake',
-                mainTxId,
-                txIds,
-                stakingContract,
-                userAddress,
-                userProfile.userId,
-                userProfile.email || '',
-                amount, 
-            );
-        }
-        return requestId;
+        const requestId = await client.sendTransactionAsync(network, txs, payload);
+        // const response = await undefinedOnTimeout(() =>
+        //     client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
+        // if (!!response && !response.rejected) {
+        //     const userProfile = await client.getUserProfile();
+        //     const txIds = response!.response.map(r => r.transactionId);
+        //     ValidationUtils.isTrue(!!txIds.length, 'No transaction was returned from Unifyre');
+        //     const mainTxId = txIds[txIds.length - 1];
+        //     txIds.pop();
+        //     await this.registerOrUpdateUserStake(
+        //         'unstake',
+        //         mainTxId,
+        //         txIds,
+        //         stakingContract,
+        //         userAddress,
+        //         userProfile.userId,
+        //         userProfile.email || '',
+        //         amount, 
+        //     );
+        // }
+        return {requestId};
     };
 
     private async updateUserStake(

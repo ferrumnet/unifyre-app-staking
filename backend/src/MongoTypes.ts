@@ -14,6 +14,7 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     stakingCap: String,
     stakedTotal: String,
     totalReward: String,
+    earlyWithdrawReward: String,
     withdrawStarts: Number,
     withdrawEnds: Number,
     stakingStarts: Number,

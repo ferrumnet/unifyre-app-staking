@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../../unifyre-web-components"
+		},
+		{
+			"path": "../../unifyre-extension-web3-retrofit"
 		}
 	],
 	"settings": {}
