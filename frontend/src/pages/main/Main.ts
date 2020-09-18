@@ -20,6 +20,7 @@ export interface MainDispatch {
 
 function mapStateToProps(state: RootState): MainProps {
     const userProfile = state.data.userData?.profile;
+    console.log('USER PROF', userProfile)
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
     return {

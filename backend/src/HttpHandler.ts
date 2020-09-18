@@ -71,7 +71,8 @@ export class HttpHandler implements LambdaHttpHandler {
                     body = await this.getStakingEventsForUser(userId!, req);
                     break;
                 case 'stakeEventProcessTransactions':
-                    body = await this.stakeEventProcessTransactions(req);
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.stakeEventProcessTransactions(userId!, req);
                     break;
                 case 'stakeTokenSignAndSendGetTransaction':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
@@ -170,7 +171,6 @@ export class HttpHandler implements LambdaHttpHandler {
     async stakeTokenSignAndSendGetTransaction(req: JsonRpcRequest):
     Promise<CustomTransactionCallRequest[]> {
         const {token, amount, network, contractAddress, userAddress} = req.data;
-        ValidationUtils.isTrue(!!token, '"token" must be provided');
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
@@ -190,11 +190,13 @@ export class HttpHandler implements LambdaHttpHandler {
         return {requestId, stakeEvent};
     }
 
-    async stakeEventProcessTransactions(req: JsonRpcRequest): Promise<{stakeEvent: StakeEvent}> {
+    async stakeEventProcessTransactions(userId: string, req: JsonRpcRequest): Promise<{stakeEvent: StakeEvent}> {
         const {token, amount, eventType, contractAddress, txIds} = req.data;
-        ValidationUtils.isTrue(!!token, '"token" must be provided');
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
-        const stakeEvent = await this.userSvc.stakeEventProcessTransactions(token, eventType, contractAddress,
+        ValidationUtils.isTrue(!!eventType, '"eventType" must be provided');
+        ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
+        ValidationUtils.isTrue(!!txIds, '"txIds" must be provided');
+        const stakeEvent = await this.userSvc.stakeEventProcessTransactions(userId, token, eventType, contractAddress,
             amount, txIds);
         return {stakeEvent};
     }

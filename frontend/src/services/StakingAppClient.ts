@@ -66,25 +66,27 @@ export class StakingAppClient implements Injectable {
         }
     }
 
-    protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>, userProfile: AppUserProfile) {
-        let currency = userProfile.accountGroups[0].addresses[0].currency;
+    async loadStakingsForToken(dispatch: Dispatch<AnyAction>, currency: string) {
         ValidationUtils.isTrue(!!currency, "Error getting user profile data. You may have no ERC-20 tokens activated in the wallet.");
         const stakingData = await this.api({
                 command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
         ValidationUtils.isTrue(!!stakingData, 'Error loading staking dashboard');
+        dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
+    }
+
+    protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>, userProfile: AppUserProfile) {
+        let currency = userProfile.accountGroups[0].addresses[0].currency;
+        await this.loadStakingsForToken(dispatch, currency);
         const events = await this.api({
             command: 'getAllStakingEventsForUser', data: {currency}, params: [] } as JsonRpcRequest);
         dispatch(addAction(Actions.USER_STAKE_EVENTS_RECEIVED, { stakeEvents:events }));
         dispatch(addAction(Actions.AUTHENTICATION_COMPLETED, { }));
         dispatch(addAction(Actions.USER_DATA_RECEIVED, { userProfile }));
-        dispatch(addAction(Actions.STAKING_DATA_RECEIVED, { stakingData }));
         return userProfile;
     }
 
     async selectStakingContract(dispatch: Dispatch<AnyAction>, network: string,
             contractAddress: string, userAddress: string): Promise<[UserStake,{}]|undefined> {
-        const token = this.getToken(dispatch);
-        if (!token) { return; }
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'selectStakingContract' }));
             const res = await this.api({
@@ -151,7 +153,7 @@ export class StakingAppClient implements Injectable {
         contractAddress: string,
         userAddress: string,
         balance: string,
-        ) {
+        ): Promise<string|undefined> {
         try {
             ValidationUtils.isTrue(new Big(amount).gt(new Big('0')), 'Amount must be positive');
             ValidationUtils.isTrue(new Big(balance).gte(new Big(amount)), 'Not enough balance');
@@ -166,7 +168,7 @@ export class StakingAppClient implements Injectable {
             }
             openUnifyre();
             await this.processRequest(dispatch, requestId);
-            return 'success';
+            return 'success' as string;
         } catch (e) {
             console.error('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
@@ -185,7 +187,8 @@ export class StakingAppClient implements Injectable {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
             const txIds = (response.response || []).map(r => r.transactionId);
-            const payload = response.requestPayload;
+            const payload = response.requestPayload || {};
+            console.log('RESPONSED IS ', response)
             const { amount, contractAddress, action } = payload;
             const res = await this.api({
                 command: 'stakeEventProcessTransactions', data: {token, amount, eventType: 'stake',

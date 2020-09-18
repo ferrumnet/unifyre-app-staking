@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import { Dashboard, DashboardDispatch } from './Dashboard';
 import { Switch, Route } from 'react-router-dom';
 import {
-    Row, ThemedText, Gap,
+    Row, ThemedText, Gap, Page,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
@@ -27,6 +27,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         // Render the routes
         return (
             <>
+            <PageWrapper>
               <Switch>
                   <Route path='/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
@@ -40,6 +41,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   <Route path='/info/:contractAddress'>
                         <StakingContractContainer />
                   </Route>
+                  <Route path="/continuation">
+                    <ConfirmTxnContainer />
+                  </Route>
                   <Route path='/'>
                         {
                           Utils.getQueryparam('continuation') ? 
@@ -47,6 +51,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         }
                   </Route>
               </Switch>
+            </PageWrapper>
             </>
         );
     }
@@ -54,7 +59,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const fatalError = props.fatalError ? (
       <>
         <Row withPadding centered>
-          <ThemedText.H2 >{intl('fatal-error-heading')}</ThemedText.H2>
+          <ThemedText.H2 >{'Could not open the app'}</ThemedText.H2>
         </Row>
         <Row withPadding centered>
           <ThemedText.H3 >{props.fatalError}</ThemedText.H3>
@@ -67,14 +72,14 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     );
 
     return (
-        <PageWrapper>
+        <Page>
             {testAlert}
             <Gap />
             <Gap />
             <Gap />
             <Gap />
             {fatalError}
-        </PageWrapper>
+        </Page>
     );
 }
 

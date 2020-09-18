@@ -14,6 +14,7 @@ function DesktopPageWrapper(props: {children: any}) {
     ) : undefined;
     return (
         <Page>
+            {connect}
             {props.children}
         </Page>
     );
@@ -21,7 +22,7 @@ function DesktopPageWrapper(props: {children: any}) {
 
 export function PageWrapper(props: {children: any}) {
     if (Utils.platform() === 'desktop') {
-        <DesktopPageWrapper>{props.children}</DesktopPageWrapper>
+        return <DesktopPageWrapper>{props.children}</DesktopPageWrapper>
     }
 
     // For mobile

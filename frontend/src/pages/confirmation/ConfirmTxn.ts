@@ -6,7 +6,7 @@ import { StakeEvent } from "../../common/Types";
 import { Big } from 'big.js';
 import { CommonActions } from "../../common/Actions";
 
-export interface ConfirmationProps {
+export interface ConfirmationProps extends ContinuationState {
     stakeEvent?: StakeEvent;
     action: 'stake' | 'unstake';
     amount: string;
@@ -22,6 +22,7 @@ function mapStateToProps(state: RootState): ConfirmationProps {
             .find(se => se.mainTxId === state.ui.continuation.selectedStakeEvent)!;
     if (!event) {
         return {
+            ...state.ui.continuation,
             action: 'stake',
             amount: '',
         } as ConfirmationProps;
@@ -30,8 +31,8 @@ function mapStateToProps(state: RootState): ConfirmationProps {
         new Big(event.amountUnstaked).add(new Big(event.amountUnstaked)).toFixed() :
         event.amountStaked;
     return {
+        ...state.ui.continuation,
         stakeEvent: event,
-        action: state.ui.continuation.action,
         amount,
     };
 }
@@ -54,7 +55,7 @@ const defaultconfirmationState = {
 
 function reduce(state: ContinuationState = defaultconfirmationState, action: AnyAction) {    
     switch(action.type) {
-        case StakingAppServiceActions.STAKING_CONTACT_RECEIVED:
+        case CommonActions.CONTINUATION_DATA_RECEIVED:
             const {action: continuationAction, mainTxId} = action.payload;
             return {...state, error: undefined, action: continuationAction,
                 selectedStakeEvent: mainTxId};

@@ -65,7 +65,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                history.replace(`/confirm/${data}`);
+                history.replace(`/continuation`);
             }
         } catch (e) {
             console.error('StakeToken.mapDispatchToProps', e);

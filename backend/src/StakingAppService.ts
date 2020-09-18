@@ -131,14 +131,20 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return {requestId};
     };
 
-    async stakeEventProcessTransactions(token: string,
+    async stakeEventProcessTransactions(userId: string, token: string,
         eventType: 'stake'|'unstake', contractAddress: string, amount: string, txIds: string[], ) {
         const client = this.uniClientFac();
-        await client.signInWithToken(token);
-        const userProfile = await client.getUserProfile();
-        const addr = userProfile.accountGroups[0]?.addresses[0];
-        ValidationUtils.isTrue(!!txIds && !!txIds.length, 'txids must be provided');
-        ValidationUtils.isTrue(!!addr, 'Error accessing unifyre. Cannot access user address');
+        let email: string = '';
+        let address: string = userId;
+        if (token) {
+            await client.signInWithToken(token);
+            const userProfile = await client.getUserProfile();
+            email = userProfile.email || '';
+            const addr = userProfile.accountGroups[0]?.addresses[0];
+            ValidationUtils.isTrue(!!txIds && !!txIds.length, 'txids must be provided');
+            ValidationUtils.isTrue(!!addr, 'Error accessing unifyre. Cannot access user address');
+            address = addr.address;
+        }
         const stakingContract = (await this.getStaking(contractAddress))!;
         const mainTxId = txIds.pop()!;
         return await this.processTransaction(
@@ -146,10 +152,10 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             mainTxId,
             txIds,
             stakingContract,
-            addr.address,
+            address,
             amount,
-            userProfile.userId,
-            userProfile.email || '',
+            userId,
+            email,
         )
     }
 

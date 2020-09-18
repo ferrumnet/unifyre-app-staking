@@ -2,20 +2,17 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { AnyAction, Dispatch } from 'redux';
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
-import { addAction } from '../common/Actions';
+import { addAction, CommonActions } from '../common/Actions';
 import { inject } from '../common/IocModule';
-import { RootState } from '../common/RootState';
+import { RootState, Web3ConnectionState } from '../common/RootState';
 // @ts-ignore
 import { ThemedButton } from 'unifyre-web-components';
+import { StakingAppClient } from '../services/StakingAppClient';
 
 const Actions = {
-    CONNECTION_FAILED: 'CONNECTION_FAILED',
-    CONNECTION_SUCCEEDED: 'CONNECTION_SUCCEEDED',
 }
 
-interface ConnectProps {
-    connected: boolean;
-    error?: string;
+interface ConnectProps extends Web3ConnectionState {
 }
 
 interface ConnectDispatch {
@@ -23,7 +20,7 @@ interface ConnectDispatch {
 }
 
 function mapStateToProps(state: RootState): ConnectProps {
-    return { connected: state.data.connection.conneted };
+    return state.data.connection;
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
@@ -31,17 +28,20 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         const client = inject<UnifyreExtensionKitClient>(UnifyreExtensionKitClient);
         try {
             await client.signInWithToken('');
+            dispatch(addAction(CommonActions.CONNECTION_SUCCEEDED, {}));
+            const sc = inject<StakingAppClient>(StakingAppClient);
+            await sc.signInToServer(dispatch);
         } catch(e) {
-            dispatch(addAction(Actions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+            dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
         }
     }
 } as ConnectDispatch);
 
-export function connectButtonReduce(state: ConnectProps = { connected: false }, action: AnyAction) {
+export function connectButtonReduce(state: Web3ConnectionState = { connected: false }, action: AnyAction) {
     switch(action.type) {
-        case Actions.CONNECTION_SUCCEEDED:
+        case CommonActions.CONNECTION_SUCCEEDED:
             return { connected: true, error: undefined };
-        case Actions.CONNECTION_FAILED:
+        case CommonActions.CONNECTION_FAILED:
             return { connected: false, error: action.payload.message };
         default:
             return state;
@@ -49,8 +49,12 @@ export function connectButtonReduce(state: ConnectProps = { connected: false }, 
 }
 
 function ConnectButton(props: ConnectProps&ConnectDispatch) {
+    // TODO: Show error
     return (
-        <ThemedButton text='Connect' onPress={props.onConnect} />
+        <ThemedButton
+            text={props.connected ? 'Connected' : 'Connect'} 
+            disabled={props.connected}
+            onClick={props.onConnect} />
     );
 }
 

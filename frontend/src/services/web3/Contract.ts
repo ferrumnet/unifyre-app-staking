@@ -140,7 +140,6 @@ export class TokenContract extends ContractBase {
       const token = await this.tokenFactory.forToken(this.tokenContract!);
       const rawRewardAmount = token.amountToRaw(rewardAmount);
       const rawWithdrawableAmount = token.amountToRaw(withdrawableAmount);
-      console.log("ADD REWARD", {rawRewardAmount,rawWithdrawableAmount});
       await this.callContractWrapper(
         'ADD_REWARD',
         userAddress,

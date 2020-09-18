@@ -1,11 +1,10 @@
 import { AnyAction, Dispatch } from "redux";
-import { IocModule, inject } from "../../common/IocModule";
+import { IocModule, inject, DEFAULT_TOKEN_FOR_WEB3_MODE } from "../../common/IocModule";
 import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, DashboardProps } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { BackendMode } from "../../common/Utils";
-import { ContinuationDispatch } from "../../components/Continutaion";
 
 const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
@@ -14,7 +13,7 @@ const DashboardActions = {
 
 const Actions = DashboardActions;
 
-export interface DashboardDispatch extends ContinuationDispatch {
+export interface DashboardDispatch {
     onLoad: () => Promise<void>;
  }
 
@@ -37,6 +36,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 } else {
                     dispatch(addAction(Actions.INIT_FAILED, { error: intl('fatal-error-details') }));
                 }
+            } else {
+                await client.loadStakingsForToken(dispatch, DEFAULT_TOKEN_FOR_WEB3_MODE);
+                dispatch(addAction(Actions.INIT_SUCCEED, {}));
             }
         } catch (e) {
             console.error('Dashboard.mapDispatchToProps', e);
@@ -44,11 +46,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
-    },
-    onContinuation: async (history, requestId, page, payload) => {
-        const client = inject<StakingAppClient>(StakingAppClient);
-        await client.processRequest(dispatch, requestId, page as any, payload);
-        history.replace('/continuation');
     },
 } as DashboardDispatch);
 

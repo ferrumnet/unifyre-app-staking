@@ -18,6 +18,7 @@ interface Config {
 }
 
 const LOCAL_DEV_CONF = {
+    // unifyreBackend: 'http://localhost:9000/api/',
     unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
     poolDropBackend: 'http://localhost:8080',
     //poolDropBackend: 'http://da208211a392.ngrok.io',
@@ -36,7 +37,7 @@ const PROD_CONF = {
     isProd: true,
 } as Config;
 
-const DEFAULT_TOKEN_FOR_WEB3_MODE = 'RINKEBY:';
+export const DEFAULT_TOKEN_FOR_WEB3_MODE = process.env.STAKE_CURRENCY || 'RINKEBY:0x93698a057cec27508a9157a946e03e277b46fe56';
 
 const DEV_USES_LOCAL: boolean = true;
 const NODE_ENV = process.env.NODE_ENV;
@@ -60,7 +61,7 @@ export class IocModule {
                 c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
         } else {
             await c.registerModule(new Web3RetrofitModule('STAKING', [DEFAULT_TOKEN_FOR_WEB3_MODE]));
-            c.registerSingleton(StakingAppClientForWeb3, c =>
+            c.registerSingleton(StakingAppClient, c =>
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
         }
         c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());

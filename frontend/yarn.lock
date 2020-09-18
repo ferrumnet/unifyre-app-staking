@@ -11688,7 +11688,7 @@ unicode-property-aliases-ecmascript@^1.0.4:
 
 "unifyre-extension-web3-retrofit@git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git":
   version "1.0.0"
-  resolved "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git#3d07e08cb82505bd6c18c5cb009dae0307098c19"
+  resolved "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git#212694d9ac208bb51c8df023b27db25a59c6a59c"
   dependencies:
     big.js "^5.2.2"
     cross-fetch "^3.0.4"
@@ -11704,7 +11704,7 @@ unicode-property-aliases-ecmascript@^1.0.4:
 
 "unifyre-web-components@git+https://github.com/ferrumnet/unifyre-web-components.git":
   version "1.0.0"
-  resolved "git+https://github.com/ferrumnet/unifyre-web-components.git#2c436cc919f836f65d59e6a883c1ed68a8c4e2ad"
+  resolved "git+https://github.com/ferrumnet/unifyre-web-components.git#002299c465ebf6eacb96cbf28412ebe77f217b43"
   dependencies:
     react-icons "^3.10.0"
     unifyre-react-helper "git+https://github.com/ferrumnet/unifyre-react-helper.git"

@@ -9,7 +9,7 @@ import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
-import { Continuation } from "../pages/continuation/ContinuationContainer";
+import { connectButtonReduce } from "../components/ConnectButton";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -60,6 +60,7 @@ function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}
 }
 
 const data = combineReducers({
+    connection: connectButtonReduce,
     userData,
     stakingData,
     userPreference: userPreferenceReducer,

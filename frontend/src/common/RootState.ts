@@ -34,11 +34,16 @@ export interface StakingDataState {
 export interface ContinuationState {
     action: 'stake' | 'unstake';
     selectedStakeEvent?: string;
+    error?: string;
+}
+
+export interface Web3ConnectionState {
+    connected: boolean; error?: string;
 }
 
 export interface RootState {
     data : {
-        connection: { conneted: boolean, error?: string }
+        connection: Web3ConnectionState,
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
         stakingData: StakingDataState,

@@ -14,17 +14,18 @@ function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
                 <Row centered><ThemedText.H2>{`Staking`}</ThemedText.H2></Row>
             </PageTopPart>
             <TransactionContinuation
-                requestId={Utils.getQueryparam('requestId')}
+                requestId={Utils.getQueryparam('continuation')}
                 network={props.stakeEvent?.network}
                 onLoad={props.onLoad}
-                txIds={[props.stakeEvent?.approveTxIds, props.stakeEvent?.mainTxId].filter(Boolean)}
+                txIds={[...(props.stakeEvent?.approveTxIds || []), props.stakeEvent?.mainTxId].filter(Boolean)}
                 okButtonText={props.action === 'stake' ? 'Stake more' : 'Check other opportunities'}
                 okButtonUrl={`/info/${props.stakeEvent?.contractAddress}`}
-                backButtonUrl={`/info/${props.stakeEvent?.contractAddress}`}
-                onRefresh={props.onRefresh}
+                backButtonUrl={props.stakeEvent ? `/info/${props.stakeEvent?.contractAddress}` : '/'}
+                onRefresh={() => props.onRefresh(props)}
                 transactionStatus={props.stakeEvent?.transactionStatus || ''}
                 successMessage={`You have ${props.action}ed ${
                     formatter.format(props.amount, false)} ${props.stakeEvent?.symbol || ''}`}
+                error={props.error}
             />
         </Page>
     );
