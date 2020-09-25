@@ -176,7 +176,7 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
         return await this.userSvc.stakeTokenSignAndSendGetTransactions(
-            token, network, contractAddress, userAddress, amount);
+            token, '', network, contractAddress, userAddress, amount);
     }
 
     async stakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string, stakeEvent?: StakeEvent}> {

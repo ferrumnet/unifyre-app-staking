@@ -93,10 +93,20 @@ export class StakingAppService extends MongooseConnection implements Injectable 
 
     async stakeTokenSignAndSendGetTransactions(
             token: string,
+            email: string,
             network: Network, contractAddress: string, userAddress: string, amount: string):
             Promise<CustomTransactionCallRequest[]> {
         const stakingContract = await this.contract.contractInfo(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
+        if (stakingContract.maxContribution) {
+            ValidationUtils.isTrue(new Big(stakingContract.maxContribution).gte(new Big(amount)),
+                `Maximum contribution is ${stakingContract.maxContribution}`);
+        }
+        if (stakingContract.emailWhitelist) {
+            const emails = stakingContract.emailWhitelist!.split(',').map(e => e.trim().toLocaleLowerCase());
+            ValidationUtils.isTrue(emails.indexOf(email.toLocaleLowerCase())>=0,
+                'Your email is not whitelisted');
+        }
         return await this.contract.checkAllowanceAndStake(
             stakingContract,
             userAddress,
@@ -108,10 +118,12 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             token: string,
             network: Network, contractAddress: string, userAddress: string, amount: string):
             Promise<{ requestId: string, stakeEvent?: StakeEvent }> {
-        const txs = await this.stakeTokenSignAndSendGetTransactions(token, network,
-            contractAddress, userAddress, amount);
+        // Validate
         const client = this.uniClientFac();
         await client.signInWithToken(token);
+        const user = await client.getUserProfile();
+        const txs = await this.stakeTokenSignAndSendGetTransactions(token, user.email || '', network,
+            contractAddress, userAddress, amount);
         const payload = { network, userAddress, amount, contractAddress, action: 'stake' };
         const requestId = await client.sendTransactionAsync(network, txs, payload);
         // Disabling the response for Lambda. AWS API kill the connection after a few seconds

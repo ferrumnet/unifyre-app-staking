@@ -20,6 +20,8 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     stakingStarts: Number,
     stakingEnds: Number,
     minContribution: String,
+    maxContribution: String,
+    emailWhitelist: String,
     backgroundImage: String,
     logo: String,
     color: String,
