@@ -1,10 +1,10 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3');
-// const web3 = new Web3(ganache.provider());
-const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
-const festakingJson = require('../build/contracts/FestakingTest.json');
-const frmJson = require('../build/contracts/FerrumToken.json');
+const web3 = new Web3(ganache.provider());
+// const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+const festakingJson = require('../build/contracts/FestakingFarmTest.json');
+const frmJson = require('../build/contracts/DummyToken.json');
 const abiDecoder = require('abi-decoder');
 
 const STAKING_CAP = 1000;
@@ -39,11 +39,14 @@ beforeEach(async () => {
             "Test Staking", frm._address, frmX._address, STAKING_CAP] })
         .send({ from: owner, gas: '5000000' });
     contractAddress = festaking._address;
+    console.log('Contract deployed at ', contractAddress)
     // Approve the owner
     await frm.methods.approve(contractAddress, STAKING_CAP).send({from: owner});
+    await frmX.methods.approve(contractAddress, STAKING_CAP).send({from: owner});
     const allowance = await frm.methods.allowance(owner, contractAddress).call();
+    const allowanceX = await frmX.methods.allowance(owner, contractAddress).call();
     abiDecoder.addABI(festakingJson['abi']);
-    console.log('Owner allowance is', allowance.toString());
+    console.log('Owner allowance is', allowance.toString(), 'and X', allowanceX.toString());
 });
 
 async function allow(addr, amount) {
@@ -90,6 +93,7 @@ async function balance(addr) {
 async function setUpStakes() {
     await addReward();
     await allow(ac1, 200);
+    await allowX(ac1, 200);
     const tx = await festaking.methods.stake(100).send({from: ac1, gas: GAS});
     await getTransactionLogs(tx.transactionHash);
     let stake = await festaking.methods.stakeOf(ac1).call();
@@ -99,10 +103,14 @@ async function setUpStakes() {
     console.log('ac1 staked ', stake);
 
     await allow(ac2, 1000);
+    await allowX(ac2, 1000);
     await festaking.methods.stake(1000).send({from: ac2, gas: GAS});
     stake = await festaking.methods.stakeOf(ac2).call();
     const allowance = await frm.methods.allowance(ac2, contractAddress).call();
+    const allowanceX = await frmX.methods.allowance(ac2, contractAddress).call();
     console.log('ac2 staked ', stake, ' and has allowance of ', allowance, ' it tried to stake 1000 ' +
+        'but cap was full');
+    console.log('ac2 staked ', stake, ' and has allowanceX of ', allowanceX, ' it tried to stake 1000 ' +
         'but cap was full');
 }
 
@@ -121,12 +129,15 @@ describe('Happy Festaking', () => {
     it('Sets the reward', async () => {
         const totalRewBefore = await festaking.methods.totalReward().call();
         assert.deepStrictEqual(totalRewBefore, '0');
+        await allowX(owner, 100)
         await festaking.methods.addReward(100, 10).send({from: owner, gas: GAS});
         let totalRewAfter = await festaking.methods.totalReward().call();
         assert.deepStrictEqual(totalRewAfter, '100');
         let earlyWithdrawReward = await festaking.methods.earlyWithdrawReward().call();
         assert.deepStrictEqual(earlyWithdrawReward, '10');
+        console.log('EARLY REWARD PAID OUT')
 
+        await allowX(owner, 100)
         await festaking.methods.addReward(50, 40).send({from: owner, gas: GAS});
         totalRewAfter = await festaking.methods.totalReward().call();
         assert.deepStrictEqual(totalRewAfter, '150');
@@ -150,7 +161,9 @@ describe('Happy Festaking', () => {
             stakedBalance: '1000',
         });
         const balanceBefore = await balance(ac2);
+        const balanceXBefore = await balanceX(ac2);
         assert.deepStrictEqual(balanceBefore, '200');
+        assert.deepStrictEqual(balanceXBefore, '1000');
 
         // Withdraw at the first moment
         const tx = await festaking.methods.withdraw(400).send({from: ac2, gas: GAS});
@@ -163,8 +176,10 @@ describe('Happy Festaking', () => {
             rewardBalance: '1000',
             stakedBalance: '600',
         });
-        let bal = await balanceX(ac2);
+        let bal = await balance(ac2);
+        let balX = await balanceX(ac2);
         assert.deepStrictEqual(bal, '600');
+        assert.deepStrictEqual(balX, '1000');
     });
 
     it('Withdraw halfway before it ends', async function () {
@@ -194,8 +209,8 @@ describe('Happy Festaking', () => {
             rewardBalance: '900',
             stakedBalance: '600',
         });
-        assert.deepStrictEqual(bal, '500');
-        assert.deepStrictEqual(balX, '200');
+        assert.deepStrictEqual(bal, '600');
+        assert.deepStrictEqual(balX, '1100');
     });
 
     it('Withdraw right before close', async function() {
@@ -219,6 +234,7 @@ describe('Happy Festaking', () => {
         await festaking.methods.withdraw(400).send({from: ac2, gas: GAS});
         let after = await vars();
         let bal = await balance(ac2);
+        let balX = await balanceX(ac2);
         assert.deepStrictEqual(after, {
             stakedTotal: '1000',
             totalReward: '1000',
@@ -226,7 +242,8 @@ describe('Happy Festaking', () => {
             rewardBalance: '801',
             stakedBalance: '600',
         });
-        assert.deepStrictEqual(bal, '799');
+        assert.deepStrictEqual(bal, '600');
+        assert.deepStrictEqual(balX, '1199');
 
         // Now continue after close
         await festaking.methods.setEarlyWithdrawalPeriod(60000).send({from: owner, gas: GAS});
@@ -246,18 +263,20 @@ describe('Happy Festaking', () => {
         });
         // Here ac2 expects ~ 66% of the remaining reward
         // because my balance at the time is ~ 66% of the remaining balance
-        assert.deepStrictEqual(balX, (801 * 400 / 600).toString());
-        assert.deepStrictEqual(balX, (400 + 799).toString());
+        assert.deepStrictEqual(bal, (400 + 600).toString());
+        assert.deepStrictEqual(balX, (1199 + 801 * 400 / 600).toString());
 
         let stakes = await festaking.methods.stakeOf(ac2).call();
         assert.deepStrictEqual(stakes, '0');
 
+        var ac1BalXBeforeWd = Number(await balanceX(ac1));
+        
         // Withdraw ac1
         await festaking.methods.withdraw(200).send({from: ac1, gas: GAS});
         bal = await balance(ac1);
         balX = await balanceX(ac1);
         assert.deepStrictEqual(bal, (200).toString());
-        assert.deepStrictEqual(balX, (801 * 200 / 600).toString());
+        assert.deepStrictEqual(balX, (ac1BalXBeforeWd + 801 * 200 / 600).toString());
         stakes = await festaking.methods.stakeOf(ac1).call();
         assert.deepStrictEqual(stakes, '0'); // Remaining stakes is zero
     });
@@ -292,6 +311,6 @@ describe('Happy Festaking', () => {
             stakedBalance: '1000',
         });
         assert.deepStrictEqual(bal, (400 + 200).toString()); // reward + amount + existing balance
-        assert.deepStrictEqual(balX, (400).toString()); // reward + amount + existing balance
+        assert.deepStrictEqual(balX, (1400).toString()); // reward + amount + existing balance
     });
 });
