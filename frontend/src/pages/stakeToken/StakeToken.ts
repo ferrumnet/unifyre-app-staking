@@ -55,6 +55,11 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             ValidationUtils.isTrue(
                 new Big(props.amount || '0').gte(new Big(props.contract.minContribution || '0')),
                 `Minimum contribution is ${props.contract.minContribution} ${props.contract.symbol}`);
+            if (props.contract.maxContribution) {
+                ValidationUtils.isTrue(
+                    new Big(props.amount || '0').lt(new Big(props.contract.maxContribution)),
+                    `Maximum contribution is ${props.contract.maxContribution} ${props.contract.symbol}`);
+            }
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
             const data = await client.stakeSignAndSend(

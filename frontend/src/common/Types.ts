@@ -20,6 +20,8 @@ export interface StakingApp {
     stakingEnds: number;
     stakedAmount?: string;
     minContribution?: string;
+    maxContribution?: string;
+    emailWhitelist?: string;
     logo?: string;
     color?: string;
     backgroundImage?: string;

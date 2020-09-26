@@ -22,6 +22,11 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
             <ErrorMessage text={props.error} />
         </Row>
     ) : undefined;
+    const whitelisted = !!props.contract.emailWhitelist ? (
+        <Row withPadding centered>
+            <ThemedText.H3>You must be on the whiltelist to stake in this contract</ThemedText.H3>
+        </Row>
+    ) : undefined;
     return (
         <Page>
             <LoaderContainer />
@@ -71,6 +76,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                       />
                   </Row>
                   <Gap/>
+                  {whitelisted}
                   {error}
                   <Row withPadding>
                         <ThemedButton

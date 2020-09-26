@@ -4,9 +4,6 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import './fonts/SawarabiGothic-Regular.ttf';
-import { BackendMode } from './common/Utils';
-
-BackendMode.mode = 'web3';
 
 ReactDOM.render(
   <React.StrictMode>

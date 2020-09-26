@@ -16,7 +16,7 @@
 			"path": "../../unifyre-extension-web3-retrofit"
 		},
 		{
-			"path": "../../frm-ethereum-contracts"
+			"path": "../contract"
 		}
 	],
 	"settings": {}

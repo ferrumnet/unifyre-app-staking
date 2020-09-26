@@ -7,6 +7,7 @@ import { StakeEventModel, StakingAppModel } from "./MongoTypes";
 import { SmartContratClient } from "./SmartContractClient";
 import { TimeoutError } from "unifyre-extension-sdk/dist/client/AsyncRequestRepeater";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
+import { Big } from 'big.js';
 
 const SIGNATURE_TIMEOUT = 1000 * 45;
 
@@ -96,7 +97,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             email: string,
             network: Network, contractAddress: string, userAddress: string, amount: string):
             Promise<CustomTransactionCallRequest[]> {
-        const stakingContract = await this.contract.contractInfo(network, contractAddress);
+        const stakingContract = (await this.getStaking(contractAddress))!; //this.contract.contractInfo(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         if (stakingContract.maxContribution) {
             ValidationUtils.isTrue(new Big(stakingContract.maxContribution).gte(new Big(amount)),
