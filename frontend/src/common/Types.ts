@@ -1,13 +1,19 @@
 import { Network } from "ferrum-plumbing";
 
+export type StakingContractType = 'staking' | 'stakeFarming';
+
 export interface StakingApp {
+    contractType: StakingContractType;
     network: Network;
     currency: string;
+    rewardCurrency?: string;
     groupId: string;
     symbol: string;
+    rewardSymbol?: string;
     contractAddress: string;
     name: string;
     tokenAddress: string;
+    rewardTokenAddress?: string;
     stakedBalance: string;
     rewardBalance: string;
     stakingCap: string;
@@ -18,7 +24,6 @@ export interface StakingApp {
     withdrawEnds: number;
     stakingStarts: number;
     stakingEnds: number;
-    stakedAmount?: string;
     minContribution?: string;
     maxContribution?: string;
     emailWhitelist?: string;
@@ -28,7 +33,8 @@ export interface StakingApp {
 }
 
 export interface StakeEvent {
-  type: 'stake' | 'unstake',
+  contractType: StakingContractType,
+  type: 'stake' | 'unstake';
   network: string;
   version: number;
   createdAt: number;
@@ -36,6 +42,8 @@ export interface StakeEvent {
   contractName: string;
   currency: string;
   symbol: string;
+  rewardCurrency?: string;
+  rewardSymbol?: string;
   userAddress: string;
   email: string;
   userId: string;

@@ -20,6 +20,8 @@ export const CategoryBtn = (props:categoryBtnProps) => {
     const styles = themedStyles(theme);
     const [expand, setExpand] = useState(false);
     const rewards = Utils.stakingRewards(props.staking);
+    const maturitySentence = Utils.rewardSentence(rewards.maturityAnnual, rewards);
+    const withdrawSentence = Utils.rewardSentence(rewards.earlyWithdrawAnnual, rewards);
     const staking = props.staking;
     let btn = (
         <></>
@@ -80,7 +82,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                     </a> 
                     <div style={{"marginRight":"15px"}}>
                         <div style={styles.symb}>
-                            {`${rewards.maturityAnnual }%`}
+                            {maturitySentence}
                         </div>
                         {btn}
                     </div>
@@ -93,7 +95,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Annual yield
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {rewards.maturityAnnual} %
+                                {maturitySentence}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>
@@ -101,7 +103,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                                 Early withdraw
                             </div>
                             <div style={{"width":'35%','textAlign':'start',fontSize: '13px'}}>
-                                {rewards.earlyWithdrawAnnual}
+                                {withdrawSentence}
                             </div>
                         </div>
                         <div style={styles.moreInfo} className={`${expand ? 'container-text' : 'opacitBefore'}`}>

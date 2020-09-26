@@ -1,6 +1,6 @@
 import { LocaleManager } from "unifyre-react-helper";
 import { RootState } from './RootState';
-import { StakingApp, StakeEvent } from './Types';
+import { StakingApp, StakeEvent, StakingContractType } from './Types';
 import { Big } from 'big.js';
 import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 import moment from 'moment';
@@ -10,9 +10,12 @@ const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.co
 export type StakingState = 'pre-stake' | 'stake' | 'pre-withdraw' | 'withdraw' | 'maturity';
 
 export interface StakingRewards {
+    contractType: StakingContractType;
     earlyWithdrawAnnual: string;
     maturityAnnual: string;
     maturityMaxAmount: string;
+    tokenSymbol: string;
+    rewardSybol: string;
 }
 
 export class BackendMode {
@@ -127,7 +130,19 @@ export class Utils {
                 contract.stakingEnds,
             ).times(100).toFixed(2),
             maturityMaxAmount: totalReward.toFixed(),
+            contractType: contract.contractType,
+            rewardSybol: contract.rewardSymbol,
+            tokenSymbol: contract.symbol,
         } as StakingRewards;
+    }
+
+    static rewardSentence(annualPct: string, reward: StakingRewards): string {
+        if (reward.contractType === 'stakeFarming') {
+            const rate = new Big(annualPct || '0').div(new Big(100)).toFixed(4);
+            return `${rate} ${reward.rewardSybol}/${reward.tokenSymbol}`;
+        } else {
+            return `${annualPct}%`;
+        }
     }
 
     static unstakeRewardsAt(contract: StakingApp, stakeOf: string, time: number) {
@@ -153,7 +168,8 @@ export class Utils {
         if (!contract || !contract.stakingEnds) {
             return 0;
         }
-        return (Date.now() - contract.stakingStarts) / (contract.stakingEnds - contract.stakingStarts);
+        const now = Date.now() / 1000;
+        return (now - contract.stakingStarts) / (contract.stakingEnds - contract.stakingStarts);
     }
 
     static tillDate(date: number) {

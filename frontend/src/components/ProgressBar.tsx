@@ -51,7 +51,7 @@ export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
   
 
 export const RewardsBar = (props:{bgcolor:string,
-    rewardPercent: string, earlyWithdrawPercent: string}) => {
+    rewardSentence: string, earlyWithdrawSentence: string}) => {
     const { bgcolor } = props;
   
     const containerStyles = {
@@ -150,13 +150,13 @@ export const RewardsBar = (props:{bgcolor:string,
         </div>
         <div style={containerStyles}>
             <div style={{...fillerStyles,"justifyContent": 'start','paddingLeft': '7%'}}>
-            <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.rewardPercent}%+`}</span>
+            <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.rewardSentence}`}</span>
             </div>
             <div style={{...fillerStyles,...img}}>
             <img style={{"width":'60px','position':'absolute','borderRadius':'50%',backgroundColor: 'black'}} src={logo}/>
             </div>
             <div style={fillersStyles}>
-                <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.earlyWithdrawPercent}%`}</span>
+                <span style={{...labelStyles,"fontSize": '23.5px',paddingTop:3}}>{`${props.earlyWithdrawSentence}`}</span>
             </div>
         </div>
         <div style={{...labelContainer,...miniContainer}}>

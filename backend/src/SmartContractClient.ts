@@ -1,7 +1,7 @@
 import { Injectable, HexString, ValidationUtils } from "ferrum-plumbing";
 import stakingAbi from './resources/Festaking-abi.json';
 import Big from 'big.js';
-import { StakingApp } from "./Types";
+import { StakingApp, StakingContractType } from "./Types";
 import { EthereumSmartContractHelper } from 'aws-lambda-helper/dist/blockchain';
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 //@ts-ignore
@@ -19,7 +19,11 @@ export interface StakedEvent {
 }
 
 export interface PaidOutEvent {
+    contractType: StakingContractType;
     token: string;
+    symbol: string;
+    rewardToken?: string;
+    rewardSymbol?: string;
     staker: string;
     amount: string;
     reward: string;
@@ -107,13 +111,12 @@ export class SmartContratClient implements Injectable {
         const stakingCapRaw = (await contractInstance.stakingCap().call()).toString();
         const stakedTotalRaw = (await contractInstance.stakedTotal().call()).toString();
         const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
-        console.log('STAKED NUMBER', {stakedBalanceRaw, rewardBalanceRaw, stakingCapRaw, stakedTotalRaw})
         const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
         const withdrawStarts = (await contractInstance.withdrawStarts().call());
         const withdrawEnds = (await contractInstance.withdrawEnds().call());
         const stakingStarts = (await contractInstance.stakingStarts().call());
         const stakingEnds = (await contractInstance.stakingEnds().call());
-        return {
+        const result = {
             network,
             currency,
             symbol,
@@ -131,6 +134,11 @@ export class SmartContratClient implements Injectable {
             stakingStarts,
             stakingEnds,
         } as StakingApp;
+        return await this.populateFurtherContractInfo(inst, result);
+    }
+
+    protected async populateFurtherContractInfo(_: any, result: StakingApp): Promise<StakingApp> {
+        return result;
     }
 
     async stakeOf(network: string, contractAddress: string, currency: string, address: string) {
@@ -145,7 +153,7 @@ export class SmartContratClient implements Injectable {
         return this.processLog(network, rec.logs);
     }
 
-    private stakingApp(network: string, contractAddress: string) {
+    protected stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
         return new web3.Contract(stakingAbi, contractAddress);
     }
@@ -196,18 +204,23 @@ export class SmartContratClient implements Injectable {
             } as StakedEvent;
         }
         if (paidOutRaw) {
-            const events = paidOutRaw.events;
-            const token  = events[0].value.toString().toLowerCase();
-            const currency = Helper.toCurrency(network, token);
-            const amount = await this.helper.amountToHuman(currency, events[2].value.toString());
-            const reward = await this.helper.amountToHuman(currency, events[3].value.toString());
-            paidOut = {
-                token,
-                staker: events[1].value.toString(),
-                amount,
-                reward,
-            } as PaidOutEvent;
+            paidOut = await this.processPaidOutEvent(network, paidOutRaw);
         }
         return [staked, paidOut];
+    }
+
+    protected async processPaidOutEvent(network: string, paidOutRaw: any): Promise<PaidOutEvent> {
+        const events = paidOutRaw.events;
+        const token  = events[0].value.toString().toLowerCase();
+        const currency = Helper.toCurrency(network, token);
+        const amount = await this.helper.amountToHuman(currency, events[2].value.toString());
+        const reward = await this.helper.amountToHuman(currency, events[3].value.toString());
+        return {
+            token,
+            symbol: await this.helper.symbol(currency),
+            staker: events[1].value.toString(),
+            amount,
+            reward,
+        } as PaidOutEvent;
     }
 }

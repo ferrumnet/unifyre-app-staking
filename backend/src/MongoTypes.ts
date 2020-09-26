@@ -3,9 +3,13 @@ import { Schema, Connection, Document } from "mongoose";
 import { StakeEvent, StakingApp, } from "./Types";
 
 const StakingAppSchema: Schema = new Schema<StakingApp>({
+    contractType: String,
     network: String,
     currency: String,
+    rewardCurrency: String,
+    groupId: String,
     symbol: String,
+    rewardSymbol: String,
     contractAddress: String,
     name: String,
     tokenAddress: String,
@@ -28,6 +32,7 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
 });
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
+  contractType: String,
   type: String,
   network: String,
   version: Number,
@@ -36,6 +41,8 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
   contractName: String,
   currency: String,
   symbol: String,
+  rewardCurrency: String,
+  rewardSymbol: String,
   userAddress: String,
   email: String,
   userId: String,

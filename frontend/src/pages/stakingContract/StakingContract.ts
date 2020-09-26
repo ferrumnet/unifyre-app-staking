@@ -16,8 +16,8 @@ export interface StakingContractProps {
     userStake: UserStake | undefined;
     stakeCompletionRate: number;
     remaining: string;
-    rewardPercent: string;
-    earlyWithdrawPercent: string;
+    rewardSentence: string;
+    earlyWithdrawSentence: string;
     stakingTimeProgress: number;
     maturityProgress: number;
     unstakeRewardsNow: string;
@@ -48,8 +48,8 @@ function mapStateToProps(state: RootState): StakingContractProps {
         stakeCompletionRate: capB.gt(new Big(0)) ?
             Number(totB.times(new Big(100)).div(capB).toFixed()) : 0,
         remaining: formatter.format(new Big(contract.stakingCap || '0').minus(new Big(contract.stakedTotal || '0')).toFixed(0), true)!,
-        rewardPercent: formatter.format(rewards.maturityAnnual, true) || '0',
-        earlyWithdrawPercent: formatter.format(rewards.earlyWithdrawAnnual, true) || '0',
+        rewardSentence: Utils.rewardSentence(rewards.maturityAnnual, rewards),
+        earlyWithdrawSentence: Utils.rewardSentence(rewards.earlyWithdrawAnnual, rewards),
         stakingTimeProgress: Utils.stakeProgress(contract),
         maturityProgress: !contract.withdrawEnds ? 0 : 
             (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
