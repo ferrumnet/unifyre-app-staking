@@ -10,6 +10,7 @@ export interface ConfirmationProps extends ContinuationState {
     stakeEvent?: StakeEvent;
     action: 'stake' | 'unstake';
     amount: string;
+    rewardAmount: string;
 }
 
 export interface ConfirmationDispatch {
@@ -28,12 +29,16 @@ function mapStateToProps(state: RootState): ConfirmationProps {
         } as ConfirmationProps;
     }
     const amount = state.ui.continuation.action === 'unstake' ? 
-        new Big(event.amountUnstaked).add(new Big(event.amountUnstaked)).toFixed() :
+        new Big(event.amountUnstaked || event.amountStaked || '0').toFixed() :
         event.amountStaked;
+    const rewardAmount = state.ui.continuation.action === 'unstake' ? 
+        new Big(event.amountOfReward || '0').toFixed() :
+       '';
     return {
         ...state.ui.continuation,
         stakeEvent: event,
         amount,
+        rewardAmount,
     };
 }
 

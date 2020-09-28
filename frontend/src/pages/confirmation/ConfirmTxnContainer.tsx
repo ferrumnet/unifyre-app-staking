@@ -8,6 +8,15 @@ import {
 import { formatter, Utils } from '../../common/Utils';
 
 function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
+    const successMsg = props.stakeEvent?.type === 'unstake' ? (
+        `You have un-staked ${
+                    formatter.format(props.amount, false)} ${props.stakeEvent?.symbol || ''} plus ${
+                    formatter.format(props.rewardAmount || '0', false)} ${
+                        props.stakeEvent?.rewardSymbol || props.stakeEvent?.symbol || ''} rewards`
+    ) : (
+        `You have ${props.action}ed ${
+                    formatter.format(props.amount, false)} ${props.stakeEvent?.symbol || ''}`
+    );
     return (
         <Page>
             <PageTopPart>
@@ -23,8 +32,7 @@ function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
                 backButtonUrl={props.stakeEvent ? `/info/${props.stakeEvent?.contractAddress}` : '/'}
                 onRefresh={() => props.onRefresh(props)}
                 transactionStatus={props.stakeEvent?.transactionStatus || ''}
-                successMessage={`You have ${props.action}ed ${
-                    formatter.format(props.amount, false)} ${props.stakeEvent?.symbol || ''}`}
+                successMessage={successMsg}
                 error={props.error}
             />
         </Page>

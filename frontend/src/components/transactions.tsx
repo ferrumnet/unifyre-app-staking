@@ -11,8 +11,10 @@ import moment from 'moment';
 interface transactionsProps {
     type: "stake" | "unstake",
     amount: string,
+    reward: string,
     status: string,
     symbol: string,
+    rewardSymbol: string,
     contractName: string,
     createdAt: number,
     url: string,
@@ -21,6 +23,11 @@ export const Transactions = (props:transactionsProps) => {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const [expand,setExpand] = useState(false);
+    const title = props.type === 'stake' ? (
+        `${props.type} ${props.amount} ${props.symbol}`
+    ) : (
+        `${props.type} ${props.amount} ${props.symbol} + ${props.reward} ${props.rewardSymbol}`
+    );
     return (
         <Row withPadding noMarginTop>
             <a
@@ -37,7 +44,7 @@ export const Transactions = (props:transactionsProps) => {
                             style={{"lineHeight": "1.4", display: 'flex', flexDirection: 'row', width:'100%',
                                     justifyContent: 'space-between'}}>
                                 <div style={styles.categoryText}>
-                                    {`${props.type} ${props.amount} ${props.symbol}`} 
+                                    {title}
                                 </div>
                                 <div style={styles.symb}>
                                     {props.status}

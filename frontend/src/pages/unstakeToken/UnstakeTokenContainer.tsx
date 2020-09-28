@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import { connect } from 'react-redux';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
+    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton, InputCurrency, ErrorMessage,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { formatter } from "../../common/Utils";
@@ -19,6 +19,11 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     var utcSeconds = contract.stakingStarts;
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
+    const error = props.error ? (
+        <Row withPadding>
+            <ErrorMessage text={props.error} />
+        </Row>
+    ) : undefined;
     return (
         <Page>
             <LoaderContainer />
@@ -32,12 +37,16 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                       <ThemedText.H4>{'Amount To Withdraw'}</ThemedText.H4>
                   </Row>
                   <Row withPadding>
-                      <InputGroupAddon
-                          value={props.amount}
-                          onChange={props.onAmountToUnstakeChanged}
-                          inputMode={'decimal'}
-                          type={Number}
-                      />
+                    <InputCurrency
+                        currencies={[{ label: props.symbol, key: props.symbol }]}
+                        amountStr={props.amount}
+                        onAmountChanged={props.onAmountToUnstakeChanged}
+                        curreny={props.symbol}
+                        onCurrencyChanged={() => { }}
+                        autoFocus={true}
+                        formatter={formatter}
+                        inputMode={'decimal'}
+                    />
                   </Row>
                   <Gap size={'small'}/>
                   <Row withPadding centered>
@@ -45,15 +54,15 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   </Row>
                   <Row withPadding>
                       <InputGroupAddon
-                          value={`${formatter.format(
-                              new Big(stakingCap || '0').minus(new Big(props.amount || '0')).toFixed(),true)} ${symbol}`}
+                          value={`${formatter.format(props.stakedAmount,true)} ${props.symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />
                   </Row>
                   <Gap/>
+                  {error}
                   <Row withPadding>
-                        <ThemedButton text={`UnStake`} onClick={()=>{props.onUnstakeToken(props)}}/>
+                        <ThemedButton text={`UnStake`} onClick={()=>{props.onUnstakeToken(history, props)}}/>
                   </Row>
               </>
             }        
