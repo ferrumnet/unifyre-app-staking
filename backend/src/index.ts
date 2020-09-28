@@ -15,6 +15,7 @@ import { SmartContratClient } from './SmartContractClient';
 import { KMS } from 'aws-sdk';
 import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
+import { StakingFarmContractClient } from './StakingFarmContractClient';
 
 const global = { init: false };
 const STAKING_APP_ID = 'STAKING';
@@ -112,11 +113,14 @@ export class stakingAppModule implements Module {
             ));
         container.registerSingleton(SmartContratClient,
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
+        container.registerSingleton(StakingFarmContractClient,
+            c => new StakingFarmContractClient(c.get(EthereumSmartContractHelper)));
         container.register('JsonStorage', () => new Object());
         container.registerSingleton(StakingAppService,
                 c => new StakingAppService(
                     () => c.get(UnifyreExtensionKitClient),
                     c.get(SmartContratClient),
+                    c.get(StakingFarmContractClient),
                     ));
 
         container.registerSingleton('LambdaHttpHandler',

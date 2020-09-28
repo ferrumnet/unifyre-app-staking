@@ -72,8 +72,11 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     async getStakingContractForUser(
         network: string, contractAddress: string, userAddress: string, userId: string):
         Promise<[UserStake, StakingApp, StakeEvent[]]> {
-        const stakingContract = await this.getStaking(contractAddress);
+        let stakingContract = await this.getStaking(contractAddress);
         ValidationUtils.isTrue(!!stakingContract, 'Contract not registerd');
+        const fromCont = await this.contract(stakingContract!.contractType).contractInfo(
+            stakingContract!.network, contractAddress);
+        stakingContract = {...stakingContract, ...fromCont};
         const currency = stakingContract!.currency;
         const stakeOf = await this.contract(stakingContract!.contractType).stakeOf(network, contractAddress, currency, userAddress);
         const userStake = {
