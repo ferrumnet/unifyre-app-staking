@@ -6,6 +6,7 @@ import { addAction } from "../../common/Actions";
 import { StakingAppServiceActions } from "../../services/StakingAppClient";
 import { History } from 'history';
 import { Big } from 'big.js';
+import { LocaleManager } from "unifyre-react-helper";
 
 export interface StakingContractProps {
     balance: string;
@@ -52,9 +53,11 @@ function mapStateToProps(state: RootState): StakingContractProps {
         earlyWithdrawSentence: Utils.rewardSentence(rewards.earlyWithdrawAnnual, rewards),
         stakingTimeProgress: Utils.stakeProgress(contract),
         maturityProgress: !contract.withdrawEnds ? 0 : 
-            (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
-        unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
-        unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
+            (Math.min(Date.now() / 1000, contract.withdrawEnds) - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
+        unstakeRewardsNow: `${LocaleManager.formatDecimalString(
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()))} ${contract.rewardSymbol || contract.symbol}`,
+        unstakeRewardsMaturity: `${LocaleManager.formatDecimalString(
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol}`,
         filled: capB.minus(totB).lte(new Big(0)),
     };
 }

@@ -156,7 +156,7 @@ export class Utils {
             contract.stakingEnds,
             new Big(contract.stakedTotal),
             0
-        ).toFixed();
+        ).toPrecision(6);
     }
 
     static icon(currency: string): string {

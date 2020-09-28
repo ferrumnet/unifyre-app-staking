@@ -208,7 +208,7 @@ function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
                                     trailColor: 'rgb(214 214 214 / 12%)',
                                     backgroundColor: 'rgb(214 214 214 / 12%)',
                                 })} 
-                                value={props.maturityProgress}
+                                value={100 * props.maturityProgress}
                                 >
                                     <Row noMarginTop><ThemedText.H2 style={{...styles.commonText,...styles.smallerMediumText}}>{'MATURITY'}</ThemedText.H2></Row>
                                     <ThemedText.H2 style={{...styles.commonText,...styles.mediumText}}>{tillMon + ' months'}</ThemedText.H2>

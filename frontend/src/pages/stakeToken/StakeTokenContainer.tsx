@@ -70,7 +70,8 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                   <Row withPadding>
                       <InputGroupAddon
                           value={`${formatter.format(
-                              new Big(props.contract.stakingCap || '0').minus(new Big(props.contract.stakedAmount || '0')).toFixed(),true)} ${props.symbol}`}
+                              new Big(props.contract.stakingCap || '0')
+                                .minus(new Big(props.stakedAmount || '0')).toFixed(),true)} ${props.symbol}`}
                           inputMode={'decimal'}
                           disabled={true}
                       />
