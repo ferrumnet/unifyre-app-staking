@@ -222,6 +222,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     async unstakeTokenSignAndSend(
+            token: string,
             network: Network, contractAddress: string, userAddress: string, amount: string):
             Promise<{requestId: string}> {
         const txs = await this.unstakeTokenSignAndSendGetTransaction(
@@ -229,6 +230,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         );
         const payload = { network, userAddress, amount, contractAddress, action: 'unstake' };
         const client = this.uniClientFac();
+        await client.signInWithToken(token);
         const requestId = await client.sendTransactionAsync(network, txs, payload);
         // const response = await undefinedOnTimeout(() =>
         //     client.getSendTransactionResponse(requestId, SIGNATURE_TIMEOUT));
@@ -287,13 +289,16 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const userStake = await this.getUserStakeEvent(mainTxId);
         const status = await this.contract(contract.contractType).helper.getTransactionStatus(
             network, mainTxId, userStake?.createdAt || 0);
-        if (!!userStake && userStake!.transactionStatus !== status) {
-            let upUserStake = {
-                ...userStake,
-                transactionStatus: status,
-            } as StakeEvent;
-            upUserStake = await this.updateStakeEventWithLogs(upUserStake);
-            return this.updateStakeEvent(upUserStake);
+        if (!!userStake) {
+            if (userStake!.transactionStatus !== status) {
+                let upUserStake = {
+                    ...userStake,
+                    transactionStatus: status,
+                } as StakeEvent;
+                upUserStake = await this.updateStakeEventWithLogs(upUserStake);
+                return this.updateStakeEvent(upUserStake);
+            }
+            return userStake;
         } else {
             let stakeEvent = {
                 contractType: contract.contractType || 'staking',
@@ -328,6 +333,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const updated = await this.stakeEventModel!.findOneAndUpdate({
             "$and": [{ mainTxId: stakeEvent.mainTxId }, { version }] },
         { '$set': { ...newPd } }).exec();
+        console.log('UPDATING EVENT ', updated, stakeEvent.mainTxId, version);
         ValidationUtils.isTrue(!!updated, 'Error updating StakeEvent. Update returned empty. Retry');
         return updated?.toJSON();
     }
@@ -335,7 +341,9 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     private async updateStakeEventWithLogs(stakeEvent: StakeEvent): Promise<StakeEvent> {
         if (stakeEvent.transactionStatus !== 'successful') { return stakeEvent; }
         const upEvent = {...stakeEvent};
-        const [staked, paidOut] = await this.contract('staking').transactionLog(stakeEvent.network, stakeEvent.mainTxId);
+        const [staked, paidOut] = await this.contract(stakeEvent.contractType)
+            .transactionLog(stakeEvent.network, stakeEvent.mainTxId);
+        console.log('updateStakeEventWithLogs transaction log is: ', {staked, paidOut});
         if (staked) {
             upEvent.amountStaked = staked.stakedAmount;
         }

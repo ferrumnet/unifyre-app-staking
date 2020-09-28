@@ -7,6 +7,7 @@ import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 //@ts-ignore
 import abiDecoder from 'abi-decoder';
 import { Eth } from 'web3-eth';
+import { decode } from "punycode";
 const Helper = EthereumSmartContractHelper;
 
 const STAKE_GAS = 200000;
@@ -33,8 +34,9 @@ export interface PaidOutEvent {
 export class SmartContratClient implements Injectable {
     constructor(
         public helper: EthereumSmartContractHelper,
+        abi: any = stakingAbi
     ) {
-        abiDecoder.addABI(stakingAbi);
+        abiDecoder.addABI(abi);
     }
 
     __name__() { return 'SmartContratClient'; }
@@ -82,7 +84,7 @@ export class SmartContratClient implements Injectable {
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
         const { name, network, contractAddress, currency, symbol } = stakingContract;
         const stakeOf = await this.stakeOf(network, contractAddress, currency, userAddress);
-        ValidationUtils.isTrue(new Big(stakeOf).lte(new Big(amount)),
+        ValidationUtils.isTrue(new Big(stakeOf).gte(new Big(amount)),
             `Not enough stake balance to unstake from. Current stake balance is ${stakeOf} but ${amount} was requested.`);
         const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
         const [unstake, unstakeGas] = await this.unstakeToken(
@@ -149,7 +151,9 @@ export class SmartContratClient implements Injectable {
     async transactionLog(network: string, transactionId: string): Promise<[StakedEvent|undefined, PaidOutEvent|undefined]> {
         const web3 = this.helper.web3(network) as Eth;
         const rec = await web3.getTransactionReceipt(transactionId);
+        console.log('GOT TX RECEIPT', rec);
         if (!rec) { return [undefined, undefined]};
+        console.log('GOT TX RECEIPT', rec);
         return this.processLog(network, rec.logs);
     }
 
@@ -188,6 +192,7 @@ export class SmartContratClient implements Injectable {
         const decoded = abiDecoder.decodeLogs(logs);
         const stakedRaw = decoded.find((l: any) => l?.name === 'Staked');
         const paidOutRaw = decoded.find((l: any) => l?.name === 'PaidOut');
+        console.log('DECODED ISO', decode, {stakedRaw, paidOutRaw});
         let staked: StakedEvent | undefined = undefined;
         let paidOut: PaidOutEvent | undefined = undefined;
         if (stakedRaw) {

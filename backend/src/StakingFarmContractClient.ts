@@ -6,6 +6,12 @@ import { StakingApp } from "./Types";
 const Helper = EthereumSmartContractHelper;
 
 export class StakingFarmContractClient extends SmartContratClient {
+    constructor(
+        helper: EthereumSmartContractHelper,
+    ) {
+        super(helper, stakingFarmAbi.abi);
+    }
+
     protected stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
         return new web3.Contract(stakingFarmAbi.abi, contractAddress);

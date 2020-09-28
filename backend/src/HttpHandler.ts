@@ -226,11 +226,12 @@ export class HttpHandler implements LambdaHttpHandler {
     }
 
     async unstakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
-        const {amount, network, contractAddress, userAddress} = req.data;
+        const {token, amount, network, contractAddress, userAddress} = req.data;
+        ValidationUtils.isTrue(!!token, '"token" must be provided');
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
-        return await this.userSvc.unstakeTokenSignAndSend(network, contractAddress, userAddress, amount);
+        return await this.userSvc.unstakeTokenSignAndSend(token, network, contractAddress, userAddress, amount);
     }
 }
