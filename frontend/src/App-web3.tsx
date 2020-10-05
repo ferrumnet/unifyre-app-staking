@@ -17,7 +17,6 @@ import { store } from './common/Store';
 import { Dialogue, } from 'unifyre-web-components';
 // @ts-ignore
 import AlertTemplate from 'react-alert-template-basic'
-import { DashboardContainer } from './pages/dashboard/DashboardContainer';
 import { WebDashboardContainer } from './pages/dashboard/WebDashboardContainer';
 import { Provider as FluentProvider, teamsTheme } from '@fluentui/react-northstar';
 import { useTheme } from '@fluentui/react-theme-provider';
@@ -28,26 +27,26 @@ const options = {
   timeout: 4000,
 }
 
+
 function App() {
-  WebThemeLoader();
-  const themeVariables = useTheme();
-  const FleuntThemeProvider = new ThemeConstantProvider('web3-theme', WebdefaultLightThemeConstantsBuilder(themeVariables).build());
-  
-  return (
-    <ThemeContext.Provider value={FleuntThemeProvider}>
-      <Provider store={store}>
-        <Dialogue.Component />
-        <AlertProvider template={AlertTemplate} {...options}>
-          <Router>
-            <FluentProvider theme={teamsTheme}>
-              <WebDashboardContainer />
-            </FluentProvider>
-          </Router>
-        </AlertProvider>
-        <WaitingContainer />
-      </Provider>
-    </ThemeContext.Provider>    
-  );  
+    WebThemeLoader();
+    const themeVariables = useTheme();
+    const FleuntThemeProvider = new ThemeConstantProvider('web3-theme', WebdefaultLightThemeConstantsBuilder(themeVariables).build());
+    return (
+      <ThemeContext.Provider value={FleuntThemeProvider}>
+        <Provider store={store}>
+          <Dialogue.Component />
+          <AlertProvider template={AlertTemplate} {...options}>
+            <Router>
+              <FluentProvider theme={teamsTheme}>
+                <WebDashboardContainer />
+              </FluentProvider>
+            </Router>
+          </AlertProvider>
+          <WaitingContainer />
+        </Provider>
+      </ThemeContext.Provider>   
+    );  
 }
 
 export default App;
