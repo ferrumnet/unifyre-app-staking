@@ -13,5 +13,5 @@ if [ "$secret" == "" ]; then
   exit -1
 fi
 
-curl -X POST -H 'Content-Type: application-json' -d "{\"command\":\"adminSaveStakingContractInfo\", \"data\":{\"network\":\"${network}\",\"contractAddress\":\"${contract}\",\"color\":\"${color}\", \"logo\":\"${logo}\", \"backgroundImage\":\"${bkgImage}\", \"adminSecret\":\"${secret}\"}}" https://y6sl343dn6.execute-api.us-east-2.amazonaws.com/default/prod-unifyre-extension-staking-backend
+curl -X POST -H 'Content-Type: application-json' -d "{\"command\":\"adminSaveStakingContractInfo\", \"data\":{\"network\":\"${network}\",\"contractAddress\":\"${contract}\",\"color\":\"${color}\", \"logo\":\"${logo}\", \"backgroundImage\":\"${bkgImage}\", \"adminSecret\":\"${secret}\", \"maxContribution\":\"${MAX_CONTRIBUTION}\"}}" https://y6sl343dn6.execute-api.us-east-2.amazonaws.com/default/prod-unifyre-extension-staking-backend
 
