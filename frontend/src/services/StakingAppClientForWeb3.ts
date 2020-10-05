@@ -3,9 +3,9 @@ import { AnyAction, Dispatch } from "redux";
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { addAction, CommonActions } from "../common/Actions";
-import { StakeEvent } from "../common/Types";
 import { StakingAppClient, StakingAppServiceActions } from "./StakingAppClient";
 import { Big } from 'big.js';
+import { logError } from "../common/Utils";
 const Actions = StakingAppServiceActions;
 
 export class StakingAppClientForWeb3 extends StakingAppClient {
@@ -59,7 +59,7 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
             await this.processRequest(dispatch, requestId);
             return 'success';
         } catch (e) {
-            console.error('Error signAndSend', e);
+            logError('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));

@@ -4,7 +4,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, DashboardProps } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient } from "../../services/StakingAppClient";
-import { BackendMode } from "../../common/Utils";
+import { BackendMode, logError } from "../../common/Utils";
 
 const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
@@ -41,7 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 dispatch(addAction(Actions.INIT_SUCCEED, {}));
             }
         } catch (e) {
-            console.error('Dashboard.mapDispatchToProps', e);
+            logError('Dashboard.mapDispatchToProps', e);
             dispatch(addAction(Actions.INIT_FAILED, { error: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));

@@ -1,7 +1,7 @@
-import { Injectable, JsonRpcRequest, ValidationUtils, Network } from "ferrum-plumbing";
+import { Injectable, JsonRpcRequest, ValidationUtils, Network, JsonApiClient } from "ferrum-plumbing";
 import { Dispatch, AnyAction } from "redux";
 import { addAction, CommonActions } from "../common/Actions";
-import { Utils } from "../common/Utils";
+import { logError, Utils } from "../common/Utils";
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
@@ -59,7 +59,7 @@ export class StakingAppClient implements Injectable {
             this.jwtToken = session;
             return this.loadDataAfterSignIn(dispatch, userProfile);
         } catch (e) {
-            console.error('Error sigining in', e);
+            logError('Error sigining in', e);
             dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
@@ -102,7 +102,7 @@ export class StakingAppClient implements Injectable {
             setTimeout(() => this.refreshStakeEvents(dispatch, stakeEvents), 1000);
             return userStake;
         } catch (e) {
-            console.error('Error sigining in', e);
+            logError('Error sigining in', e);
             dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could get the staking contract data' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'selectStakingContract' }));
@@ -122,7 +122,7 @@ export class StakingAppClient implements Injectable {
                 }
             }
         } catch (e) {
-            console.error('Error updating staking events', e);
+            logError('Error updating staking events', e);
         }
     }
 
@@ -130,13 +130,13 @@ export class StakingAppClient implements Injectable {
         let storedToken: string|null = '';
         try {
             storedToken = localStorage.getItem('SIGNIN_TOKEN');
-        } catch (e) { console.error('Reading local storage', e); }
+        } catch (e) { logError('Reading local storage', e); }
         const token = Utils.getQueryparam('token') || this.token || storedToken;
         if (!!token && token !== storedToken) {
             try {
                 localStorage.setItem('SIGNIN_TOKEN', token!);
             } catch(e) {
-                console.error('Reading local storage', e);
+                logError('Reading local storage', e);
             }
         }
         if (!token) {
@@ -170,7 +170,7 @@ export class StakingAppClient implements Injectable {
             await this.processRequest(dispatch, requestId);
             return 'success' as string;
         } catch (e) {
-            console.error('Error signAndSend', e);
+            logError('Error signAndSend', e);
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
@@ -200,7 +200,7 @@ export class StakingAppClient implements Injectable {
             await this.processRequest(dispatch, requestId);
             return 'success' as string;
         } catch (e) {
-            console.error('Error signAndSend', e);
+            logError('Error signAndSend', e);
             dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
@@ -231,7 +231,7 @@ export class StakingAppClient implements Injectable {
             dispatch(addAction(CommonActions.CONTINUATION_DATA_RECEIVED, {action,
                 mainTxId: stakeEvent!.mainTxId}));
         } catch(e) {
-            console.error('Error signAndSend', e);
+            logError('Error signAndSend', e);
             dispatch(addAction(CommonActions.CONTINUATION_DATA_FAILED, {message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
@@ -257,12 +257,12 @@ export class StakingAppClient implements Injectable {
             let jerror: any;
             try {
                 jerror = JSON.parse(error);
-            } catch (e) {}
-            console.error('Server returned an error when calling ', req, {
-                status: res.status, statusText: res.statusText, error});
+            } catch (e) { }
+            logError('Server returned an error when calling ' + req + JSON.stringify({
+                status: res.status, statusText: res.statusText, error}), new Error());
             throw new Error(jerror?.error ? jerror.error : error);
         } catch (e) {
-            console.error('Error calling api with ', req, e);
+            logError('Error calling api with ' + JSON.stringify(req), e);
             throw e;
         }
     }

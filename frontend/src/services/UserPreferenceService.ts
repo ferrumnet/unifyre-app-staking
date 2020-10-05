@@ -3,6 +3,7 @@ import { defaultUserPreference, UserPreference } from "../common/RootState";
 import { Dispatch } from "react";
 import { AnyAction } from "redux";
 import { addAction } from "../common/Actions";
+import { logError } from "../common/Utils";
 
 const USER_PREFERENCE_STORAGE_KEY = 'USER_PREFERENCE';
 const UserPreferenceActions = {
@@ -18,7 +19,7 @@ export class UserPreferenceService implements Injectable {
             if (strLoaded) {
                 this.pref = JSON.parse(strLoaded);
             }
-        } catch (e) { console.error('UserPreferenceService', e); }
+        } catch (e) { logError('UserPreferenceService', e); }
     }
 
     init(dispatch: Dispatch<AnyAction>) {
@@ -32,7 +33,7 @@ export class UserPreferenceService implements Injectable {
         const perfJ = JSON.stringify(this.pref);
         try {
             localStorage.setItem(USER_PREFERENCE_STORAGE_KEY, perfJ);
-        } catch (e) { console.error('Error using localStorage ', e); }
+        } catch (e) { logError('Error using localStorage ', e); }
         dispatch(addAction(UserPreferenceActions.USER_PREFERENCE_LOADED, { userPreference }));
     }
 

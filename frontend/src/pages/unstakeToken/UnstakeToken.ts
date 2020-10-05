@@ -3,7 +3,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeToken, StakeTokenProps } from "../stakeToken/StakeToken";
-import { Utils } from "../../common/Utils";
+import { logError, Utils } from "../../common/Utils";
 import { ValidationUtils } from "ferrum-plumbing";
 import { inject, IocModule } from "../../common/IocModule";
 import { History} from 'history';
@@ -58,7 +58,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 history.replace(`/continuation`);
             }
         } catch (e) {
-            console.error('StakeToken.mapDispatchToProps', e);
+            logError('StakeToken.mapDispatchToProps', e);
             dispatch(addAction(StakingAppServiceActions.UN_STAKING_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeToken' }));

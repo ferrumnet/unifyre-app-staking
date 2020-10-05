@@ -8,6 +8,8 @@ import { UnifyreExtensionKitClient, ClientModule } from 'unifyre-extension-sdk';
 import { BackendMode } from './Utils';
 import { Web3RetrofitModule } from 'unifyre-extension-web3-retrofit/dist/Web3RetrofitModule';
 import { StakingAppClientForWeb3 } from '../services/StakingAppClientForWeb3';
+import { Integrations } from "@sentry/tracing";
+import * as Sentry from "@sentry/browser";
 
 class DummyStorage {}
 
@@ -51,6 +53,7 @@ export class IocModule {
         if (!!IocModule._container) {
             return IocModule._container;
         }
+        IocModule.setupSentry();
 
         const c = new Container();
         c.register(LoggerFactory, () => new LoggerFactory(n => new ConsoleLogger(n)));
@@ -75,6 +78,17 @@ export class IocModule {
     static container() {
         ValidationUtils.isTrue(!!IocModule._container, 'Container not initialized');
         return IocModule._container;
+    }
+
+    private static setupSentry() {
+        Sentry.init({
+            dsn: 'https://b12178c8a471450a9aad6b44e1d6e660@o455885.ingest.sentry.io/5448142',
+            integrations: [
+              new Integrations.BrowserTracing(),
+            ],
+            release: "unifyre-app-staking@" + process.env.npm_package_version, // To set your release version
+            tracesSampleRate: 0.1,
+          });
     }
 }
 

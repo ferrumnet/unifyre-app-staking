@@ -1,6 +1,7 @@
 import { Injectable, LocalCache, ValidationUtils } from 'ferrum-plumbing';
 import Web3 from 'web3';
 import { StakingApp } from '../../common/Types';
+import { logError } from '../../common/Utils';
 import FerrumJson from './resources/abi/FerrumToken.json'
 import FestakingJson from './resources/abi/Festaking-abi.json';
 import FestakingBytecode from './resources/abi/Festaking-bytecode.json';
@@ -48,7 +49,7 @@ class ContractBase {
         if (e instanceof ContractCallError) {
           throw e;
         }
-        console.error(e);
+        logError(`Error calling contract method: ${topic}`, e);
         throw new ContractCallError(`Error calling contract method: ${topic}`, e);
       }
     }

@@ -4,6 +4,7 @@ import { StakingApp, StakeEvent, StakingContractType } from './Types';
 import { Big } from 'big.js';
 import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 import moment from 'moment';
+import * as Sentry from "@sentry/browser";
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  
@@ -20,6 +21,10 @@ export interface StakingRewards {
 
 export class BackendMode {
     static mode: 'unifyre' | 'web3' = 'unifyre';
+}
+
+export function logError(msg: string, err: Error) {
+    Sentry.captureException(err);
 }
 
 export class Utils {

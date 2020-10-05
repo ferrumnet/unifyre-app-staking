@@ -5,7 +5,7 @@ import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
-import {Utils} from '../../common/Utils';
+import {logError, Utils} from '../../common/Utils';
 import { ValidationUtils } from "ferrum-plumbing";
 import { Big } from 'big.js';
 
@@ -73,7 +73,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 history.replace(`/continuation`);
             }
         } catch (e) {
-            console.error('StakeToken.mapDispatchToProps', e);
+            logError('StakeToken.mapDispatchToProps', e);
             dispatch(addAction(StakingAppServiceActions.STAKING_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'stakeToken' }));
