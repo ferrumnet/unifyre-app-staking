@@ -5,9 +5,10 @@ import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeEvent, StakingApp } from "../../common/Types";
 import { History } from 'history';
-import {logError, Utils} from '../../common/Utils';
+import {formatter,StakingState,Utils,logError} from '../../common/Utils';
 import { ValidationUtils } from "ferrum-plumbing";
 import { Big } from 'big.js';
+import { UserStake } from "../../common/Types";
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -17,12 +18,23 @@ const Actions = StakeTokenActions;
 
 export interface StakeTokenProps extends StakeTokenState {
     network: string;
-    symbol: string;
-    contract: StakingApp;
-    balance: string;
-    stakedAmount: string;
     userAddress: string;
     stakeEvents: StakeEvent[];
+    balance: string;
+    symbol: string;
+    contract: StakingApp;
+    stakedAmount: string;
+    state: StakingState;
+    userStake: UserStake | undefined;
+    stakeCompletionRate: number;
+    remaining: string;
+    rewardPercent: string;
+    earlyWithdrawPercent: string;
+    stakingTimeProgress: number;
+    maturityProgress: number;
+    unstakeRewardsNow: string;
+    unstakeRewardsMaturity: string;
+    filled: boolean;
 }
 
 export interface StakeTokenDispatch {
@@ -35,7 +47,11 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     const userProfile = state.data.userData?.profile;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
-
+    const contract = state.data.stakingData.selectedContract || {} as any as StakingApp;
+    const rewards = Utils.stakingRewards(contract);
+    const stakeOf = state?.data?.stakingData?.userStake || {} as any as UserStake;
+    const totB = new Big(contract.stakedTotal || '0');
+    const capB = new Big(contract.stakingCap || '0');
     return {
         ...state.ui.stakeToken,
         network: address.network,
@@ -45,6 +61,19 @@ function mapStateToProps(state: RootState): StakeTokenProps {
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,
         stakeEvents: state.data.stakingData.stakeEvents,
+        state: Utils.stakingState(contract),
+        userStake: stakeOf,
+        stakeCompletionRate: capB.gt(new Big(0)) ?
+            Number(totB.times(new Big(100)).div(capB).toFixed()) : 0,
+        remaining: formatter.format(new Big(contract.stakingCap || '0').minus(new Big(contract.stakedTotal || '0')).toFixed(0), true)!,
+        rewardPercent: formatter.format(rewards.maturityAnnual, true) || '0',
+        earlyWithdrawPercent: formatter.format(rewards.earlyWithdrawAnnual, true) || '0',
+        stakingTimeProgress: Utils.stakeProgress(contract),
+        maturityProgress: !contract.withdrawEnds ? 0 : 
+            (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
+        unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
+        unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
+        filled: capB.minus(totB).lte(new Big(0)),
     };
 }
 

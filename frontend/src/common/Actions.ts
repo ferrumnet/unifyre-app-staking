@@ -6,6 +6,7 @@ export const CommonActions = {
     CONTINUATION_DATA_FAILED: 'CONTINUATION_DATA_FAILED',
     CONNECTION_FAILED: 'CONNECTION_FAILED',
     CONNECTION_SUCCEEDED: 'CONNECTION_SUCCEEDED',
+    CLEAR_ERROR: 'CLEAR_ERROR'
 };
 
 export function addAction(type: string, payload: any) {

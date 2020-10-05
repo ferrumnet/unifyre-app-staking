@@ -1,0 +1,159 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.progress {
+height: 1.6rem !important;
+}
+
+.progress-bar {
+  height: 1.6rem;
+  background-color: #150e0e66 !important;
+}
+
+.example {
+  opacity: 0.01;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
+.container{
+  animation-name: example;
+  animation-duration: 1s;
+}
+
+.collapsed {
+  animation-name: collapse;
+  animation-duration: 1s;
+  min-height: 55px;
+}
+
+.container-text {
+  opacity: 1;
+  animation-name: opac;
+  animation-duration: 4s;
+}
+
+.more {
+  height: 0px;
+}
+
+.opacitBefore {
+  display: 0;
+}
+
+.footer{
+  h1{
+    z-index: 50;
+    position: absolute;
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+  svg{
+    position: absolute;
+  }
+  header{    
+    width: 100%;
+  }
+}
+
+@keyframes example {
+  from {max-height: 80px;}
+  to {max-height: 390px;}
+}
+
+@keyframes collapse {
+  from {min-height: 190px;}
+  to {min-height: 50px;}
+}
+
+@keyframes opac {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+.nav{
+  justify-content: center;
+  display: block !important;
+
+  span{
+      &.ui-label{
+          display: flex;
+          padding: 25px;
+          justify-content: center;
+          align-items: center;
+          color: white;
+          margin-top: 50px;
+          width: 60%;
+      }
+  }
+
+  .nav_detail{
+    margin: 0px auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  .nav-container{
+    margin: 0px auto;
+    display: flex;
+    justify-content: center;
+  }
+
+}
+
+@media (max-width: 1100px) {
+  .withdraw_Container {
+    flex-direction: column;
+  }
+
+  .details{
+      margin-top: 30px;
+  }
+
+  .nav{
+      img{
+          width: 200px
+      }
+  }
+}
+

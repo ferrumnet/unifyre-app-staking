@@ -1,0 +1,91 @@
+.web-categories {
+    .btnContainer{
+        display: 'flex';
+        color: 'white';
+        justify-content: 'space-between';
+        width: '100%';
+        border-radius: '3px';
+        padding-bottom: '10px';
+        height: '60px';
+        cursor: pointer;
+    }
+
+    .tokenInfo{
+        display: 'flex';
+        flex: 1;
+        color: 'white';
+        justify-content: 'flex-start';
+        align-items: 'center'
+    }
+
+    .tokenSymbol {
+        margin: '0px 5px';
+        display: 'flex';
+        align-items: 'center'
+    }
+
+    .cat_text_container{
+        line-height: "1.4";
+        width: "50%"
+    }
+
+    .cat_categoryText{
+        letter-spacing: 1.5;
+        font-weight: 600;
+        font-size: '30px';
+        padding-left: '3%'
+    }
+
+    .percent{
+        margin-right:"0px";
+        justify-content: "flex-end" as "flex-end";
+        align-items: "center" as "center";
+        display: "flex" as "flex";
+        min-width: '17%';
+
+        .symb{
+            font-size: '30px';
+            text-align: 'right' as 'right';
+            font-weight: 'bold' as 'bold';
+            letter-spacing: 1
+        }
+    }
+
+    .stakingCapText{
+        font-size: '50px';
+        font-weight: 600;
+        color: 'white';
+        letter-spacing: 1.5;
+        display: "flex";
+        justify-content: 'space-between';
+        align-items: "center" as "center";
+        margin: "20px 0px"
+    }
+
+    .progessBarContainer{
+        padding-top: '20px'
+    }
+
+    .miniText2{
+        font-size: '11px';
+        margin: '5px 0px';
+        margin-top: '0px';
+        margin-bottom: "5px"
+    }
+
+    .rewards {
+        background-color: 'white';
+        color: '#c1052a';
+        text-align: "center" as "center";
+        font-size: '15px';
+        font-weight: "bold" as "bold";
+        margin: '4px 0px';
+        padding: '4px 50px';
+        justify-content: "center" as "center";
+        align-items: "center" as "center";
+        display: "flex" as "flex";
+        border-radius: '2px';
+        height: '55px';
+        cursor: 'pointer'
+    }
+}
