@@ -21,7 +21,6 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     const {symbol,stakingCap} = props.contract;   
     const history = useHistory();
     const {contract} = props;
-    var utcSeconds = contract.stakingStarts;
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
 
@@ -107,7 +106,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                         iconPosition="before"
                         primary
                         content={`UnStake`}
-                        onClick={()=>{props.onUnstakeToken(props)}}
+                        onClick={()=>{props.onUnstakeToken(history, props)}}
                     />
                 </div>
             </div>

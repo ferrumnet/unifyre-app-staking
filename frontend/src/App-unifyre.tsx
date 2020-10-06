@@ -20,8 +20,6 @@ const options = {
   timeout: 4000,
 }
 
-const WEB = false;
-
 function App() {
   let themeProvider = new ThemeConstantProvider('unifyre', defaultGreenThemeConstantsBuilder.set(Theme.Font.main, "'Open Sans', sans-serif").build());  
   return (

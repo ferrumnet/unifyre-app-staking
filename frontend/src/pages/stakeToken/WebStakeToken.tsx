@@ -15,11 +15,11 @@ import { Big } from 'big.js';
 import {ThemeContext,Theme} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
 import { StakingContractProps } from '../stakingContract/StakingContract';
-import { Header,Divider,Button} from '@fluentui/react-northstar';
+import { Header,Divider} from '@fluentui/react-northstar';
 import './stake.scss';
 import {List} from '../../components/list';
 
-function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch&StakingContractProps) {
+function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const history = useHistory();

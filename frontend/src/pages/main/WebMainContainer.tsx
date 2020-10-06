@@ -39,6 +39,8 @@ function MainComponent(props: MainProps&MainDispatch) {
                             status={e.transactionStatus}
                             contractName={e.contractName}
                             createdAt={e.createdAt}
+                            reward={e.amountOfReward}
+                            rewardSymbol={e.rewardSymbol || e.symbol}
                             url={Utils.linkForTransaction(e.network, e.mainTxId)}
                         />
 

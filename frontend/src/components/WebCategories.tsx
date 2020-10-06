@@ -7,7 +7,7 @@ import {ThemeContext} from 'unifyre-react-helper';
 import {formatter,Utils} from '../common/Utils';
 import { StakingApp } from "../common/Types";
 import { StakeCompletionProgress } from './ProgressBar';
-import ProgressBar from 'react-bootstrap/ProgressBar';
+// import ProgressBar from 'react-bootstrap/ProgressBar';
 import './categories_view.scss';
 
 interface categoryBtnProps {
@@ -89,7 +89,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                     {btn}
                 </div>
                 <div className="progessBarContainer">
-                    <ProgressBar animated now={100}></ProgressBar>
+                    {/* <ProgressBar animated now={100}></ProgressBar> */}
                 </div>
             </div>
         </Row>

@@ -15,10 +15,8 @@ import { CONFIG } from '../../common/IocModule';
 import { intl } from 'unifyre-react-helper';
 import { DashboardProps } from '../../common/RootState';
 import { MainContainer } from '../main/WebMainContainer';
-import { StakingContractContainer } from '../stakingContract/StakingContractContainer';
-import { StakeTokenContainer as WebStakeToken } from '../stakeToken/WebStakeToken';
+import { StakeTokenContainer as WebStakeTokenContainer } from '../stakeToken/WebStakeToken';
 import { UnstakeTokenContainer as WebUnStakeToken } from '../unstakeToken/WebUnstakeTokenContainer';
-import { UnstakeTokenContainer } from '../unstakeToken/UnstakeTokenContainer';
 import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
 import { PageWrapper } from '../../components/PageWrapper';
 import { Utils } from '../../common/Utils';
@@ -44,7 +42,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         <WebUnStakeToken/>
                   </Route>
                   <Route path='/stake/:contractAddress'>
-                        <WebStakeToken/>
+                        <WebStakeTokenContainer/>
                   </Route>
                   <Route path='/info/:contractAddress'>
                         <WebStakingContractContainer />
