@@ -3,10 +3,10 @@ import {
     Row
     // @ts-ignore
 } from 'unifyre-web-components';
-import {ThemeContext} from 'unifyre-react-helper';
+import {Theme, ThemeContext} from 'unifyre-react-helper';
 import {formatter,Utils} from '../common/Utils';
 import { StakingApp } from "../common/Types";
-import { StakeCompletionProgress } from './ProgressBar';
+import { ProgressBar, StakeCompletionProgress } from './ProgressBar';
 // import ProgressBar from 'react-bootstrap/ProgressBar';
 import './categories_view.scss';
 
@@ -56,7 +56,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
         backgroundImage: `url("${props.staking.backgroundImage}")`} : {};
     return (
         <div className="web-categories">
-        <Row withPadding noMarginTop>
+        <Row noMarginTop>
             <div style={
                     Object.assign({...styles.Container}, staking.color ? { backgroundColor: staking.color, }
                         : {}, backgroundStyle)}
@@ -65,15 +65,15 @@ export const CategoryBtn = (props:categoryBtnProps) => {
             >
                 <div className="btnContainer">
                     <a className="tokenInfo">
-                        <div className="tokenSymbol">
+                        {/* <div className="tokenSymbol">
                             <img
                                 style={{"width":'50px'}}
                                 src={staking.logo || Utils.icon(staking.currency)}
                             />
-                        </div>
+                        </div> */}
                         <div className="cat_text_container">
                             <div className="cat_categoryText">
-                                {Utils.ellipsis(props.staking.name, 20)}
+                                {Utils.ellipsis(props.staking.name, 30)}
                             </div>
                             {progressBar}
                         </div>
@@ -82,6 +82,13 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                         <div className="symb">
                             {`${rewards.maturityAnnual }%`}
                         </div>
+                        <span className="number-desc">STARTING<br/>APY</span>
+                    </div>
+                    <div className="percent">
+                        <div className="symb">
+                            {`${rewards.earlyWithdrawAnnual}%`}
+                        </div>
+                        <span className="number-desc">EARLY<br/>REWARD</span>
                     </div>
                 </div>
                 <div className="stakingCapText">
@@ -89,7 +96,7 @@ export const CategoryBtn = (props:categoryBtnProps) => {
                     {btn}
                 </div>
                 <div className="progessBarContainer">
-                    {/* <ProgressBar animated now={100}></ProgressBar> */}
+                    <ProgressBar completed={100 * Utils.stakeProgress(props.staking)} bgcolor={'white'}></ProgressBar>
                 </div>
             </div>
         </Row>
@@ -102,11 +109,12 @@ export const CategoryBtn = (props:categoryBtnProps) => {
 const themedStyles = (theme) => ({
     Container: {
         display: 'relative',
-        borderRadius: '10px',
+        borderRadius: '20px',
         width: '100%',
         marginBottom: '25px',
-        boxShadow: '0 0 15px 0 #bababa',
-        padding: '30px'
+        boxShadow: '0 0 15px 0 ' + theme.get(Theme.Colors.textColor),
+        padding: '30px',
+        minHeight: '300px',
     },
     containerBackgroundImage: {
         backgroundImage: '',

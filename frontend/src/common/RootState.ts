@@ -1,5 +1,5 @@
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { StakeEvent, StakingApp, UserStake } from "./Types";
+import { GroupInfo, StakeEvent, StakingApp, UserStake } from "./Types";
 
 export interface UserPreference {
     lastRedirectLink?: string;
@@ -9,7 +9,7 @@ export interface UserPreference {
 export const defaultUserPreference = {
 } as UserPreference;
 
-export interface DashboardProps {
+export interface DashboardState {
     initialized: boolean;
     fatalError?: string;
 }
@@ -41,18 +41,23 @@ export interface Web3ConnectionState {
     connected: boolean; error?: string;
 }
 
+export interface GroupData {
+    info: GroupInfo,
+}
+
 export interface RootState {
     data : {
         connection: Web3ConnectionState,
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
         stakingData: StakingDataState,
+        groupData: GroupData,
     },
     ui: {
         flags: {
             waiting: boolean,
         },
-        dashboard: DashboardProps,
+        dashboard: DashboardState,
         stakeToken: StakeTokenState,
         unstakeToken: StakeTokenState,
         continuation: ContinuationState,

@@ -34,22 +34,10 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
 
     return (
         <Page>
-            <div className="mainpage">
-                    {/* <PageTopPart>
-                    <Row withPadding centered>
-                        <ThemedText.H2>{props.contract.name}</ThemedText.H2>
-                    </Row>
-                    <Gap />
-                </PageTopPart> */}
-                
-                {mainPart}
-                <Row withPadding centered>
-                    <ThemedLink text={'Go back'} onClick={() => history.replace('/')} />
-                </Row>
-                <Gap size={'small'}/>
-            </div>
             <LoaderContainer />
-           
+            <div className="mainpage">
+                {mainPart}
+            </div>
         </Page>
     );
 }

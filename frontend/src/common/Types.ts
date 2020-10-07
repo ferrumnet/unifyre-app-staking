@@ -63,3 +63,11 @@ export interface UserStake {
     contractAddress: string;
     amountInStake: string;
 }
+
+export interface GroupInfo {
+  groupId: string;
+  themeVariables: any;
+  defaultCurrency: string;
+  headerHtml?: string;
+  footerHtml?: string;
+}

@@ -2,14 +2,14 @@ import React,{useContext} from 'react';
 import {ThemeContext} from 'unifyre-react-helper';
 
 
-//@ts-ignore
-export const Footer = ({children}) => {    
+export const Footer = (props: {children: any, htmlFooter?: string}) => {    
     const theme = useContext(ThemeContext);    
-    const styles = themedStyles(theme);
-
+    const footer = props.htmlFooter ? (
+        <div dangerouslySetInnerHTML={{ __html: props.htmlFooter }} ></div>
+    ) : undefined;
     return (
         <div className="footer">
-            <h1>Header Content</h1>
+            {footer}
         </div>
     )
 }

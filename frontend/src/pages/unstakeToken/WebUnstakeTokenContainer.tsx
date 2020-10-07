@@ -122,8 +122,8 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                         </div>
                         <Gap/>
                         {
-                            fields.map(e=>
-                                <List value={e.value} lable={e.lable}/>
+                            fields.map((e, i)=>
+                                <List key={i} value={e.value} label={e.lable}/>
                             )
                         }
                     </div>

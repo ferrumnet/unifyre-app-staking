@@ -101,7 +101,7 @@ export function PreStakingView (props: StakingContractProps&StakingContractDispa
                         <Gap/>
                         {
                             fields.map(e=>
-                                <List value={e.value} lable={e.lable}/>
+                                <List value={e.value} label={e.lable}/>
                             )
                         }
                     </div>

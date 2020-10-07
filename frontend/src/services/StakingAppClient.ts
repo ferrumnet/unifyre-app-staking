@@ -5,7 +5,7 @@ import { logError, Utils } from "../common/Utils";
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { StakeEvent, UserStake } from "../common/Types";
+import { GroupInfo, StakeEvent, UserStake } from "../common/Types";
 import { Big } from 'big.js';
 
 export const StakingAppServiceActions = {
@@ -23,7 +23,8 @@ export const StakingAppServiceActions = {
     STAKING_FAILED: 'STAKING_FAILED',
     UN_STAKING_FAILED: 'UN_STAKING_FAILED',
     CONTRACT_SELECTED: 'CONTRACT_SELECTED',
-    STAKING_SUCCESS: 'STAKING_SUCCESS'
+    STAKING_SUCCESS: 'STAKING_SUCCESS',
+    GROUP_INFO_LOADED: 'GROUP_INFO_LOADED',
 };
 
 const Actions = StakingAppServiceActions;
@@ -236,6 +237,10 @@ export class StakingAppClient implements Injectable {
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
         }
+    }
+
+    async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
+        throw new Error('loadGroupInfo: Not implemented');
     }
 
     protected async api(req: JsonRpcRequest): Promise<any> {

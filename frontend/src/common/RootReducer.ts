@@ -7,9 +7,10 @@ import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserP
 import { StakeToken } from "../pages/stakeToken/StakeToken";
 import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
-import { StakingDataState } from "./RootState";
+import { GroupData, StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
 import { connectButtonReduce } from "../components/ConnectButton";
+import { GroupInfo } from "./Types";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -58,12 +59,22 @@ function stakingData(state: StakingDataState = { contracts: [], stakeEvents: []}
             return state;
     }
 }
+function groupData(state: GroupData = { info: {} as any }, action: AnyAction): GroupData {
+    switch(action.type) {
+        case StakingAppServiceActions.GROUP_INFO_LOADED:
+            const groupInfo = action.payload as GroupInfo;
+            return {...state, info: groupInfo};
+        default:
+            return state;
+    }
+}
 
 const data = combineReducers({
     connection: connectButtonReduce,
     userData,
     stakingData,
     userPreference: userPreferenceReducer,
+    groupData: groupData,
 });
 
 const ui = combineReducers({

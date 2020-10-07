@@ -1,12 +1,13 @@
 import { AnyAction, Dispatch } from "redux";
-import { IocModule, inject, DEFAULT_TOKEN_FOR_WEB3_MODE } from "../../common/IocModule";
+import { IocModule, inject } from "../../common/IocModule";
 import { addAction, CommonActions } from "../../common/Actions";
-import { RootState, DashboardProps } from "../../common/RootState";
+import { DashboardState, RootState } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { BackendMode, logError } from "../../common/Utils";
+import { loadThemeForGroup } from "../../themeLoader";
 
-const DashboardActions = {
+export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
     INIT_SUCCEED: 'INIT_SUCCEED',
 };
@@ -14,17 +15,26 @@ const DashboardActions = {
 const Actions = DashboardActions;
 
 export interface DashboardDispatch {
-    onLoad: () => Promise<void>;
+    onLoad: (groupId?: string) => Promise<void>;
  }
+
+export interface DashboardProps extends DashboardState {
+    customTheme: any;
+    headerHtml?: string;
+    footerHtml?: string;
+}
 
 function mapStateToProps(state: RootState): DashboardProps {
     return {
         ...state.ui.dashboard,
+        customTheme: state.data.groupData.info.themeVariables,
+        headerHtml: state.data.groupData.info.headerHtml,
+        footerHtml: state.data.groupData.info.footerHtml,
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onLoad: async () => {
+    onLoad: async (groupId) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
@@ -34,34 +44,43 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 if (!!userProfile) {
                     dispatch(addAction(Actions.INIT_SUCCEED, {}));
                 } else {
-                    dispatch(addAction(Actions.INIT_FAILED, { error: intl('fatal-error-details') }));
+                    dispatch(addAction(Actions.INIT_FAILED, { message: intl('fatal-error-details') }));
                 }
             } else {
-                await client.loadStakingsForToken(dispatch, DEFAULT_TOKEN_FOR_WEB3_MODE);
+                if (!groupId) {
+                    setTimeout(() => dispatch(addAction(Actions.INIT_FAILED, {message: 'No group ID'})));
+                    return;
+                }
+                const groupInfo = await client.loadGroupInfo(dispatch, groupId!);
+                if (!groupInfo) {
+                    dispatch(addAction(Actions.INIT_FAILED, {message: 'No group info'}));
+                    return;
+                }
+                loadThemeForGroup(groupInfo.themeVariables);
+                await client.loadStakingsForToken(dispatch, groupInfo.defaultCurrency);
                 dispatch(addAction(Actions.INIT_SUCCEED, {}));
             }
         } catch (e) {
             logError('Dashboard.mapDispatchToProps', e);
-            dispatch(addAction(Actions.INIT_FAILED, { error: e.toString() }));
+            dispatch(addAction(Actions.INIT_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
 } as DashboardDispatch);
 
-const defaultStakingCreateState = {
+const defaultDashboardState = {
     initialized: false,
-    amount: '0'
 }
 
-function reduce(state: DashboardProps = defaultStakingCreateState, action: AnyAction) {    
+function reduce(state: DashboardState = defaultDashboardState, action: AnyAction) {    
     switch(action.type) {
         case Actions.INIT_FAILED:
-            return {...state, initialized: false, fatalError: action.payload.error};
+            return {...state, initialized: false, fatalError: action.payload.message};
         case Actions.INIT_SUCCEED:
             return {...state, initialized: true, fatalError: undefined};
         default:
-        return state;
+            return state;
     }
 }
 

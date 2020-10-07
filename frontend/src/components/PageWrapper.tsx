@@ -1,49 +1,49 @@
 import React from 'react';
 import { BackendMode, Utils } from '../common/Utils';
 import {
-    Page, Row,ThemedText, Gap,PageTopPart,
+    Page,
     // @ts-ignore
 } from 'unifyre-web-components';
 import {
-    DesktopPage,FullScreen
+    DesktopPage,
     // @ts-ignore
 } from 'desktop-components-library';
-import { Label, Provider, Text , teamsTheme} from '@fluentui/react-northstar';
 import { ConnectButtonContainer } from './ConnectButton';
 import {NavBar} from './NavBar';
 import {Footer} from './Footer';
 import './nav.scss';
+import { ActionButton } from '@fluentui/react';
+import { useHistory, useParams } from 'react-router';
 
-function DesktopPageWrapper(props: {children: any}) {
+function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string}) {
     const connect = BackendMode.mode === 'web3' ? (
                 <ConnectButtonContainer />
     ) : undefined;
+    const history = useHistory();
+    const groupId = Utils.getGroupIdFromHref();
     return (
         <>
-        <div className="navigation" >
-            <input type="checkbox" className="navigation__checkbox" id="navi-toggle"/>
-            <label htmlFor="navi-toggle" className="navigation__button"></label>
-            <div className="navigation__background">&nbsp;</div>
-            <nav className="navigation__nav">
-                <ul className="navigation__list">
-                    <li className="navigation__item"><a href="#" className="navigation__link">Staking Pools</a></li>
-                    <li className="navigation__item"><a href="#" className="navigation__link">Recent Transactions</a></li>
-
-                </ul>
-            </nav>
-        </div>
-      
         <DesktopPage 
             NavBar={
                 <NavBar 
                     connect={connect}
-                    withShadow={true}
+                    htmlHeader={props.headerHtml}
                 >
+                    <ActionButton
+                        onClick={() => history.push('/' + groupId)}
+                        allowDisabledFocus>
+                        Staking Options
+                    </ActionButton>
+                    <ActionButton
+                        allowDisabledFocus>
+                        Transactions
+                    </ActionButton>
                 </NavBar>
             }
-            withShadow={true}
             Footer={
-                <Footer>
+                <Footer
+                    htmlFooter={props.footerHtml}
+                >
                 </Footer>
             }
         >
@@ -53,9 +53,9 @@ function DesktopPageWrapper(props: {children: any}) {
     );
 }
 
-export function PageWrapper(props: {children: any}) {
+export function PageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string}) {
     if (Utils.platform() === 'desktop') {
-        return <DesktopPageWrapper >{props.children}</DesktopPageWrapper>
+        return <DesktopPageWrapper headerHtml={props.headerHtml} footerHtml={props.footerHtml} >{props.children}</DesktopPageWrapper>
     }
 
     // For mobile

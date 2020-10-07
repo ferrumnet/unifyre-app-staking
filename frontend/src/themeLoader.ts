@@ -1,4 +1,29 @@
 import { loadTheme } from '@fluentui/react';
+// const myTheme = {
+//     palette: {
+//       themePrimary: '#fff53b',
+//       themeLighterAlt: '#0a0a02',
+//       themeLighter: '#292709',
+//       themeLight: '#4d4a12',
+//       themeTertiary: '#999323',
+//       themeSecondary: '#e0d834',
+//       themeDarkAlt: '#fff64e',
+//       themeDark: '#fff86a',
+//       themeDarker: '#fffa91',
+//       neutralLighterAlt: '#0b0b0b',
+//       neutralLighter: '#151515',
+//       neutralLight: '#252525',
+//       neutralQuaternaryAlt: '#2f2f2f',
+//       neutralQuaternary: '#373737',
+//       neutralTertiaryAlt: '#595959',
+//       neutralTertiary: '#4d2d0d',
+//       neutralSecondary: '#995a1a',
+//       neutralPrimaryAlt: '#e08326',
+//       neutralPrimary: '#ff952b',
+//       neutralDark: '#ffaf5e',
+//       black: '#ffc488',
+//       white: '#000000',
+//     }}
 
 export const BuilderVariables ={
     palette: {
@@ -26,12 +51,19 @@ export const BuilderVariables ={
         black: '#1d1d1d',
         white: '#ffffff',
         wierd: '#ffffff',
-        logoUrl: 'https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png'
     },
-    logoUrl: 'https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png'
 }
 export const WebThemeLoader = () =>
     loadTheme({
-       ...BuilderVariables
+    //    ...myTheme,
+       ...BuilderVariables,
     });
 
+export function loadThemeForGroup(customTheme: any) {
+    console.log('LOADING THEME ', customTheme)
+    return loadTheme({
+    //    ...BuilderVariables,
+    //    ...myTheme,
+        palette: {...customTheme}
+    });
+}

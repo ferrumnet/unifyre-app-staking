@@ -57,9 +57,13 @@ function MainComponent(props: MainProps&MainDispatch) {
         </>
     ) : undefined;
 
+    const headerH = props.headerHtml ? (
+        <div dangerouslySetInnerHTML={ {__html: props.headerHtml} } ></div>
+    ) : undefined;
     
     return (
         <Page>
+            {headerH}
             <Gap size={'small'}/>
             {
                 stakings.map((e:StakingApp, i: number) => 
@@ -67,7 +71,7 @@ function MainComponent(props: MainProps&MainDispatch) {
                             key={i}
                             staking={e}
                             userAddress={props.userAddress}
-                            onStakeNow={()=>props.onContractSelected(history, e, props.userAddress)}
+                            onStakeNow={()=>props.onContractSelected(history, e, props.userAddress, props.groupId)}
                         />)
             }
             <Gap/>

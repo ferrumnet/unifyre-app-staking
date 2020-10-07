@@ -11,16 +11,17 @@ export interface MainProps {
     userAddress: string;
     stakings: StakingApp[];
     currency: string,
-    stakeEvents: StakeEvent[]
+    stakeEvents: StakeEvent[];
+    groupId?: string;
+    headerHtml?: string;
 }
 
 export interface MainDispatch {
-    onContractSelected: (history: History, contract: StakingApp, userAddress: string) => void;
+    onContractSelected: (history: History, contract: StakingApp, userAddress: string, groupId?: string) => void;
 }
 
 function mapStateToProps(state: RootState): MainProps {
     const userProfile = state.data.userData?.profile;
-    console.log('USER PROF', userProfile)
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
     return {
@@ -28,17 +29,19 @@ function mapStateToProps(state: RootState): MainProps {
         userAddress: address.address,
         stakings: state.data.stakingData.contracts,
         currency: address.currency,
-        stakeEvents: state.data.stakingData.stakeEvents
+        stakeEvents: state.data.stakingData.stakeEvents,
+        groupId: state.data.groupData.info.groupId,
+        headerHtml: state.data.groupData.info.headerHtml,
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onContractSelected: async (history, contract, userAddress) => {
+    onContractSelected: async (history, contract, userAddress, groupId) => {
         const client = inject<StakingAppClient>(StakingAppClient);
         const res = await client.selectStakingContract(dispatch, contract.network,
             contract.contractAddress, userAddress);
         if (!!res) {
-            history.push('/info/' + contract.contractAddress);
+            history.push((groupId ? `/${groupId}` : '') + '/info/' + contract.contractAddress);
         }
     }
 } as MainDispatch);

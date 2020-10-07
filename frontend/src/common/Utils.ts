@@ -48,6 +48,12 @@ export class Utils {
         return base + subRoute;
     }
 
+    static getGroupIdFromHref() {
+        let base = window.location.pathname;
+        const parts = base.split('/');
+        return parts[1];
+    }
+
     static platform(): 'desktop' | 'iOS' | 'android' {
         var iOs = /Phone|iPad|iPod/i.test(navigator.userAgent);
         var android = /Android/i.test(navigator.userAgent);
@@ -174,7 +180,7 @@ export class Utils {
             return 0;
         }
         const now = Date.now() / 1000;
-        return (now - contract.stakingStarts) / (contract.stakingEnds - contract.stakingStarts);
+        return Math.min(1, (now - contract.stakingStarts) / (contract.stakingEnds - contract.stakingStarts));
     }
 
     static tillDate(date: number) {

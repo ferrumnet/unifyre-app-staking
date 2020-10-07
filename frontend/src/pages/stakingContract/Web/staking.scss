@@ -1,16 +1,79 @@
-.withdraw_Container{
-    margin-top: 5%;
-    justify-content: space-around;
-    padding-top: 20px;
-    padding-bottom: 10%;
+.staking-box {
+    flex: 1;
+    min-width: 350px;
+    min-height: 350px;
+    max-width: 400px;
+    border-radius: 30px;
+    border-style: solid;
+    border-width: 3px;
+    border-color: #dcf5f255;
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    margin-bottom: 12px;
+    margin-right: 12px;
+}
 
-    .ui-list__item__contentWrapper{
-        margin: 30px 0px 30px 0px;
+.address-box {
+}
+
+.info-box {
+    flex: 1;
+    min-width: 400px;
+    .staking-info-small-val {
+        font-weight: bold;
+        font-size: 12px;
+    }
+    .staking-info-val {
+        font-weight: bold;
+    }
+}
+
+
+.main-staking-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 50px;
+}
+
+.contract-top {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+
+    .contract-title-box {
+        display: flex;
+        flex-direction: column;
     }
 
-    .ui-list__item__content{
-        font-size: 1rem;
+    .contract-title {
+        font-size: 28px;
     }
+
+    .contract-logo {
+        width: 50px;
+        height: 50px;
+        margin-right: 8px;
+    }
+
+    .contract-logo img {
+        width: 50px;
+        height: 50px;
+        margin-right: 8px;
+    }
+    .contract-sub-title {
+        font-size: 18px;
+    }
+}
+
+.contract-container{
+    display: flex;
+    flex-direction: row;
+    width: '100%';
+    flex-wrap: wrap;
 
     .details{
         border-radius: 20px;
@@ -78,6 +141,10 @@
 
 .main_address{
     width: 100%;
+
+    .contract-title {
+
+    }
 }
 
 .details_header{
@@ -111,73 +178,6 @@
     height: 30rem;
     box-shadow: 0 1.5rem 4rem black .15;
 
-    &__cta{
-        color: white;
-        text-align: center;
-        width: 100%;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    &_value{
-        color: white;
-        font-size: 3rem;
-        width: 100%;
-        font-weight: 100;
-        display: block;
-        padding-bottom: 0px;
-        margin-bottom: 0px;
-        line-height: 1.3;
-        text-transform: uppercase;  
-    }
-
-    &_sub{
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 100;
-        position: absolute;
-        bottom: 5px;
-        text-align: right;
-        padding-left: 10px;
-        right: 20px;
-    }
-
-    
-    &__side{
-        position: absolute;
-        height: 30rem;
-        top:0;
-        left:0;
-        transition: all .8s ease;
-        width: 100%;
-        backface-visibility: hidden;
-        border-radius: 3px;
-        box-shadow: 0 1.5rem 2rem #00000057;
-
-        &__front{
-            background-color:#e8f3ff;
-        }
-
-        &__back{
-            background-color: green;
-            transform: rotateY(180deg);
-        }
-
-        &__front_pre{
-            background-color: green;
-
-        }
-
-        &__back_pre{
-            background-color:#e8f3ff;
-            transform: rotateY(180deg);
-        }
-    }
-
-
-
     &:hover &__side__front {
         transform: rotateY(180deg);
     }
@@ -185,7 +185,6 @@
     &:hover &__side__back {
         transform: rotateY(0deg);
     }
-   
 }
 
 .button_container{

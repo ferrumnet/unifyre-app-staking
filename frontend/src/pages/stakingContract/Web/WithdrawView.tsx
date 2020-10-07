@@ -20,23 +20,23 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
        
         {
             value: 'You Have Staked',
-            lable: `${props.userStake?.amountInStake} ${props.symbol}`
+            label: `${props.userStake?.amountInStake} ${props.symbol}`
         },
         {
             value: 'Rewards if un-staked today',
-            lable: props.unstakeRewardsNow
+            label: props.unstakeRewardsNow
         },
         {
             value: 'Rewards at maturity',
-            lable: props.unstakeRewardsMaturity
+            label: props.unstakeRewardsMaturity
         },
         {
             value: 'Early withdraw starts',
-            lable: dataFormat(props.contract.withdrawStarts)
+            label: dataFormat(props.contract.withdrawStarts)
         },
         {
             value: 'Maturity',
-            lable: dataFormat(props.contract.withdrawEnds)
+            label: dataFormat(props.contract.withdrawEnds)
         }
             
     ]
@@ -80,8 +80,8 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
                         </div>
                         <Gap/>
                         {
-                            fields.map(e=>
-                                <List value={e.value} lable={e.lable}/>
+                            fields.map((e, i)=>
+                                <List key={i} value={e.value} label={e.label}/>
                             )
                         }
                     </div>

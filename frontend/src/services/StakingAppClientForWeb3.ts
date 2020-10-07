@@ -6,6 +6,7 @@ import { addAction, CommonActions } from "../common/Actions";
 import { StakingAppClient, StakingAppServiceActions } from "./StakingAppClient";
 import { Big } from 'big.js';
 import { logError } from "../common/Utils";
+import { GroupInfo } from "../common/Types";
 const Actions = StakingAppServiceActions;
 
 export class StakingAppClientForWeb3 extends StakingAppClient {
@@ -63,6 +64,26 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
             dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signAndSend' }));
+        }
+    }
+
+    async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
+        try {
+            ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');
+            dispatch(addAction(CommonActions.WAITING, { source: 'loadGroupInfo' }));
+            let groupInfo = (await this.api({
+                command: 'getGroupInfo', data: {groupId},
+                params: []}as JsonRpcRequest)) as GroupInfo;
+            if (!groupInfo) {
+                return undefined;
+            }
+            dispatch(addAction(Actions.GROUP_INFO_LOADED, groupInfo));
+            return groupInfo;
+        } catch (e) {
+            logError('Error loading group info', e);
+            return;
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'loadGroupInfo' }));
         }
     }
 

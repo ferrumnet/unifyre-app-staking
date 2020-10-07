@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { Dashboard, DashboardDispatch } from './Dashboard';
+import { Dashboard, DashboardDispatch, DashboardProps } from './Dashboard';
 import { Switch, Route } from 'react-router-dom';
 import {
     Row, ThemedText, Gap, Page,
@@ -7,8 +7,6 @@ import {
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
 import { CONFIG } from '../../common/IocModule';
-import { intl } from 'unifyre-react-helper';
-import { DashboardProps } from '../../common/RootState';
 import { MainContainer } from '../main/MainContainer';
 import { StakingContractContainer } from '../stakingContract/StakingContractContainer';
 import { StakeTokenContainer } from '../stakeToken/StakeTokenContainer';
@@ -22,6 +20,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         onLoad();
     }, [onLoad]);
 
+    console.log('PROPS 000 ARE ', props)
     const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><ThemedText.H1>TEST MODE</ThemedText.H1></Row></>)
     if (props.initialized) {
         // Render the routes

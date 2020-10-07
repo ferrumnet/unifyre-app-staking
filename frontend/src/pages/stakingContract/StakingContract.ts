@@ -24,10 +24,11 @@ export interface StakingContractProps {
     unstakeRewardsNow: string;
     unstakeRewardsMaturity: string;
     filled: boolean;
+    groupId?: string;
 }
 
 export interface StakingContractDispatch {
-    onContractSelected: (history: History, address: string,withdraw:boolean) => void;
+    onContractSelected: (history: History, address: string, withdraw:boolean, groupId?: string) => void;
 }
 
 function mapStateToProps(state: RootState): StakingContractProps {
@@ -59,16 +60,18 @@ function mapStateToProps(state: RootState): StakingContractProps {
         unstakeRewardsMaturity: `${LocaleManager.formatDecimalString(
             Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol}`,
         filled: capB.minus(totB).lte(new Big(0)),
+        groupId: state.data.groupData.info.groupId,
     };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onContractSelected: (history, address,withdraw) => {
+    onContractSelected: (history, address,withdraw, groupId) => {
         dispatch(addAction(StakingAppServiceActions.CONTRACT_SELECTED, {address}));
+        const gidPre = groupId ? `/${groupId}` : '';
         if(withdraw){
-            history.push(`/unstake/${address}`);
+            history.push(`${gidPre}/unstake/${address}`);
         }else{
-            history.push(`/stake/${address}`);
+            history.push(`${gidPre}/stake/${address}`);
         }
     }
 } as StakingContractDispatch);
