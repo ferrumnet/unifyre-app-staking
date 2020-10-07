@@ -8,6 +8,23 @@
     height: 80px;
 }
 
+.ms-Panel-navigation{
+    margin-top: 20px;
+}
+
+.ms-Panel-contentInner{
+    text-align: center;
+    margin: 30px 20px;
+
+    .ms-Panel-content{
+        padding-left: 0px;
+    }
+
+    .ms-Label{
+        font-size: 20px;
+    }
+}
+
 .logo_img{
     image-Rendering: 'auto' as "auto";
     height: 40px;
