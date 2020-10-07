@@ -5331,7 +5331,7 @@ des.js@^1.0.0:
 
 "desktop-components-library@https://github.com/ferrumnet/desktop-components-library.git":
   version "1.0.0"
-  resolved "https://github.com/ferrumnet/desktop-components-library.git#ed3b792ea318efc393279b4c713320b85a92cb30"
+  resolved "https://github.com/ferrumnet/desktop-components-library.git#3439c88fc33ef0e2e77f64502d77746080a27399"
   dependencies:
     "@fluentui/react" "^7.143.0"
     "@types/jest" "^25.2.3"
