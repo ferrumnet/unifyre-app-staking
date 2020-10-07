@@ -1,127 +1,121 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useHistory } from 'react-router-dom';
-import { StakingContract, StakingContractDispatch, StakingContractProps } from '../StakingContract';
+import { StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import './staking.scss';
 import {List} from '../../../components/list';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap,InputGroupAddon,ThemedButton
+    Row, ThemedText, Gap,InputGroupAddon,ThemedButton
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Header,Divider,Button} from '@fluentui/react-northstar';
-import { Flex } from '@fluentui/react-northstar';
-import { CallVideoIcon } from '@fluentui/react-icons-northstar';
-import { dataFormat, Utils } from "../../../common/Utils";
-import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
+import { dataFormat, Utils } from '../../../common/Utils';
+import { Theme, ThemeContext } from 'unifyre-react-helper';
+import { LeftBox, RightBox } from '../../../components/WebBoxes';
+import { PrimaryButton } from '@fluentui/react';
 
 export function WithdrawView (props: StakingContractProps&StakingContractDispatch) {
     const history = useHistory();
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
 
     const fields = [
        
         {
-            value: 'You Have Staked',
-            label: `${props.userStake?.amountInStake} ${props.symbol}`
+            label: 'You Have Staked',
+            value: `${props.userStake?.amountInStake || '0'} ${props.symbol || ''}`
         },
         {
-            value: 'Rewards if un-staked today',
-            label: props.unstakeRewardsNow
+            label: 'Rewards if un-staked today',
+            value: props.unstakeRewardsNow || ''
         },
         {
-            value: 'Rewards at maturity',
-            label: props.unstakeRewardsMaturity
+            label: 'Rewards at maturity',
+            value: props.unstakeRewardsMaturity || ''
         },
         {
-            value: 'Early withdraw starts',
-            label: dataFormat(props.contract.withdrawStarts)
+            label: 'Early withdraw starts',
+            value: dataFormat(props.contract.withdrawStarts)
         },
         {
-            value: 'Maturity',
-            label: dataFormat(props.contract.withdrawEnds)
+            label: 'Maturity',
+            value: dataFormat(props.contract.withdrawEnds)
         }
             
     ]
     const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
-      
-    return (
-        <div className="withdraw_Container">
-            <div className="main_address">
-                    <>
-                        <Header as="h2" content="PLATINUM" />
-                        <Header as="h4" content="STAKING POOL" color='red' />
-                        <div className="details_header">
-                            <Divider fitted size={3} color='red' />
-                        </div>
-                    </>
-                <div className="address_container">
-                    <input value={props.userStake?.userAddress} />
-                    <Gap/>
-                    <div className="space"></div>
-                    <input value={props.userStake?.userAddress} />
-                </div>
-                <Button 
-                    className="btn" 
-                    content="Un stake" 
-                    iconPosition="before"
-                    primary 
-                    disabled={props.state !== 'withdraw' && props.state !== 'maturity'}
-                    onClick={() => props.onContractSelected(history,props.contract.contractAddress,true)}
-                />
 
+    const contractTop = (
+        <div className="contract-top">
+            <div className="contract-logo">
+                <img src={props.contract.logo} />
             </div>
-            <div className="details">              
-                <div className="details_card">
-                    <div className="details_card__side  details_card__side__front">
-                        <Gap/>
-                        <div className="mini_header">
-                            <Header as="h4" content="DETAILS" color='red' />
-                            <div className="details_header">
-                                <Divider fitted size={3} color='red' />
-                            </div>
-                        </div>
-                        <Gap/>
-                        {
-                            fields.map((e, i)=>
-                                <List key={i} value={e.value} label={e.label}/>
-                            )
-                        }
-                    </div>
-                    <div className="details_card__side details_card__side__back">
-                        <div className="graph">
-                                <CircularProgressbarWithChildren
-                                strokeWidth = {4}
-                                styles={buildStyles({
-                                    // Rotation of path and trail, in number of turns (0-1)
-                                    rotation: 2.25,
-                                
-                                    // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-                                    strokeLinecap: 'butt',
-
-                                
-                                    // Text size
-                                    textSize: '10px',
-                            
-                                    // How long animation takes to go from one percentage to another, in seconds
-                                    pathTransitionDuration: 1,
-                                
-                                    // Can specify path transition in more detail, or remove it entirely
-                                    // pathTransition: 'none',
-                                
-                                    // Colors
-                                    pathColor: `rgba(249, 64, 43, 1)`,
-                                    textColor: '#ffffff',
-                                    trailColor: 'rgb(214 214 214 / 12%)',
-                                    backgroundColor: 'rgb(214 214 214 / 12%)',
-                                })} 
-                                value={props.maturityProgress}
-                                >
-                                    <Row noMarginTop><ThemedText.H2>{'MATURITY'}</ThemedText.H2></Row>
-                                    <ThemedText.H2>{tillDay + ' days'}</ThemedText.H2>
-                                    <ThemedText.H4>{tillMon + ' months'}</ThemedText.H4>
-                                </CircularProgressbarWithChildren>;
-                        </div>
-                    </div>
-                </div>
+            <div className="contract-title-box">
+                <span className="contract-title" style={styles.text}>
+                    {props.contract.name || ''}
+                </span>
+                <span className="contract-sub-title" style={styles.text}>
+                    {'STAKING POOL'}
+                </span>
             </div>
         </div>
-    )
+    );
+
+    const addressBox = (
+        <LeftBox>
+            {contractTop}
+            <Gap size='small' />
+            <Row >
+                <ThemedText.H3>YOUR ADDRESS</ThemedText.H3>
+            </Row>
+            <Row >
+                <ThemedText.H2 >{Utils.shorten(props.userStake?.userAddress || '')}</ThemedText.H2>
+            </Row>
+            <Gap size='small' />
+            <Row >
+                <ThemedText.H3>CONTRACT ADDRESS</ThemedText.H3>
+            </Row>
+            <Row >
+                <ThemedText.H2 >{Utils.shorten(props.userStake?.contractAddress || '')}</ThemedText.H2>
+            </Row>
+            <Gap />
+            <Row>
+                <PrimaryButton text={'Un-stake'}
+                    disabled={props.state !== 'withdraw'}
+                    onClick={() => props.onContractSelected(
+                        history,props.contract.contractAddress, true, props.groupId)}
+                    />
+            </Row>
+        </LeftBox>
+    );
+
+    const infoBox = (
+        <RightBox>
+        {
+        fields.map((e, i)=>
+            <List key={i}
+            value={e.value} label={e.label} />
+        )
+        }
+        <Gap />
+        <Row centered>
+            <span className="staking-maturity-counter" style={styles.text}>
+                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
+            </span>
+        </Row>
+        </RightBox>
+    );
+      
+    return (
+        <div className="main-staking-container">
+        <div className="contract-container">
+            {addressBox}
+            {infoBox}
+        </div> 
+        </div>
+    );
 }
+
+const themedStyles = (theme:any) => ({
+    text: {
+        color: theme.get(Theme.Colors.textColor),
+    },
+})

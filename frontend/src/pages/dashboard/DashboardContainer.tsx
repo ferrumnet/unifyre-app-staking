@@ -20,7 +20,6 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         onLoad();
     }, [onLoad]);
 
-    console.log('PROPS 000 ARE ', props)
     const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><ThemedText.H1>TEST MODE</ThemedText.H1></Row></>)
     if (props.initialized) {
         // Render the routes

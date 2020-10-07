@@ -1,22 +1,19 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, ThemedButton, ThemedLink, InputGroupAddon,
+    Page,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { useHistory } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import { LoaderContainer } from '../../../components/Loader';
-import { buildStyles,CircularProgressbarWithChildren} from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import {ThemeContext, Theme} from 'unifyre-react-helper';
 import {PreStakingView} from './PreStakingView';
-import {WithdrawView} from './WithdrawView';
 import {StakingView} from './StakingView';
-import { Label } from '@fluentui/react-northstar'
+import { WithdrawView } from './WithdrawView';
 
 function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
-    const history = useHistory();
+    console.log('STAKOO CONTRACTAR', props);
     let mainPart = (<> </>);
     switch (props.state) {
         case 'pre-stake':
@@ -28,7 +25,7 @@ function StakingContractComponent(props: StakingContractProps&StakingContractDis
         case 'pre-withdraw':
         case 'maturity':
         case 'withdraw':
-                mainPart = (<StakingView {...props}/>);
+                mainPart = (<WithdrawView {...props}/>);
             break;
     }
 

@@ -59,7 +59,8 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
             value: dataFormat(props.contract.withdrawEnds)
         }
             
-    ]
+    ];
+
     const contractTop = (
         <div className="contract-top">
             <div className="contract-logo">
@@ -75,7 +76,6 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
             </div>
         </div>
     );
-
 
     const addressBox = (
         <LeftBox>
