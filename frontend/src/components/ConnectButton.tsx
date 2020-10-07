@@ -14,11 +14,20 @@ import {
     WebThemedButton
     // @ts-ignore
 } from 'desktop-components-library';
+import { StakingApp,StakeEvent } from "../common/Types";
 
 const Actions = {
 }
 
-interface ConnectProps extends Web3ConnectionState {
+export interface ConnectProps extends Web3ConnectionState {
+    symbol: string;
+    userAddress: string;
+    stakings: StakingApp[];
+    currency: string,
+    stakeEvents: StakeEvent[];
+    groupId?: string;
+    headerHtml?: string;
+    connected:  boolean;
 }
 
 interface ConnectDispatch {
@@ -27,7 +36,19 @@ interface ConnectDispatch {
 }
 
 export function mapStateToProps(state: RootState): ConnectProps {
-    return state.data.connection;
+    const userProfile = state.data.userData?.profile;
+    const addr = userProfile?.accountGroups[0]?.addresses || {};
+    const address = addr[0] || {};
+    return {
+        symbol: address.symbol,
+        userAddress: address.address,
+        stakings: state.data.stakingData.contracts,
+        currency: address.currency,
+        stakeEvents: state.data.stakingData.stakeEvents,
+        groupId: state.data.groupData.info.groupId,
+        headerHtml: state.data.groupData.info.headerHtml,
+        connected: state.data.connection as any
+    };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({

@@ -28,16 +28,14 @@ function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHt
                 <NavBar 
                     connect={connect}
                     htmlHeader={props.headerHtml}
+                    
                 >
                     <ActionButton
                         onClick={() => history.push('/' + groupId)}
                         allowDisabledFocus>
                         Staking Options
                     </ActionButton>
-                    <ActionButton
-                        allowDisabledFocus>
-                        Transactions
-                    </ActionButton>
+                    
                 </NavBar>
             }
             Footer={
