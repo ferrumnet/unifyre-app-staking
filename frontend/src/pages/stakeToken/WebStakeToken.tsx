@@ -1,161 +1,123 @@
-import React, {useContext,useEffect,useState} from 'react';
+import React, {useContext} from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, ErrorMessage
+    Row, ThemedText, Gap, ErrorMessage
     // @ts-ignore
 } from 'unifyre-web-components';
-import {
-    InputGroupAddon,WebThemedButton
-    // @ts-ignore
-} from 'desktop-components-library';
 import { dataFormat,formatter } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
 import {ThemeContext,Theme} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
-import { StakingContractProps } from '../stakingContract/StakingContract';
-import { Header,Divider} from '@fluentui/react-northstar';
 import './stake.scss';
 import {List} from '../../components/list';
+import { LeftBox, RightBox } from '../../components/WebBoxes';
+import { PrimaryButton, TextField } from '@fluentui/react';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
-    const theme = useContext(ThemeContext);
-    const styles = themedStyles(theme);
     const history = useHistory();
     
 
     const fields = [
        
         {
-            value: 'You Have Staked',
-            label: `${props.userStake?.amountInStake} ${props.symbol}`
+            label: 'You Have Staked',
+            value: `${props.userStake?.amountInStake || ''} ${props.symbol || ''}`
         },
         {
-            value: 'Rewards if un-staked today',
-            label: props.unstakeRewardsNow
+            label: 'Rewards if un-staked today',
+            value: props.unstakeRewardsNow
         },
         {
-            value: 'Rewards at maturity',
-            label: props.unstakeRewardsMaturity
+            label: 'Rewards at maturity',
+            value: props.unstakeRewardsMaturity
         },
         {
-            value: 'Early withdraw starts',
-            label: dataFormat(props.contract.withdrawStarts)
+            label: 'Early withdraw starts',
+            value: dataFormat(props.contract.withdrawStarts)
         },
         {
-            value: 'Maturity',
-            label: dataFormat(props.contract.withdrawEnds)
+            label: 'Maturity',
+            value: dataFormat(props.contract.withdrawEnds)
         }
             
     ]
 
-    const [time,setTime] = useState({'days': 0,'hours':0,'minutes':0,'seconds':0})
-
-    useEffect(() => {
-        var countDownDate = new Date("Jan 5, 2021 15:37:25").getTime();
-        
-        setInterval(()=> {
-            var now = new Date().getTime();
-            var distance = countDownDate - now;    
-            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            setTime({days,hours,minutes,seconds})
-        },1000);
-    });
-
-    const {balance} = props;
     const error = props.error ? (
         <Row withPadding>
             <ErrorMessage text={props.error} />
         </Row>
     ) : undefined;
 
-    return (
-        <div className="staking">
-            <LoaderContainer />
-            <div className="main_address">
-                    <>
-                        <Header as="h2" content={`Start Staking ${props.symbol}`} />
-                        <Header as="h4" content="PLATINUM POOL" color={styles.categoryColor.color} />
-                        <div className="details_header">
-                            <Divider fitted size={3} color={styles.categoryColor.color} />
-                        </div>
-                    </>
-                    <div className="address_container">
-                    <ThemedText.H4>{'Amount To Stake'}</ThemedText.H4>
-                    <Gap />
-                    <InputGroupAddon
-                        placeholder={`0  ${props.symbol}`}
-                        editable={true} 
+    const inputBox = (
+        <LeftBox>
+            <Row>
+                <ThemedText.H3>{'AMOUNT TO STAKE'}</ThemedText.H3>
+            </Row>
+            <Row>
+                <TextField
+                    onChange={(e, v) => props.onAmountToStakeChanged(v || '')}
+                    value={props.amount}
+                    suffix={props.symbol || ''}/>
+            </Row>
+            <Row>
+                <ThemedText.H3>{'AVAILABLE BALANCE'}</ThemedText.H3>
+            </Row>
+            <Row>
+                <TextField
+                    value={`${formatter.format(props.balance || '0', false)} ${props.symbol || ''}`}
+                    readOnly={true}
+                    disabled={true}
                     />
-                    <Gap />
-                    <ThemedText.H4>{'Available Balance'}</ThemedText.H4>
-                    <Gap />
-                    <InputGroupAddon
-                          value={`${formatter.format(balance,false)} ${props.symbol}`}
-                          inputMode={'decimal'}
-                          disabled={true} 
+            </Row>
+            <Row>
+                <ThemedText.H3>{'REMAINING FROM CAP'}</ThemedText.H3>
+            </Row>
+            <Row>
+                <TextField
+                    value={`${formatter.format(
+                    new Big(props.contract.stakingCap || '0').minus(new Big(props.contract.stakedTotal || '0')).toFixed(),true)} ${props.symbol || ''}`}
+                    readOnly={true}
+                    disabled={true}
                     />
-                    <Gap />
-                    <ThemedText.H4>{'Amount Remaining in Stake'}</ThemedText.H4>
-                    <Gap />
-                    <InputGroupAddon
-                          value={`${formatter.format(
-                            new Big(props.contract.stakingCap || '0').minus(new Big(props.contract.stakedTotal || '0')).toFixed(),true)} ${props.symbol}`}
-                            disabled={true}
-                    />
-                    <Gap size={'small'}/>
-                    <WebThemedButton
-                        className="btn" 
-                        iconPosition="before"
-                        primary
-                        content={`Submit Stake`}
-                        onClick ={()=>{ props.onStakeToken(history,props) } }
-                    />
-                </div>
-            </div>
-            <div className="details prestaking">              
-                <div className="details_card"> 
-                    <div className="details_card__side  details_card__side__front">
-                        <Gap/>
-                        <div className="mini_header">
-                            <Header as="h4" content="DETAILS" color='red' />
-                            <div className="details_header">
-                                <Divider fitted size={3} color={styles.categoryColor.color} />
-                            </div>
-                        </div>
-                        <Gap/>
-                        {
-                            fields.map((e, i)=>
-                                <List key={i} value={e.value} label={e.label}/>
-                            )
-                        }
-                    </div>
-                    <div className="details_card__side details_card__side__back">
-                        <div className="details_card__cta">
-                            <p className="details_card_value">{'STAKING'}</p>
-                            <p className="details_card_value">{'Ends In'}</p>
-                            <p className="details_card_value_sub">{dataFormat(props.contract.stakingEnds)} </p>
-                        </div>
-                        <p className="details_card_sub">{time.days + "d " + time.hours + "h " + time.minutes + "m " + time.seconds + "s "}</p>
+            </Row>
+            {error}
+            <Row>
+                <PrimaryButton
+                    text={'Submit stake'}
+                    onClick ={()=> props.onStakeToken(history,props)}
+                />
+            </Row>
+        </LeftBox>
+    );
 
-                    </div>
-                    
-                </div>
+    const infoBox = (
+        <RightBox>
+            {
+                fields.map((e, i)=>
+                    <List key={i} value={e.value || ''} label={e.label}/>
+                )
+            }
+        </RightBox>
+    );
+
+    return (
+        <>
+            <LoaderContainer />
+            <Gap/>
+            <div className="main-staking-container">
+            <div className="contract-container">
+                {inputBox}
+                {infoBox}
+            </div> 
             </div>
-        </div>
+            <Gap/>
+            <Gap/>
+            <Gap/>
+        </>
     );
 }
 
 export const StakeTokenContainer = connect(
   StakeToken.mapStateToProps, StakeToken.mapDispatchToProps)(StakeTokenComponent);
-
-  //@ts-ignore
-const themedStyles = (theme) => ({
-    categoryColor: {
-        color: theme.get(Theme.Colors.headerTextColor),
-    },
-});

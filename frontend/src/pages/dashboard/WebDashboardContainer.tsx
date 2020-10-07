@@ -37,6 +37,7 @@ function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
       .set(Theme.Text.h3Size, themeVariables.fonts.medium.fontSize as number)
       .set(Theme.Text.h4Size, themeVariables.fonts.smallPlus.fontSize as number)
       .set(Theme.Text.linkColor, themeVariables.semanticColors.actionLink)
+      .set(Theme.Text.numberDownColor, themeVariables.semanticColors.errorText)
       .set(Theme.Font.main, themeVariables.fonts.medium.fontFamily! as string)
       .set(Theme.Input.inputTextColor, themeVariables.semanticColors.inputText)
       .set(Theme.Input.inputBackground, themeVariables.semanticColors.inputBackground)

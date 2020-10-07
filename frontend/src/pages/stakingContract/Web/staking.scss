@@ -13,6 +13,7 @@
     padding: 24px;
     margin-bottom: 12px;
     margin-right: 12px;
+    justify-content: center;
 }
 
 .address-box {
@@ -78,30 +79,6 @@
     .details{
         border-radius: 20px;
     }
-
-    input{
-        margin-bottom: 20px;
-        padding: 10px;
-        border-radius: 20;
-        overflow: visible;
-        border-radius: 10px;
-        border-bottom-width: 4px;
-        height: 80px;
-        font-size: 30px;
-    }
-
-    button {
-        box-shadow: 0 1.5rem 2rem #00000057;
-    }
-
-    .btn{
-        box-shadow: 0 1.5rem 4rem black .15;
-
-        span{
-            font-size: 25px;
-        }
-    }
-    
 }
 
 
@@ -196,3 +173,6 @@
     }
 }
 
+.ms-TextField {
+    width: 100%;
+}

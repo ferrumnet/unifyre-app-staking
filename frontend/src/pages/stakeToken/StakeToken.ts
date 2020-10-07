@@ -39,7 +39,7 @@ export interface StakeTokenProps extends StakeTokenState {
 
 export interface StakeTokenDispatch {
     onStakeToken: (history: History, props: StakeTokenProps) => Promise<void>;
-    onAmountToStakeChanged: (v:number) => Promise<void>;
+    onAmountToStakeChanged: (v: string) => Promise<void>;
     refreshStaking: () => void
 }
 
@@ -56,7 +56,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
         ...state.ui.stakeToken,
         network: address.network,
         symbol: address.symbol,
-        contract: Utils.selectedContrat(state, (window.location.href.split('/')[4]) || '') || {} as any,
+        contract: state.data.stakingData.selectedContract || {} as any,// || Utils.selectedContrat(state, (window.location.href.split('/')[4]) || '') || {} as any,
         balance: address.balance,
         stakedAmount: state.data.stakingData.userStake?.amountInStake || '',
         userAddress: address.address,
@@ -91,6 +91,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
+            console.log('CONTRAC IS ',  props.contract)
             const data = await client.stakeSignAndSend(
                 dispatch, props.amount,
                 props.contract.network,
@@ -108,7 +109,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'stakeToken' }));
         }
     },
-    onAmountToStakeChanged: async (v:number) => {
+    onAmountToStakeChanged: async (v: string) => {
         dispatch(addAction(Actions.AMOUNT_TO_STAKE_CHANGED, { amount: v }));
     },
     refreshStaking: () => {

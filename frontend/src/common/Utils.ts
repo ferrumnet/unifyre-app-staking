@@ -5,6 +5,7 @@ import { Big } from 'big.js';
 import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 import moment from 'moment';
 import * as Sentry from "@sentry/browser";
+import { error } from "console";
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  
@@ -24,6 +25,7 @@ export class BackendMode {
 }
 
 export function logError(msg: string, err: Error) {
+    console.error(msg, err);
     Sentry.captureException(err);
 }
 

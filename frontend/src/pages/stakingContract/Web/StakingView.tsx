@@ -7,8 +7,6 @@ import {
     Gap, Row,
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Header,Divider,Button} from '@fluentui/react-northstar';
-import { Flex } from '@fluentui/react-northstar';
 import { dataFormat, Utils } from "../../../common/Utils";
 import {ThemeContext, Theme} from 'unifyre-react-helper';
 import {
@@ -16,6 +14,7 @@ import {
     // @ts-ignore
 } from 'desktop-components-library';
 import { PrimaryButton } from '@fluentui/react';
+import { LeftBox, RightBox } from '../../../components/WebBoxes';
 
 export function StakingView (props: StakingContractProps&StakingContractDispatch) {
     const theme = useContext(ThemeContext);
@@ -79,7 +78,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
 
 
     const addressBox = (
-        <div className="staking-box address-box">
+        <LeftBox>
             {contractTop}
             <Gap size='small' />
             <Row >
@@ -103,34 +102,18 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
                         history,props.contract.contractAddress,false, props.groupId)}
                     />
             </Row>
-        </div>
+        </LeftBox>
     );
-                            // <Button 
-                            //     className="btn" 
-                            //     iconPosition="before"
-                            //     primary
-                            //     content={
-                            //         props.filled ? 'Filled' :
-                            //             props.userStake?.amountInStake === '0' ? `Start Winning` : `Stake More ${props.symbol}`}
-                            //     
-                            //     disabled={props.filled}
-                            // />
 
     const infoBox = (
-        <div className="staking-box info-box">
+        <RightBox>
         {
         fields.map((e, i)=>
-            <List key={i} value={
-                    <span className={e.value.length > 10 ? 'staking-info-small-val' : 'staking-info-val'}
-                        style={styles.text}>{e.value || ''}</span>
-                }
-                label={
-                    <span 
-                        style={styles.text}>{e.label || ''}
-                    </span>}/>
+            <List key={i}
+            value={e.value} label={e.label} />
         )
         }
-        </div>
+        </RightBox>
     );
       
     return (

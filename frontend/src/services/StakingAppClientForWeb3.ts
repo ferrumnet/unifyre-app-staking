@@ -42,8 +42,8 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
         balance: string,
         ) {
         try {
-            ValidationUtils.isTrue(new Big(amount).gt(new Big('0')), 'Amount must be positive');
-            ValidationUtils.isTrue(new Big(balance).gte(new Big(amount)), 'Not enough balance');
+            ValidationUtils.isTrue(new Big(amount || '0').gt(new Big('0')), 'Amount must be positive');
+            ValidationUtils.isTrue(new Big(balance || '0').gte(new Big(amount || '0')), 'Not enough balance');
             dispatch(addAction(CommonActions.WAITING, { source: 'stakeSignAndSend' }));
             const token = this.getToken(dispatch);
             let txs = (await this.api({
