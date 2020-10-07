@@ -2,7 +2,7 @@ import React,{useContext,useState} from 'react';
 import {Theme,ThemeContext} from 'unifyre-react-helper';
 import { connect } from 'react-redux';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
-import {mapStateToProps,ConnectProps} from './ConnectButton';
+import {mapStateToProps} from './ConnectButton';
 import { useBoolean } from '@uifabric/react-hooks';
 import { ActionButton } from '@fluentui/react';
 import {Transactions} from '../components/transactions';
@@ -11,16 +11,13 @@ import { Label } from 'office-ui-fabric-react/lib/Label';
 
 import './nav.scss';
 
-
-const NavBarContainer = (props:{children: any, connect: any, htmlHeader?: string}&ConnectProps) => { 
+const NavBarContainer = (props:{children: any, connect: any, htmlHeader?: string}) => { 
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     const header = props.htmlHeader ? (
         <div dangerouslySetInnerHTML={ {__html: props.htmlHeader} } ></div>
     ) : undefined;
     const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
-
-
 
     return (
         <>
@@ -33,7 +30,7 @@ const NavBarContainer = (props:{children: any, connect: any, htmlHeader?: string
                 headerText="Recent Staking Transactions"
             >
                 {
-                    props.stakeEvents.length == 0 ?
+                    [].length == 0 ?
                     [
                     {
                     "amountStaked": '20',

@@ -47,7 +47,7 @@ export function mapStateToProps(state: RootState): ConnectProps {
         stakeEvents: state.data.stakingData.stakeEvents,
         groupId: state.data.groupData.info.groupId,
         headerHtml: state.data.groupData.info.headerHtml,
-        connected: state.data.connection as any
+        connected: state.data.connection?.connected
     };
 }
 
@@ -97,7 +97,6 @@ function ConnectButton(props: ConnectProps&ConnectDispatch) {
         }
     }, [props.error]);
     
-    // TODO: Show error
     return (
              <WebThemedButton
                 text={props.connected ? 'Connected' : 'Connect'} 
