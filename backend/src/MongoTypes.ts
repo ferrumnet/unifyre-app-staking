@@ -1,6 +1,6 @@
 import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
-import { StakeEvent, StakingApp, } from "./Types";
+import { GroupInfo, StakeEvent, StakingApp, } from "./Types";
 
 const StakingAppSchema: Schema = new Schema<StakingApp>({
     contractType: String,
@@ -54,9 +54,17 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
   transactionStatus: String,
 });
 
+const groupInfoSchema: Schema = new Schema<GroupInfo>({
+  groupId: String,
+  ThemeVariables: Object,
+  defaultCurrency: String,
+});
+
 export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
 
 export const StakeEventModel = (c: Connection) => c.model<StakeEvent&Document>('stakeEvent', StakeEventSchema);
+
+export const GroupInfoModel = (c: Connection) => c.model<GroupInfo&Document>('groupInfo', groupInfoSchema);
 
 export function getEnv(env: string) {
     const res = process.env[env];

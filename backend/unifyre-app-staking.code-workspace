@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../../aws-lambda-helper"
+		},
+		{
+			"path": "../../desktop-components-library"
 		}
 	],
 	"settings": {}

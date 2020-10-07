@@ -77,3 +77,11 @@ export interface StakingAppConfig {
     cmkKeyArn: string;
     adminSecret: string;
 }
+
+export interface GroupInfo {
+  groupId: string;
+  themeVariables: any;
+  defaultCurrency: string;
+  headerHtml?: string;
+  footerHtml?: string;
+}

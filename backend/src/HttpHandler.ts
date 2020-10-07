@@ -70,6 +70,10 @@ export class HttpHandler implements LambdaHttpHandler {
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.getStakingEventsForUser(userId!, req);
                     break;
+                case 'getGroupInfo':
+                    const {groupId} = req.data;
+                    body = await this.userSvc.getGroupInfo(groupId);
+                    break;
                 case 'stakeEventProcessTransactions':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.stakeEventProcessTransactions(userId!, req);

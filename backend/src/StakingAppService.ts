@@ -2,8 +2,8 @@ import { MongooseConnection } from "aws-lambda-helper";
 import { Connection, Model, Document } from "mongoose";
 import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
 import { CustomTransactionCallRequest, UnifyreExtensionKitClient } from "unifyre-extension-sdk";
-import { StakeEvent, StakingApp, StakingContractType, UserStake } from "./Types";
-import { StakeEventModel, StakingAppModel } from "./MongoTypes";
+import { GroupInfo, StakeEvent, StakingApp, StakingContractType, UserStake } from "./Types";
+import { GroupInfoModel, StakeEventModel, StakingAppModel } from "./MongoTypes";
 import { SmartContratClient } from "./SmartContractClient";
 import { TimeoutError } from "unifyre-extension-sdk/dist/client/AsyncRequestRepeater";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
@@ -24,6 +24,7 @@ async function undefinedOnTimeout<T>(fun: () => Promise<T|undefined>) {
 export class StakingAppService extends MongooseConnection implements Injectable {
     private stakingModel: Model<StakingApp & Document, {}> | undefined;
     private stakeEventModel: Model<StakeEvent & Document, {}> | undefined;
+    private groupInfoModel: Model<GroupInfo & Document, {}> | undefined;
     constructor(
         private uniClientFac: () => UnifyreExtensionKitClient,
         private stakingContract: SmartContratClient,
@@ -31,8 +32,10 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     ) { super(); }
 
     initModels(con: Connection): void {
-        this.stakingModel = StakingAppModel(con)
-        this.stakeEventModel = StakeEventModel(con)
+        console.log('DB WAS ',con.db );
+        this.stakingModel = StakingAppModel(con);
+        this.stakeEventModel = StakeEventModel(con);
+        this.groupInfoModel = GroupInfoModel(con);
     }
 
     private contract(cType: StakingContractType) {
@@ -97,6 +100,16 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         // Get all user stakeEvents
         const stakeEvents = await this.userStakeEvents(userId, currency);
         return stakeEvents;
+    }
+
+    async getGroupInfo(groupId: string): Promise<GroupInfo|undefined> {
+        this.verifyInit();
+        ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');
+        const r = await this.groupInfoModel!.findOne({groupId}).exec();
+        if (r) {
+            return r.toJSON();
+        }
+        return;
     }
 
     async updateStakingEvents(
