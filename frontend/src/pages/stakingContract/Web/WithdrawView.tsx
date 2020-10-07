@@ -4,24 +4,23 @@ import { StakingContractDispatch, StakingContractProps } from '../StakingContrac
 import './staking.scss';
 import {List} from '../../../components/list';
 import {
-    Row, ThemedText, Gap,InputGroupAddon,ThemedButton
+    Row, ThemedText, Gap,
     // @ts-ignore
 } from 'unifyre-web-components';
 import { dataFormat, Utils } from '../../../common/Utils';
 import { Theme, ThemeContext } from 'unifyre-react-helper';
 import { LeftBox, RightBox } from '../../../components/WebBoxes';
 import { PrimaryButton } from '@fluentui/react';
+import { StakingApp, UserStake } from '../../../common/Types';
 
-export function WithdrawView (props: StakingContractProps&StakingContractDispatch) {
-    const history = useHistory();
+export function WithdrawViewInfoBox(props: {contract: StakingApp,
+    userStake: UserStake, unstakeRewardsNow: string, unstakeRewardsMaturity: string}) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-
     const fields = [
-       
         {
             label: 'You Have Staked',
-            value: `${props.userStake?.amountInStake || '0'} ${props.symbol || ''}`
+            value: `${props.userStake?.amountInStake || '0'} ${props.contract.symbol || ''}`
         },
         {
             label: 'Rewards if un-staked today',
@@ -42,6 +41,28 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
             
     ]
     const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
+    return (
+        <RightBox>
+        {
+        fields.map((e, i)=>
+            <List key={i}
+            value={e.value} label={e.label} />
+        )
+        }
+        <Gap />
+        <Row centered>
+            <span className="staking-maturity-counter" style={styles.text}>
+                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
+            </span>
+        </Row>
+        </RightBox>
+    );
+}
+
+export function WithdrawView (props: StakingContractProps&StakingContractDispatch) {
+    const history = useHistory();
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
 
     const contractTop = (
         <div className="contract-top">
@@ -87,28 +108,17 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
         </LeftBox>
     );
 
-    const infoBox = (
-        <RightBox>
-        {
-        fields.map((e, i)=>
-            <List key={i}
-            value={e.value} label={e.label} />
-        )
-        }
-        <Gap />
-        <Row centered>
-            <span className="staking-maturity-counter" style={styles.text}>
-                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
-            </span>
-        </Row>
-        </RightBox>
-    );
       
     return (
         <div className="main-staking-container">
         <div className="contract-container">
             {addressBox}
-            {infoBox}
+            <WithdrawViewInfoBox
+                contract={props.contract}
+                unstakeRewardsMaturity={props.unstakeRewardsMaturity}
+                unstakeRewardsNow={props.unstakeRewardsNow}
+                userStake={props.userStake || {} as any}
+            />
         </div> 
         </div>
     );

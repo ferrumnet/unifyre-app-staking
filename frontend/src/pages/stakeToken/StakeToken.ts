@@ -35,6 +35,7 @@ export interface StakeTokenProps extends StakeTokenState {
     unstakeRewardsNow: string;
     unstakeRewardsMaturity: string;
     filled: boolean;
+    groupId?: string;
 }
 
 export interface StakeTokenDispatch {
@@ -74,6 +75,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
         unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
         unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
         filled: capB.minus(totB).lte(new Big(0)),
+        groupId: state.data.groupData.info?.groupId,
     };
 }
 
@@ -100,7 +102,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 props.balance,
                 );
             if (!!data) {
-                history.replace(`/continuation`);
+                const gidPrefix = props.groupId ? `/${props.groupId}` : '';
+                history.replace(`${gidPrefix}/continuation`);
             }
         } catch (e) {
             logError('StakeToken.mapDispatchToProps', e);

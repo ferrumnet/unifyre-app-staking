@@ -8,7 +8,6 @@ import {
 import { dataFormat,formatter } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
-import {ThemeContext,Theme} from 'unifyre-react-helper';
 import { LoaderContainer } from '../../components/Loader';
 import './stake.scss';
 import {List} from '../../components/list';

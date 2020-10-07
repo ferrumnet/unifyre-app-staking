@@ -20,7 +20,7 @@ export interface UnstakeTokenProps extends StakeTokenProps {
 
 export interface UnstakeTokenDispatch {
     onUnstakeToken: (history: History, props: UnstakeTokenProps) => Promise<void>;
-    onAmountToUnstakeChanged: (v:number) => Promise<void>;
+    onAmountToUnstakeChanged: (v: string) => Promise<void>;
 }
 
 function mapStateToProps(state: RootState): StakeTokenProps {
@@ -41,21 +41,18 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             ValidationUtils.isTrue(
                 new Big(props.amount || '0').lte(new Big(props.stakedAmount)),
             `You can not unstake more than your staked balance`);
-            if (props.contract.maxContribution) {
-                ValidationUtils.isTrue(
-                    new Big(props.amount || '0').lt(new Big(props.contract.maxContribution)),
-                    `Maximum contribution is ${props.contract.maxContribution} ${props.contract.symbol}`);
-            }
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
             const data = await client.unstakeSignAndSend(
-                dispatch, props.amount,
+                dispatch,
+                props.amount,
                 props.contract.network,
                 props.contract.contractAddress,
                 props.userAddress,
                 );
             if (!!data) {
-                history.replace(`/continuation`);
+                const gidPrefix = props.groupId ? `/${props.groupId}` : '';
+                history.replace(`${gidPrefix}/continuation`);
             }
         } catch (e) {
             logError('StakeToken.mapDispatchToProps', e);
@@ -64,7 +61,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeToken' }));
         }
     },
-    onAmountToUnstakeChanged: async (v:number) => {
+    onAmountToUnstakeChanged: async (v: string) => {
         dispatch(addAction(Actions.AMOUNT_TO_UN_STAKE_CHANGED, { amount: v }));
     },
 } as UnstakeTokenDispatch);

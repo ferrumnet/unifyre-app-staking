@@ -17,6 +17,7 @@ function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
         `You have ${props.action}ed ${
                     formatter.format(props.amount, false)} ${props.stakeEvent?.symbol || ''}`
     );
+    const gidPrefix = props.groupId ? `/${props.groupId}` : '';
     return (
         <Page>
             <PageTopPart>
@@ -28,8 +29,8 @@ function ConfirmationComponent(props: ConfirmationProps&ConfirmationDispatch) {
                 onLoad={props.onLoad}
                 txIds={[...(props.stakeEvent?.approveTxIds || []), props.stakeEvent?.mainTxId].filter(Boolean)}
                 okButtonText={props.action === 'stake' ? 'Stake more' : 'Check other opportunities'}
-                okButtonUrl={`/info/${props.stakeEvent?.contractAddress}`}
-                backButtonUrl={props.stakeEvent ? `/info/${props.stakeEvent?.contractAddress}` : '/'}
+                okButtonUrl={`${gidPrefix}/info/${props.stakeEvent?.contractAddress}`}
+                backButtonUrl={props.stakeEvent ? `${gidPrefix}/info/${props.stakeEvent?.contractAddress}` : `${gidPrefix}/`}
                 onRefresh={() => props.onRefresh(props)}
                 transactionStatus={props.stakeEvent?.transactionStatus || ''}
                 successMessage={successMsg}

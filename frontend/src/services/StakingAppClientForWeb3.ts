@@ -67,6 +67,39 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
         }
     }
 
+    async unstakeSignAndSend(
+        dispatch: Dispatch<AnyAction>, 
+        amount: string,
+        network: Network,
+        contractAddress: string,
+        userAddress: string,
+        ): Promise<string|undefined> {
+        try {
+            ValidationUtils.isTrue(new Big(amount).gt(new Big('0')), 'Amount must be positive');
+            dispatch(addAction(CommonActions.WAITING, { source: 'unstakeSignAndSend' }));
+            let txs = (await this.api({
+                command: 'unstakeTokenSignAndSendGetTransaction', data: {
+                    amount, network, contractAddress, userAddress},
+                params: []}as JsonRpcRequest)) as CustomTransactionCallRequest[];
+            if (!txs || !txs.length) {
+                dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not create an un-stake transaction.' }));
+            }
+            const requestId = await this.client.sendTransactionAsync(network, txs,
+                {amount, contractAddress, action: 'unstake'});
+            if (!requestId) {
+                dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not submit transaction.' }));
+            }
+            await this.processRequest(dispatch, requestId);
+            return 'success';
+        } catch (e) {
+            logError('Error unstakeSsignAndSend', e);
+            dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not send a sign request. ' + e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeSignAndSend' }));
+        }
+    }
+
+
     async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
         try {
             ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');

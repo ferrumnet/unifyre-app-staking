@@ -11,6 +11,7 @@ export interface ConfirmationProps extends ContinuationState {
     action: 'stake' | 'unstake';
     amount: string;
     rewardAmount: string;
+    groupId?: string;
 }
 
 export interface ConfirmationDispatch {
@@ -39,6 +40,7 @@ function mapStateToProps(state: RootState): ConfirmationProps {
         stakeEvent: event,
         amount,
         rewardAmount,
+        groupId: state.data.groupData.info.groupId,
     };
 }
 

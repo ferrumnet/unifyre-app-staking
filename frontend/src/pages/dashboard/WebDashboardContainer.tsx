@@ -88,7 +88,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   <Route path='/:gid/info/:contractAddress'>
                         <WebStakingContractContainer />
                   </Route>
-                  <Route path="/continuation">
+                  <Route path="/:gid/continuation">
                     <ConfirmTxnContainer />
                   </Route>
                   <Route path='/'>
