@@ -31,7 +31,7 @@ export const Transactions = (props:transactionsProps) => {
     return (
         <Row withPadding noMarginTop>
             <a
-            style={styles.Container} className={`${expand ? 'container' : 'collapsed'}`}
+            style={styles.Container} className={`transaction_tile ${expand ? 'container' : 'collapsed'}`}
             onClick={() => window.open(props.url, '_blank')}
             >
                 <div style={styles.btnContainer}>

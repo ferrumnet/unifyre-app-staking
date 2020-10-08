@@ -15,11 +15,15 @@ import {
     // @ts-ignore
 } from 'desktop-components-library';
 import { StakingApp,StakeEvent } from "../common/Types";
+import {Transactions} from '../components/transactions';
+import { Utils } from '../common/Utils';
+import { Label } from 'office-ui-fabric-react/lib/Label';
+import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
 
 const Actions = {
 }
 
-export interface ConnectProps extends Web3ConnectionState {
+interface ConnectProps extends Web3ConnectionState {
     symbol: string;
     userAddress: string;
     stakings: StakingApp[];
@@ -116,5 +120,39 @@ const themedStyles = (theme) => ({
     }
 })
 
+function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void}&ConnectProps){
+    return (
+        <Panel
+            isOpen={props.isOpen}
+            onDismiss={props.dismissPanel}
+            type={PanelType.medium}
+            closeButtonAriaLabel="Close"
+            isLightDismiss={true}
+            headerText="Recent Staking Transactions"
+        >
+        {
+            props.stakeEvents.length > 0 ?
+                props.stakeEvents.map((e, idx) => (
+                    <Transactions
+                        key={idx}
+                        type={e.type || 'stake'}
+                        amount={e.amountStaked}
+                        symbol={e.symbol}
+                        status={e.transactionStatus}
+                        contractName={e.contractName}
+                        createdAt={e.createdAt}
+                        reward={e.amountOfReward}
+                        rewardSymbol={e.rewardSymbol || e.symbol}
+                        url={Utils.linkForTransaction(e.network, e.mainTxId)}
+                    />
+                )) :   <Label disabled> You do not have any recent Transactions</Label>
+            }
+        </Panel>
+    )
+}
+
 export const ConnectButtonContainer = connect(
   mapStateToProps, mapDispatchToProps)(ConnectButton);
+
+export const SidePaneContainer = connect(
+mapStateToProps, mapDispatchToProps)(StakingSidePane);
