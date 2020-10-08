@@ -21,7 +21,11 @@ const options = {
 }
 
 function App() {
-  let themeProvider = new ThemeConstantProvider('unifyre', defaultGreenThemeConstantsBuilder.set(Theme.Font.main, "'Open Sans', sans-serif").build());  
+  let themeProvider = new ThemeConstantProvider('unifyre', defaultDarkThemeConstantsBuilder
+    .set(Theme.Font.main, "'Open Sans', sans-serif")
+    .set(Theme.Colors.themeNavBkg, "$Color.bkgShade2")
+      .set(Theme.Logo.logo, 'https://staking.ferrum.network/static/media/logo.44e552d9.png')
+    .build());  
   return (
     <ThemeContext.Provider value={themeProvider}>
           <Provider store={store}>
