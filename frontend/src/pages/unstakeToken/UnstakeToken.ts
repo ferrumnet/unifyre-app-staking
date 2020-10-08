@@ -3,7 +3,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { RootState, StakeTokenState } from "../../common/RootState";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { StakeToken, StakeTokenProps } from "../stakeToken/StakeToken";
-import { logError, Utils } from "../../common/Utils";
+import { logError } from "../../common/Utils";
 import { ValidationUtils } from "ferrum-plumbing";
 import { inject, IocModule } from "../../common/IocModule";
 import { History} from 'history';

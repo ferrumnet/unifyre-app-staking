@@ -18,6 +18,7 @@ import { Utils } from '../../common/Utils';
 import { StakingContractContainer as WebStakingContractContainer } from '../stakingContract/Web/index';
 import { Provider as FluentProvider } from '@fluentui/react-northstar';
 import { Theme as FulentTheme, useTheme } from '@fluentui/react-theme-provider';
+import { WebWaitingContainer } from '../../components/WebWaiting';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -42,8 +43,8 @@ function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
       .set(Theme.Input.inputTextColor, themeVariables.semanticColors.inputText)
       .set(Theme.Input.inputBackground, themeVariables.semanticColors.inputBackground)
       .set(Theme.Input.inputTextSize, themeVariables.fonts.medium.fontSize as number)
-      .set(Theme.Button.btnPrimary, themeVariables.semanticColors.buttonBackground)
-      .set(Theme.Button.btnPrimaryTextColor, themeVariables.semanticColors.buttonText)
+      .set(Theme.Button.btnPrimary, themeVariables.semanticColors.primaryButtonBackground)
+      .set(Theme.Button.btnPrimaryTextColor, themeVariables.semanticColors.primaryButtonText)
       .set(Theme.Button.btnBorderRadius, themeVariables.spacing.s2)
       .set(Theme.Button.btnPadding, themeVariables.spacing.s1)
       .set(Theme.Button.btnHighlight, themeVariables.semanticColors.primaryButtonBackground)
@@ -98,9 +99,10 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         }
                   </Route>
               </Switch>
+              <WebWaitingContainer />
             </PageWrapper>
             </FluentProvider>
-          </ThemeContext.Provider>
+            </ThemeContext.Provider>
             </>
         );
     }

@@ -22,41 +22,6 @@ function MainComponent(props: MainProps&MainDispatch) {
     const history = useHistory();
     const {stakings} = props;
 
-    const recentTx = props.stakeEvents && props.stakeEvents.length ? (
-        <>
-            <Row withPadding>
-                <ThemedText.H4>{'Recent Transactions'}</ThemedText.H4>
-            </Row>
-            <Gap size={'small'}/>
-            {
-                props.stakeEvents.length > 0 &&
-                    props.stakeEvents.map((e, idx) => (
-                        <Transactions
-                            key={idx}
-                            type={'stake'}
-                            amount={e.amountStaked}
-                            symbol={e.symbol}
-                            status={e.transactionStatus}
-                            contractName={e.contractName}
-                            createdAt={e.createdAt}
-                            reward={e.amountOfReward}
-                            rewardSymbol={e.rewardSymbol || e.symbol}
-                            url={Utils.linkForTransaction(e.network, e.mainTxId)}
-                        />
-
-                    ))
-            }
-            {
-                props.stakeEvents.length === 0 && 
-                <Row withPadding>
-                <div className="btnContainer">
-                    You Have Made No Recent Transactions 
-                </div>
-                </Row>
-            }
-        </>
-    ) : undefined;
-
     const headerH = props.headerHtml ? (
         <div dangerouslySetInnerHTML={ {__html: props.headerHtml} } ></div>
     ) : undefined;
@@ -67,15 +32,18 @@ function MainComponent(props: MainProps&MainDispatch) {
             <Gap size={'small'}/>
             {
                 stakings.map((e:StakingApp, i: number) => 
+                    <React.Fragment key={i}>
                         <CategoryBtn
                             key={i}
                             staking={e}
                             userAddress={props.userAddress}
                             onStakeNow={()=>props.onContractSelected(history, e, props.userAddress, props.groupId)}
-                        />)
+                        />
+                        <Gap />
+                        <Gap />
+                    </React.Fragment>)
             }
             <Gap/>
-            {recentTx}
         </Page>
      
     );

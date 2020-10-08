@@ -4,7 +4,6 @@ import {
   BrowserRouter as Router,
 } from "react-router-dom";
 import { Provider as AlertProvider } from 'react-alert';
-import { WebWaitingContainer } from './components/WebWaiting';
 import { Provider } from 'react-redux';
 import { store } from './common/Store';
 // @ts-ignore
@@ -29,7 +28,6 @@ function App() {
               <WebDashboardContainer />
             </Router>
           </AlertProvider>
-          <WebWaitingContainer />
         </Provider>
     );  
 }

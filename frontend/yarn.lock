@@ -1597,7 +1597,16 @@
     "@uifabric/set-version" "^7.0.23"
     tslib "^1.10.0"
 
-"@fluentui/react@^7.143.0", "@fluentui/react@^7.144.3":
+"@fluentui/react@^7.143.0":
+  version "7.145.0"
+  resolved "https://registry.yarnpkg.com/@fluentui/react/-/react-7.145.0.tgz#d9ff288cbaf13a61c5d0d36d19eaa693519e4e4c"
+  integrity sha512-RNYTWwRQhIFKoMHmDkMLF48KcH91brHV/WXCEboIxsmtHm4HyYVG4Zpjib6UG2XOS1zk9sBefHao/zTx3pdG8Q==
+  dependencies:
+    "@uifabric/set-version" "^7.0.23"
+    office-ui-fabric-react "^7.145.0"
+    tslib "^1.10.0"
+
+"@fluentui/react@^7.144.3":
   version "7.144.3"
   resolved "https://registry.yarnpkg.com/@fluentui/react/-/react-7.144.3.tgz#c01b2bc8e8405e51e2eb00218bd3b2adcd126f9a"
   integrity sha512-UR6BV11Yz2P4nRcG/weLmiVeDgwk9BlhXHt5vUaE9IpiBeqjjGTugmq1ra92Z0bk/TAPMw1CjDpJ9wIVLhP4OQ==
@@ -5331,7 +5340,7 @@ des.js@^1.0.0:
 
 "desktop-components-library@https://github.com/ferrumnet/desktop-components-library.git":
   version "1.0.0"
-  resolved "https://github.com/ferrumnet/desktop-components-library.git#3439c88fc33ef0e2e77f64502d77746080a27399"
+  resolved "https://github.com/ferrumnet/desktop-components-library.git#d886e8b89058dfc67234921468ac56bf72bb605a"
   dependencies:
     "@fluentui/react" "^7.143.0"
     "@types/jest" "^25.2.3"
@@ -10330,10 +10339,10 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-office-ui-fabric-react@^7.144.3:
-  version "7.144.3"
-  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.144.3.tgz#98b417795501068d1243d59e4e53e9f7e293f4e3"
-  integrity sha512-k1i0ZdcP6nIhe3VuiG32OXigBNslP8c46Gvm5CIVPO+IQCJH3SKM5o50+zplw9GdQF4tpHgcguL1cBms+9Zqsw==
+office-ui-fabric-react@^7.144.3, office-ui-fabric-react@^7.145.0:
+  version "7.145.0"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.145.0.tgz#e86a5fa08a2a3528f2a692bec88ea55c76b238b3"
+  integrity sha512-+eAo/bZpnTXmirwsPZxIbPhjQk+C34f0W/8tAHYWYASrRio9DWWDB0PRsSGUNrn1QubWxjudW294fovkewPeAQ==
   dependencies:
     "@fluentui/date-time-utilities" "^7.9.0"
     "@fluentui/react-focus" "^7.16.10"

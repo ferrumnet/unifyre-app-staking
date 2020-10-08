@@ -43,17 +43,37 @@
         display: flex;
         min-width: 17%;
 
+        .symb-mini {
+            font-size: 18px;
+            text-align: right;
+            font-weight: bold;
+            letter-spacing: 1
+        }
+
         .symb{
             font-size: 30px;
             text-align: right;
             font-weight: bold;
             letter-spacing: 1
         }
+        
+        .symb-token{
+            font-weight: lighter;
+            margin-left: 4px;
+        }
+
+        .number-desc-mini {
+            font-size: 8px;
+            text-align: left;
+            font-weight: bold;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
 
         .number-desc {
             font-size: 12px;
             text-align: left;
-            font-weight: bold;
+            font-weight: lighter;
             margin-left: 4px;
             margin-right: 4px;
         }
@@ -81,19 +101,23 @@
         margin-bottom: 5px
     }
 
-    .rewards {
-        background-color: white;
-        color: #c1052a;
+    .rewards-btn {
         text-align: center;
-        font-size: 15px;
+        font-size: 24px;
         font-weight: bold;
         margin: 4px 0px;
-        padding: 4px 50px;
+        border-radius: 8px;
+        padding: 12px 50px;
         justify-content: center;
         align-items: center;
         display: flex;
-        border-radius: 2px;
-        height: 55px;
+        height: 68px;
+        min-width: 268px;
         cursor: pointer
     }
+}
+
+.percent-wrapper-vertical {
+    display: flex;
+    flex-direction: column;
 }

@@ -56,9 +56,9 @@ function mapStateToProps(state: RootState): StakingContractProps {
         maturityProgress: !contract.withdrawEnds ? 0 : 
             (Math.min(Date.now() / 1000, contract.withdrawEnds) - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
         unstakeRewardsNow: `${LocaleManager.formatDecimalString(
-            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()))} ${contract.rewardSymbol || contract.symbol}`,
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()))} ${contract.rewardSymbol || contract.symbol || ''}`,
         unstakeRewardsMaturity: `${LocaleManager.formatDecimalString(
-            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol}`,
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol || ''}`,
         filled: capB.minus(totB).lte(new Big(0)),
         groupId: state.data.groupData.info.groupId,
     };

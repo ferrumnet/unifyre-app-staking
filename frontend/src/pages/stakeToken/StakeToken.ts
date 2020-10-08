@@ -93,7 +93,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
-            console.log('CONTRAC IS ',  props.contract)
             const data = await client.stakeSignAndSend(
                 dispatch, props.amount,
                 props.contract.network,

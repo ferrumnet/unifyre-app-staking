@@ -151,7 +151,7 @@ export class Utils {
 
     static rewardSentence(annualPct: string, reward: StakingRewards): string {
         if (reward.contractType === 'stakeFarming') {
-            const rate = new Big(annualPct || '0').div(new Big(100)).toFixed(4);
+            const rate = formatter.format(new Big(annualPct || '0').div(new Big(100)).toFixed(4), false);
             return `${rate} ${reward.rewardSybol}/${reward.tokenSymbol}`;
         } else {
             return `${annualPct}%`;

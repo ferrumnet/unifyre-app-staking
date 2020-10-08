@@ -17,9 +17,10 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
     userStake: UserStake, unstakeRewardsNow: string, unstakeRewardsMaturity: string}) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
+    console.log('PROPS ARE ', props)
     const fields = [
         {
-            label: 'You Have Staked',
+            label: 'You staked balance',
             value: `${props.userStake?.amountInStake || '0'} ${props.contract.symbol || ''}`
         },
         {
