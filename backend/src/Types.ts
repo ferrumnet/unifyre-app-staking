@@ -31,6 +31,8 @@ export interface StakingApp {
     logo?: string;
     color?: string;
     backgroundImage?: string;
+    backgroundImageDesktop?: string;
+    filled: boolean;
 }
 
 export interface StakeEvent {

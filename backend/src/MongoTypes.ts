@@ -27,8 +27,10 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     maxContribution: String,
     emailWhitelist: String,
     backgroundImage: String,
+    backgroundImageDesktop: String,
     logo: String,
     color: String,
+    filled: Boolean,
 });
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
