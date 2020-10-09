@@ -6,6 +6,7 @@ import { intl } from "unifyre-react-helper";
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { BackendMode, logError } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
+import { CurrencyList } from "unifyre-extension-web3-retrofit";
 
 export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
@@ -56,6 +57,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                     dispatch(addAction(Actions.INIT_FAILED, {message: 'No group info'}));
                     return;
                 }
+                const currencyList = inject<CurrencyList>(CurrencyList);
+                currencyList.set([groupInfo.defaultCurrency]);
                 loadThemeForGroup(groupInfo.themeVariables);
                 await client.loadStakingsForToken(dispatch, groupInfo.defaultCurrency);
                 dispatch(addAction(Actions.INIT_SUCCEED, {}));
