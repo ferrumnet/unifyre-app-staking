@@ -121,15 +121,20 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     async stakeTokenSignAndSendGetTransactions(
-            token: string,
+            userId: string,
             email: string,
-            network: Network, contractAddress: string, userAddress: string, amount: string):
+            contractAddress: string, userAddress: string, amount: string):
             Promise<CustomTransactionCallRequest[]> {
         const stakingContract = (await this.getStaking(contractAddress))!;
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         if (stakingContract.maxContribution) {
             ValidationUtils.isTrue(new Big(stakingContract.maxContribution).gte(new Big(amount)),
                 `Maximum contribution is ${stakingContract.maxContribution}`);
+            const allStakes = await this.getUserStakingEvents(userId, stakingContract.currency);
+            const sumStakes = allStakes.filter(s => s.contractAddress === contractAddress)
+                .reduce((prev, cur) => prev.add(cur.amountStaked || '0'), new Big('0'));
+            ValidationUtils.isTrue(new Big(stakingContract.maxContribution).gte(new Big(sumStakes)),
+                `Maximum contribution is ${stakingContract.maxContribution}. You have already staked ${sumStakes.toFixed()}`);
         }
         if (stakingContract.emailWhitelist) {
             const emails = stakingContract.emailWhitelist!.split(',').map(e => e.trim().toLocaleLowerCase());
@@ -151,7 +156,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const client = this.uniClientFac();
         await client.signInWithToken(token);
         const user = await client.getUserProfile();
-        const txs = await this.stakeTokenSignAndSendGetTransactions(token, user.email || '', network,
+        const txs = await this.stakeTokenSignAndSendGetTransactions(user.userId, 
+            user.email || '',
             contractAddress, userAddress, amount);
         const payload = { network, userAddress, amount, contractAddress, action: 'stake' };
         const requestId = await client.sendTransactionAsync(network, txs, payload);
