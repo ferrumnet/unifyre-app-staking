@@ -15,7 +15,8 @@ import './nav.scss';
 import { ActionButton } from '@fluentui/react';
 import { useHistory, useParams } from 'react-router';
 
-function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string}) {
+function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string,
+    homepage?: string}) {
     const connect = BackendMode.mode === 'web3' ? (
                 <ConnectButtonContainer />
     ) : undefined;
@@ -27,8 +28,6 @@ function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHt
             NavBar={
                 <NavBar 
                     connect={connect}
-                    htmlHeader={props.headerHtml}
-                    
                 >
                     <ActionButton
                         onClick={() => history.push('/' + groupId)}
@@ -51,9 +50,11 @@ function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHt
     );
 }
 
-export function PageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string}) {
+export function PageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string, homepage?: string}) {
     if (Utils.platform() === 'desktop') {
-        return <DesktopPageWrapper headerHtml={props.headerHtml} footerHtml={props.footerHtml} >{props.children}</DesktopPageWrapper>
+        return <DesktopPageWrapper
+            headerHtml={props.headerHtml} footerHtml={props.footerHtml} homepage={props.homepage}
+            >{props.children}</DesktopPageWrapper>
     }
 
     // For mobile

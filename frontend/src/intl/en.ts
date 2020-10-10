@@ -10,4 +10,7 @@ fatal-error-details = Your session might be expired. Open this page from your Un
 btn-ok = Ok
 btn-cancel = Cancel
 
+## Staking
+connect-required = Connect to see the details
+
 `;

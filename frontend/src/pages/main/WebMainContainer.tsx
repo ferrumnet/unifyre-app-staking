@@ -1,18 +1,15 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap,
+    Page, Gap,
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Button, Label, Provider, Text , teamsTheme} from '@fluentui/react-northstar';
 import { Main, MainDispatch, MainProps } from './Main';
 import 'react-circular-progressbar/dist/styles.css';
-import {ThemeContext, Theme} from 'unifyre-react-helper';
+import {ThemeContext} from 'unifyre-react-helper';
 import {CategoryBtn} from "../../components/WebCategories";
 import { StakingApp } from "../../common/Types";
-import {Transactions} from '../../components/transactions';
-import { Utils } from '../../common/Utils';
 import './web_main.scss';
 
 function MainComponent(props: MainProps&MainDispatch) {
@@ -20,7 +17,12 @@ function MainComponent(props: MainProps&MainDispatch) {
     const styles = themedStyles(theme);
     
     const history = useHistory();
-    const {stakings} = props;
+    const {stakings, redirectToUrl} = props;
+    useEffect(() => {
+        if (redirectToUrl) {
+            window.location.href = redirectToUrl;
+        }
+    }, [redirectToUrl])
 
     const headerH = props.headerHtml ? (
         <div dangerouslySetInnerHTML={ {__html: props.headerHtml} } ></div>

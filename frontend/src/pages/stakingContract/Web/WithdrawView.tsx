@@ -8,7 +8,7 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { dataFormat, Utils } from '../../../common/Utils';
-import { Theme, ThemeContext } from 'unifyre-react-helper';
+import { intl, Theme, ThemeContext } from 'unifyre-react-helper';
 import { LeftBox, RightBox } from '../../../components/WebBoxes';
 import { PrimaryButton } from '@fluentui/react';
 import { StakingApp, UserStake } from '../../../common/Types';
@@ -17,7 +17,11 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
     userStake: UserStake, unstakeRewardsNow: string, unstakeRewardsMaturity: string}) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-    console.log('PROPS ARE ', props)
+    const notConnected = !!props.contract.stakingStarts ? undefined : (
+        <Row centered>
+            <ThemedText.H2>{intl('connect-required')}</ThemedText.H2>
+        </Row>
+    );
     const fields = [
         {
             label: 'You staked balance',
@@ -44,6 +48,7 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
     const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
     return (
         <RightBox>
+            {notConnected}
         {
         fields.map((e, i)=>
             <List key={i}

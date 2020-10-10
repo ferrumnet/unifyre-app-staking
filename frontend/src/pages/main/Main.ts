@@ -14,6 +14,7 @@ export interface MainProps {
     stakeEvents: StakeEvent[];
     groupId?: string;
     headerHtml?: string;
+    redirectToUrl?: string;
 }
 
 export interface MainDispatch {
@@ -32,6 +33,7 @@ function mapStateToProps(state: RootState): MainProps {
         stakeEvents: state.data.stakingData.stakeEvents,
         groupId: state.data.groupData.info.groupId,
         headerHtml: state.data.groupData.info.headerHtml,
+        redirectToUrl: state.data.groupData.info.noMainPage ? state.data.groupData.info.homepage : undefined,
     };
 }
 

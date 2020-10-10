@@ -8,7 +8,7 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { dataFormat, formatter, Utils } from "../../../common/Utils";
-import {ThemeContext, Theme} from 'unifyre-react-helper';
+import {ThemeContext, Theme, intl} from 'unifyre-react-helper';
 import {
     ThemedText,
     // @ts-ignore
@@ -41,7 +41,6 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
     const withdrawSentence = Utils.rewardSentence(rewards.earlyWithdrawAnnual, rewards);
 
     const fields = [
-       
         {
             label: 'Your staked balance',
             value: `${props.userStake?.amountInStake || ''} ${props.symbol || ''}`
@@ -76,6 +75,12 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
         }
             
     ];
+
+    const notConnected = !!props.contract.stakingStarts ? undefined : (
+        <Row centered>
+            <ThemedText.H2>{intl('connect-required')}</ThemedText.H2>
+        </Row>
+    );
 
     const contractTop = (
         <div className="contract-top">
@@ -123,6 +128,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
 
     const infoBox = (
         <RightBox>
+            {notConnected}
         {
         fields.map((e, i)=>
             <List key={i}

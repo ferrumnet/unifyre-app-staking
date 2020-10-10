@@ -23,23 +23,23 @@ import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
 const Actions = {
 }
 
-interface ConnectProps extends Web3ConnectionState {
+export interface NavBarProps extends Web3ConnectionState {
     symbol: string;
     userAddress: string;
     stakings: StakingApp[];
     currency: string,
     stakeEvents: StakeEvent[];
     groupId?: string;
-    headerHtml?: string;
+    homepage: string;
     connected:  boolean;
 }
 
-interface ConnectDispatch {
+interface NavBarDispatch {
     onConnect: () => void;
     clearError: () => void;
 }
 
-export function mapStateToProps(state: RootState): ConnectProps {
+export function mapStateToProps(state: RootState): NavBarProps {
     const userProfile = state.data.userData?.profile;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
@@ -50,8 +50,8 @@ export function mapStateToProps(state: RootState): ConnectProps {
         currency: address.currency,
         stakeEvents: state.data.stakingData.stakeEvents,
         groupId: state.data.groupData.info.groupId,
-        headerHtml: state.data.groupData.info.headerHtml,
-        connected: state.data.connection?.connected
+        connected: state.data.connection?.connected,
+        homepage: state.data.groupData.info.homepage,
     };
 }
 
@@ -70,7 +70,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     clearError: () => {
         dispatch(addAction(CommonActions.CLEAR_ERROR, {}))
     }
-} as ConnectDispatch);
+} as NavBarDispatch);
 
 export function connectButtonReduce(state: Web3ConnectionState = { connected: false,error: '' }, action: AnyAction) {
     switch(action.type) {
@@ -89,7 +89,7 @@ export function connectButtonReduce(state: Web3ConnectionState = { connected: fa
     }
 }
 
-function ConnectButton(props: ConnectProps&ConnectDispatch) {
+function ConnectButton(props: NavBarProps&NavBarDispatch) {
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     const alert = useAlert();
@@ -120,7 +120,7 @@ const themedStyles = (theme) => ({
     }
 })
 
-function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void}&ConnectProps){
+function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void}&NavBarProps){
     return (
         <Panel
             isOpen={props.isOpen}
