@@ -159,6 +159,49 @@ height: 1.6rem !important;
     flex-direction: column;
   }
 
+  .nav-bar-container{
+    .nav-bar {
+      padding: 5px 0px;
+      display: block;
+
+      a{
+        margin: 20px;
+        padding: 10px 0px;
+      }
+    }
+  }
+
+  .nav-children{
+    margin: 0px auto;
+    padding: 0px 10px;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .contract-container{
+    .staking-box {
+      margin: 10px 10px;
+      min-width: auto;
+    }
+
+    .contract-top .contract-title {
+      font-size: 20px;
+      font-weight: 800;
+    }
+  }
+
+  .ListValue {
+    text-align: center;
+  }
+
+  .ListLabel {
+    font-size: 12px;
+    flex: 1 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+ 
   .details{
       margin-top: 30px;
   }
