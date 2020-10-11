@@ -136,7 +136,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
     const styles = themedStyles(theme);
     
     const history = useHistory();
-    const btn = props.state === 'pre-stake' ? (
+    const btn = props.state !== 'pre-stake' ? (
         <Row>
             <PrimaryButton text={props.filled ? 'Filled' : 'Stake Now'}
                 disabled={props.filled}
