@@ -1,12 +1,9 @@
 .staking-box {
     flex: 1;
-    min-width: 350px;
+    min-width: 450px;
     min-height: 350px;
-    max-width: 400px;
+    max-width: 650px;
     border-radius: 30px;
-    border-style: solid;
-    border-width: 3px;
-    border-color: #dcf5f255;
     align-items: stretch;
     display: flex;
     flex-direction: column;
@@ -16,12 +13,14 @@
     justify-content: center;
 }
 
+.staking-box-bordered {
+}
+
 .address-box {
 }
 
 .info-box {
     flex: 1;
-    min-width: 400px;
     .staking-info-small-val {
         font-weight: bold;
         font-size: 12px;
@@ -52,6 +51,7 @@
 
     .contract-title {
         font-size: 28px;
+        font-weight: 800;
     }
 
     .contract-logo {
@@ -67,13 +67,14 @@
     }
     .contract-sub-title {
         font-size: 18px;
+        font-weight: 500;
     }
 }
 
 .contract-container{
     display: flex;
     flex-direction: row;
-    width: '100%';
+    justify-content: center;
     flex-wrap: wrap;
 
     .details{
@@ -99,7 +100,6 @@
         /* display: block; */
         justify-content: space-around;
         padding: 15px 0px;
-        font-family: sans-serif;
         font-size: 18px;
         text-transform: capitalize;  
     }
@@ -118,10 +118,6 @@
 
 .main_address{
     width: 100%;
-
-    .contract-title {
-
-    }
 }
 
 .details_header{

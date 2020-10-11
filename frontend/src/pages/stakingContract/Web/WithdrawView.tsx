@@ -10,8 +10,9 @@ import {
 import { dataFormat, Utils } from '../../../common/Utils';
 import { intl, Theme, ThemeContext } from 'unifyre-react-helper';
 import { LeftBox, RightBox } from '../../../components/WebBoxes';
-import { PrimaryButton } from '@fluentui/react';
+import { PrimaryButton, TextField } from '@fluentui/react';
 import { StakingApp, UserStake } from '../../../common/Types';
+import { StakingContractAddress, StakingContractDetails } from './StakingView';
 
 export function WithdrawViewInfoBox(props: {contract: StakingApp,
     userStake: UserStake, unstakeRewardsNow: string, unstakeRewardsMaturity: string}) {
@@ -46,6 +47,14 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
             
     ]
     const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
+    const maturityTracker = ((props.contract.withdrawEnds || 0) * 1000 <= Date.now()) ? undefined : (
+        <Row centered>
+            <span className="staking-maturity-counter" style={styles.text}>
+                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
+            </span>
+        </Row>
+    );
+
     return (
         <RightBox>
             {notConnected}
@@ -56,11 +65,7 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
         )
         }
         <Gap />
-        <Row centered>
-            <span className="staking-maturity-counter" style={styles.text}>
-                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
-            </span>
-        </Row>
+        {maturityTracker}
         </RightBox>
     );
 }
@@ -70,39 +75,14 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
 
-    const contractTop = (
-        <div className="contract-top">
-            <div className="contract-logo">
-                <img src={props.contract.logo} />
-            </div>
-            <div className="contract-title-box">
-                <span className="contract-title" style={styles.text}>
-                    {props.contract.name || ''}
-                </span>
-                <span className="contract-sub-title" style={styles.text}>
-                    {'STAKING POOL'}
-                </span>
-            </div>
-        </div>
-    );
-
     const addressBox = (
         <LeftBox>
-            {contractTop}
+            <StakingContractDetails logo={props.contract.logo} name={props.contract.name} />
             <Gap size='small' />
-            <Row >
-                <ThemedText.H3>YOUR ADDRESS</ThemedText.H3>
-            </Row>
-            <Row >
-                <ThemedText.H2 >{Utils.shorten(props.userStake?.userAddress || '')}</ThemedText.H2>
-            </Row>
-            <Gap size='small' />
-            <Row >
-                <ThemedText.H3>CONTRACT ADDRESS</ThemedText.H3>
-            </Row>
-            <Row >
-                <ThemedText.H2 >{Utils.shorten(props.userStake?.contractAddress || '')}</ThemedText.H2>
-            </Row>
+            <StakingContractAddress network={props.contract.network}
+                contractAddress={props.contract.contractAddress}
+                userAddress={props.userStake?.userAddress}
+                />
             <Gap />
             <Row>
                 <PrimaryButton text={'Un-stake'}

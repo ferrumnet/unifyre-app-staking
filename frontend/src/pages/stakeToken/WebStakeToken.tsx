@@ -13,35 +13,11 @@ import './stake.scss';
 import {List} from '../../components/list';
 import { LeftBox, RightBox } from '../../components/WebBoxes';
 import { PrimaryButton, TextField } from '@fluentui/react';
+import { StakingRight } from '../stakingContract/Web/StakingView';
 
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const history = useHistory();
     
-
-    const fields = [
-       
-        {
-            label: 'You Have Staked',
-            value: `${props.userStake?.amountInStake || ''} ${props.symbol || ''}`
-        },
-        {
-            label: 'Rewards if un-staked today',
-            value: props.unstakeRewardsNow
-        },
-        {
-            label: 'Rewards at maturity',
-            value: props.unstakeRewardsMaturity
-        },
-        {
-            label: 'Early withdraw starts',
-            value: dataFormat(props.contract.withdrawStarts)
-        },
-        {
-            label: 'Maturity',
-            value: dataFormat(props.contract.withdrawEnds)
-        }
-            
-    ]
 
     const error = props.error ? (
         <Row withPadding>
@@ -91,16 +67,6 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
         </LeftBox>
     );
 
-    const infoBox = (
-        <RightBox>
-            {
-                fields.map((e, i)=>
-                    <List key={i} value={e.value || ''} label={e.label}/>
-                )
-            }
-        </RightBox>
-    );
-
     return (
         <>
             <LoaderContainer />
@@ -108,7 +74,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
             <div className="main-staking-container">
             <div className="contract-container">
                 {inputBox}
-                {infoBox}
+                <StakingRight contract={props.contract} userStake={props.userStake} />
             </div> 
             </div>
             <Gap/>

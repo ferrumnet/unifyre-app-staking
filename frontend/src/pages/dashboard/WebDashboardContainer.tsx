@@ -22,10 +22,11 @@ import { WebWaitingContainer } from '../../components/WebWaiting';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
-      .set(Theme.Colors.bkgShade0, themeVariables.semanticColors.bodyFrameBackground)
-      .set(Theme.Colors.bkgShade1, themeVariables.semanticColors.bodyStandoutBackground)
-      .set(Theme.Colors.bkgShade2, themeVariables.semanticColors.bodyBackgroundChecked)
-      .set(Theme.Colors.bkgShade3, themeVariables.semanticColors.bodyBackgroundHovered)
+      .set(Theme.Colors.bkgShade0, themeVariables.semanticColors.bodyBackground)
+      .set(Theme.Colors.bkgShade1, themeVariables.palette.neutralLight)
+      .set(Theme.Colors.bkgShade2, themeVariables.palette.neutralLighter)
+      .set(Theme.Colors.bkgShade3, themeVariables.palette.neutralQuaternary)
+      .set(Theme.Colors.bkgShade4, themeVariables.palette.neutralTertiary)
       .set(Theme.Colors.textColor, themeVariables.semanticColors.bodyText)
       .set(Theme.Colors.themeNavBkg, themeVariables.semanticColors.bodyStandoutBackground)
       .set(Theme.Spaces.line, themeVariables.spacing.l1)

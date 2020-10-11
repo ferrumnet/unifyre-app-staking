@@ -1,5 +1,14 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+$font: 'Quicksand', sans-serif;
+
+body {
+  background-color: #000000;
+  font-family: $font;
+}
+
+.ms-Fabric--isFocusHidden {
+  font-family: $font;
 }
 
 .App-logo {

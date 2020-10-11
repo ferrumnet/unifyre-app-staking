@@ -53,27 +53,6 @@
 
         width: 40%;
         border-radius: 10px;
-
-        .listItem{
-            display: flex;
-            /* display: block; */
-            justify-content: space-around;
-            padding: 15px 0px;
-            font-family: sans-serif;
-            font-size: 18px;
-            text-transform: capitalize;  
-        }
-
-        .ListLabel{
-            width: 60%;
-            padding-left: 30px;
-        }
-
-        .ListValue {
-            width: 60%;
-            text-align: start;
-        }
-
     }
 
     .main_address{

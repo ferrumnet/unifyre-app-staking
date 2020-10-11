@@ -1,18 +1,16 @@
 .listItem{
     display: flex;
     justify-content: space-between;
-    font-family: sans-serif;
     font-size: 18px;
     padding-top: 8px;
 }
 
 .ListLabel{
-    width: 60%;
     flex: 1;
 }
 
 .ListValue {
-    width: 100px;
+    min-width: 150px;
 }
 
 .staking{

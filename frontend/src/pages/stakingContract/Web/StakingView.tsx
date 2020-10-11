@@ -13,29 +13,65 @@ import {
     ThemedText,
     // @ts-ignore
 } from 'desktop-components-library';
-import { PrimaryButton } from '@fluentui/react';
+import { PrimaryButton, TextField } from '@fluentui/react';
 import { LeftBox, RightBox } from '../../../components/WebBoxes';
 import moment from 'moment';
+import { StakingApp, UserStake } from '../../../common/Types';
 
-export function StakingView (props: StakingContractProps&StakingContractDispatch) {
+export function StakingContractDetails(props: {logo?: string, name?: string,}) {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-    
-    const history = useHistory();
-    // const [time,setTime] = useState({'days': 0,'hours':0,'minutes':0,'seconds':0})
+    return (
+        <div className="contract-top">
+            <div className="contract-logo">
+                <img src={props.logo} />
+            </div>
+            <div className="contract-title-box">
+                <span className="contract-title" style={styles.text}>
+                    {props.name || ''}
+                </span>
+                <span className="contract-sub-title" style={styles.text}>
+                    {'STAKING POOL'}
+                </span>
+            </div>
+        </div>
+    );
+}
 
-    // useEffect(() => {
-    //     var countDownDate = new Date("Jan 5, 2021 15:37:25").getTime();
-    //     setInterval(()=> {
-    //         var now = new Date().getTime();
-    //         var distance = countDownDate - now;    
-    //         var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    //         var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    //         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    //         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    //         setTime({days,hours,minutes,seconds})
-    //     },10000);
-    // }, []);
+export function StakingContractAddress(props: {network: string, userAddress?: string, contractAddress?: string}) {
+    return (
+        <>
+            <Row >
+                <ThemedText.H3>YOUR ADDRESS</ThemedText.H3>
+            </Row>
+            <Row >
+                <TextField 
+                underlined
+                value={props.userAddress}
+                readOnly
+                suffix={'🔗'}
+                onClick={() => props.userAddress && window.open(Utils.linkForAddress(props.network, props.userAddress!))}
+                />
+            </Row>
+            <Gap size='small' />
+            <Row >
+                <ThemedText.H3>CONTRACT ADDRESS</ThemedText.H3>
+            </Row>
+            <Row >
+                <TextField 
+                underlined
+                value={props.contractAddress}
+                readOnly
+                suffix={'🔗'}
+                onClick={() => props.contractAddress && window.open(Utils.linkForAddress(props.network, props.contractAddress!))}
+                />
+            </Row>
+        </>
+    );
+}
+
+
+export function StakingRight(props: {contract: StakingApp, userStake?: UserStake}) {
     const rewards = Utils.stakingRewards(props.contract);
     const maturitySentence = Utils.rewardSentence(rewards.maturityAnnual, rewards);
     const withdrawSentence = Utils.rewardSentence(rewards.earlyWithdrawAnnual, rewards);
@@ -43,15 +79,15 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
     const fields = [
         {
             label: 'Your staked balance',
-            value: `${props.userStake?.amountInStake || ''} ${props.symbol || ''}`
+            value: `${props.userStake?.amountInStake || ''} ${props.contract.symbol || ''}`
         },
         {
             label: 'Staking cap',
-            value: `${formatter.format(props.contract.stakingCap, false)} ${props.symbol}`,
+            value: `${formatter.format(props.contract.stakingCap, false)} ${props.contract.symbol}`,
         },
         {
             label: 'Staked so far',
-            value: `${formatter.format(props.contract.stakedTotal, false)} ${props.symbol}`,
+            value: `${formatter.format(props.contract.stakedTotal, false)} ${props.contract.symbol}`,
         },
         {
             label: 'Maturity reward',
@@ -82,51 +118,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
         </Row>
     );
 
-    const contractTop = (
-        <div className="contract-top">
-            <div className="contract-logo">
-                <img src={props.contract.logo} />
-            </div>
-            <div className="contract-title-box">
-                <span className="contract-title" style={styles.text}>
-                    {props.contract.name || ''}
-                </span>
-                <span className="contract-sub-title" style={styles.text}>
-                    {'STAKING POOL'}
-                </span>
-            </div>
-        </div>
-    );
-
-    const addressBox = (
-        <LeftBox>
-            {contractTop}
-            <Gap size='small' />
-            <Row >
-                <ThemedText.H3>YOUR ADDRESS</ThemedText.H3>
-            </Row>
-            <Row >
-                <ThemedText.H2 >{Utils.shorten(props.userStake?.userAddress || '')}</ThemedText.H2>
-            </Row>
-            <Gap size='small' />
-            <Row >
-                <ThemedText.H3>CONTRACT ADDRESS</ThemedText.H3>
-            </Row>
-            <Row >
-                <ThemedText.H2 >{Utils.shorten(props.userStake?.contractAddress || '')}</ThemedText.H2>
-            </Row>
-            <Gap />
-            <Row>
-                <PrimaryButton text={props.filled ? 'Filled' : 'Stake Now'}
-                    disabled={props.filled}
-                    onClick={() => props.onContractSelected(
-                        history,props.contract.contractAddress,false, props.groupId)}
-                    />
-            </Row>
-        </LeftBox>
-    );
-
-    const infoBox = (
+    return (
         <RightBox>
             {notConnected}
         {
@@ -137,15 +129,56 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
         }
         </RightBox>
     );
+}
+
+export function StakingView (props: StakingContractProps&StakingContractDispatch) {
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);
+    
+    const history = useHistory();
+    const btn = props.state === 'pre-stake' ? (
+        <Row>
+            <PrimaryButton text={props.filled ? 'Filled' : 'Stake Now'}
+                disabled={props.filled}
+                onClick={() => props.onContractSelected(
+                    history,props.contract.contractAddress,false, props.groupId)}
+                />
+        </Row>
+    ) : (
+        <>
+            <Row>
+                <ThemedText.H3>STARKING OPENS</ThemedText.H3>
+            </Row>
+            <Row >
+                <ThemedText.H2 >{
+                           moment(props.contract.stakingStarts * 1000).fromNow() 
+                }</ThemedText.H2>
+            </Row>
+        </>
+    );
+
+    const addressBox = (
+        <LeftBox>
+            <StakingContractDetails logo={props.contract.logo} name={props.contract.name}  />
+            <Gap size='small' />
+            <StakingContractAddress network={props.contract.network}
+                contractAddress={props.contract.contractAddress}
+                userAddress={props.userStake?.userAddress}
+                />
+            <Gap />
+            {btn}
+        </LeftBox>
+    );
+
       
     return (
         <div className="main-staking-container">
         <div className="contract-container">
             {addressBox}
-            {infoBox}
+            <StakingRight contract={props.contract} userStake={props.userStake} />
         </div> 
         </div>
-    )
+    );
 }
 
 const themedStyles = (theme:any) => ({
