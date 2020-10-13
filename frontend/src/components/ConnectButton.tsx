@@ -44,13 +44,13 @@ export function mapStateToProps(state: RootState): NavBarProps {
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
     return {
+        ...state.data.connection,
         symbol: address.symbol,
         userAddress: address.address,
         stakings: state.data.stakingData.contracts,
         currency: address.currency,
         stakeEvents: state.data.stakingData.stakeEvents,
         groupId: state.data.groupData.info.groupId,
-        connected: state.data.connection?.connected,
         homepage: state.data.groupData.info.homepage,
     };
 }
@@ -95,10 +95,10 @@ function ConnectButton(props: NavBarProps&NavBarDispatch) {
     const alert = useAlert();
 
     useEffect(() => {
-        if(props.error!='' && props.error!=null){
-            alert.error(props.error)
-            props.clearError()
-        }
+        // if(props.error!='' && props.error!=null){
+        //     alert.error(props.error)
+        //     props.clearError()
+        // }
     }, [props.error]);
     
     return (

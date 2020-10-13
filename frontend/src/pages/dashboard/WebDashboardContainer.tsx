@@ -53,6 +53,7 @@ function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
       .set(Theme.Button.inverseBtnPrimary, themeVariables.semanticColors.menuBackground)
       .set(Theme.Button.inverseBtnPrimaryTextColor, themeVariables.semanticColors.menuItemText)
       .set(Theme.Logo.logo, customTheme?.mainLogo || 'https://staking.ferrum.network/static/media/logo.44e552d9.png')
+      .set(Theme.Logo.logoHeight, customTheme?.logoHeight || -1)
       .build();
     return new ThemeConstantProvider('web3-theme', themeConstants);
 }

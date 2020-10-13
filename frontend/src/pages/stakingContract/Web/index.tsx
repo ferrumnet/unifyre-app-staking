@@ -3,7 +3,6 @@ import {
     Page,
     // @ts-ignore
 } from 'unifyre-web-components';
-import { useHistory } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { StakingContract, StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import { LoaderContainer } from '../../../components/Loader';
@@ -12,7 +11,6 @@ import {StakingView} from './StakingView';
 import { WithdrawView } from './WithdrawView';
 
 function StakingContractComponent(props: StakingContractProps&StakingContractDispatch) {
-    console.log('STAKOO CONTRACTAR', props);
     let mainPart = (<> </>);
     switch (props.state) {
         case 'pre-stake':
