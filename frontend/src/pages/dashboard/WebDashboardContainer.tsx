@@ -14,11 +14,12 @@ import { StakeTokenContainer as WebStakeTokenContainer } from '../stakeToken/Web
 import { UnstakeTokenContainer as WebUnStakeToken } from '../unstakeToken/WebUnstakeTokenContainer';
 import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
 import { PageWrapper } from '../../components/PageWrapper';
-import { Utils } from '../../common/Utils';
+import { BackendMode, Utils } from '../../common/Utils';
 import { StakingContractContainer as WebStakingContractContainer } from '../stakingContract/Web/index';
 import { Provider as FluentProvider } from '@fluentui/react-northstar';
 import { Theme as FulentTheme, useTheme } from '@fluentui/react-theme-provider';
 import { WebWaitingContainer } from '../../components/WebWaiting';
+import { ConnectButtonContainer } from '../../components/ConnectButton';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -125,9 +126,13 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       </Row>
     );
 
+    const connect = BackendMode.mode === 'web3' ? (
+                <ConnectButtonContainer /> ) : undefined;
+
     return (
       <Page>
           {testAlert}
+          {connect}
           <Gap />
           <Gap />
           <Gap />

@@ -184,7 +184,9 @@ height: 1.6rem !important;
   .nav-bar-container{
     .nav-bar {
       padding: 5px 0px;
-      display: block;
+      // display: block;
+      display: flex;
+      flex-direction: row;
 
       a{
         margin: 20px;

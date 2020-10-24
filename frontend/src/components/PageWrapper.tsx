@@ -1,7 +1,7 @@
 import React from 'react';
 import { BackendMode, Utils } from '../common/Utils';
 import {
-    Page,
+    Page, Row,
     // @ts-ignore
 } from 'unifyre-web-components';
 import {
@@ -58,7 +58,7 @@ function DesktopPageWrapper(props: {children: any, footerHtml?: string,
 
 export function PageWrapper(props: {children: any, noMainPage?: boolean,
         footerHtml?: string, homepage?: string}) {
-    if (Utils.platform() === 'desktop') {
+    if (Utils.platform() === 'desktop' || BackendMode.mode === 'web3') {
         return <DesktopPageWrapper
             footerHtml={props.footerHtml} homepage={props.homepage}
             noMainPage={props.noMainPage}

@@ -10,6 +10,7 @@ import {
     Row
     //@ts-ignore
 } from 'unifyre-web-components';
+import { Utils } from '../common/Utils';
 
 function ErrorBar(props: {error: string}) {
     return (
@@ -35,6 +36,17 @@ const NavBarContainer = (props: NavBarProps&{children: any, connect: any}) => {
         <ErrorBar error={props.error} />
     ) : undefined;
 
+    const dektopItems = Utils.platform() === 'desktop' ? (
+        <>
+            <ActionButton
+                allowDisabledFocus
+                onClick={openPanel}
+            >
+                Transactions
+            </ActionButton>
+        </>
+    ) : undefined;
+
     return (
         <>
             <SidePaneContainer
@@ -49,14 +61,9 @@ const NavBarContainer = (props: NavBarProps&{children: any, connect: any}) => {
                     style={{height: theme.get(Theme.Logo.logoHeight) > 0 ? theme.get(Theme.Logo.logoHeight) : undefined}}
                 /> 
                 </a>
+                {dektopItems}
+                {props.children}
                 <div className="nav-children">
-                    <ActionButton
-                        allowDisabledFocus
-                        onClick={openPanel}
-                    >
-                        Transactions
-                    </ActionButton>
-                    {props.children}
                     {props.connect}
                 </div>
             </div>
