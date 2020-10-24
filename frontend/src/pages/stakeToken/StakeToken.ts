@@ -9,6 +9,7 @@ import {formatter,StakingState,Utils,logError} from '../../common/Utils';
 import { ValidationUtils } from "ferrum-plumbing";
 import { Big } from 'big.js';
 import { UserStake } from "../../common/Types";
+import { LocaleManager } from "unifyre-react-helper";
 
 const StakeTokenActions = {
     AMOUNT_TO_STAKE_CHANGED: 'AMOUNT_TO_STAKE_CHANGED',
@@ -72,8 +73,10 @@ function mapStateToProps(state: RootState): StakeTokenProps {
         stakingTimeProgress: Utils.stakeProgress(contract),
         maturityProgress: !contract.withdrawEnds ? 0 : 
             (Date.now() / 1000 - contract.stakingEnds) / (contract.withdrawEnds - contract.stakingEnds),
-        unstakeRewardsNow: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()),
-        unstakeRewardsMaturity: Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1),
+        unstakeRewardsNow: `${LocaleManager.formatDecimalString(
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, Date.now()))} ${contract.rewardSymbol || contract.symbol || ''}`,
+        unstakeRewardsMaturity: `${LocaleManager.formatDecimalString(
+            Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol || ''}`,
         filled: capB.minus(totB).lte(new Big(0)),
         groupId: state.data.groupData.info?.groupId,
     };

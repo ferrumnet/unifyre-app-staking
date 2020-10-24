@@ -22,8 +22,8 @@ export interface DashboardDispatch {
 export interface DashboardProps extends DashboardState {
     homepage: string;
     customTheme: any;
-    headerHtml?: string;
     footerHtml?: string;
+    noMainPage: boolean;
 }
 
 function mapStateToProps(state: RootState): DashboardProps {
@@ -31,8 +31,8 @@ function mapStateToProps(state: RootState): DashboardProps {
         ...state.ui.dashboard,
         homepage: state.data.groupData.info.homepage,
         customTheme: state.data.groupData.info.themeVariables,
-        headerHtml: state.data.groupData.info.headerHtml,
         footerHtml: state.data.groupData.info.footerHtml,
+        noMainPage: state.data.groupData.info.noMainPage,
     };
 }
 

@@ -15,8 +15,8 @@ import './nav.scss';
 import { ActionButton } from '@fluentui/react';
 import { useHistory, useParams } from 'react-router';
 
-function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string,
-    homepage?: string}) {
+function DesktopPageWrapper(props: {children: any, footerHtml?: string,
+    homepage?: string, noMainPage?: boolean}) {
     const connect = BackendMode.mode === 'web3' ? (
                 <ConnectButtonContainer />
     ) : undefined;
@@ -30,7 +30,13 @@ function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHt
                     connect={connect}
                 >
                     <ActionButton
-                        onClick={() => history.push('/' + groupId)}
+                        onClick={() => {
+                            if (props.noMainPage) {
+                                window.location.href = props.homepage!;
+                            } else {
+                                return history.push('/' + groupId);
+                            }
+                        }}
                         allowDisabledFocus>
                         Staking Options
                     </ActionButton>
@@ -50,10 +56,12 @@ function DesktopPageWrapper(props: {children: any, headerHtml?: string, footerHt
     );
 }
 
-export function PageWrapper(props: {children: any, headerHtml?: string, footerHtml?: string, homepage?: string}) {
+export function PageWrapper(props: {children: any, noMainPage?: boolean,
+        footerHtml?: string, homepage?: string}) {
     if (Utils.platform() === 'desktop') {
         return <DesktopPageWrapper
-            headerHtml={props.headerHtml} footerHtml={props.footerHtml} homepage={props.homepage}
+            footerHtml={props.footerHtml} homepage={props.homepage}
+            noMainPage={props.noMainPage}
             >{props.children}</DesktopPageWrapper>
     }
 

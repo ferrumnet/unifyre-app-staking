@@ -77,7 +77,8 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
             <>
           <ThemeContext.Provider value={theme}>
             <FluentProvider theme={teamsTheme}>
-            <PageWrapper footerHtml={props.footerHtml}>
+            <PageWrapper footerHtml={props.footerHtml} homepage={props.homepage}
+              noMainPage={props.noMainPage}>
               <Switch>
                   <Route path='/:gid/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
