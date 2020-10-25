@@ -24,7 +24,14 @@ contract FestakingFarmTest is FestakingFarm {
         setStakingStart(now - GAP * 2 - SEC);
     }
 
-    function setStakingStart(uint time) private {
+    function setPreWithdrawStart() public {
+        stakingStarts = now - GAP - SEC;
+        stakingEnds = now - SEC;
+        withdrawStarts = now + GAP;
+        withdrawEnds = now + GAP * 2;
+    }
+
+    function setStakingStart(uint time) public {
         stakingStarts = time;
         stakingEnds = time + GAP;
         withdrawStarts = time + GAP;

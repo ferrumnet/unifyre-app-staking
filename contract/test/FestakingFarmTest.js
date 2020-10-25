@@ -145,6 +145,35 @@ describe('Happy Festaking', () => {
         assert.deepStrictEqual(earlyWithdrawReward, '50');
     });
 
+    it('Can add reward after stake close', async function() {
+        const totalRewBefore = await festaking.methods.totalReward().call();
+        assert.deepStrictEqual(totalRewBefore, '0');
+        await allowX(owner, 100)
+        await festaking.methods.addReward(100, 10).send({from: owner, gas: GAS});
+        let totalRewAfter = await festaking.methods.totalReward().call();
+        assert.deepStrictEqual(totalRewAfter, '100');
+
+        // Now moving to fter staking closes
+        const time = Math.round(Date.now() / 1000);
+        await festaking.methods.setPreWithdrawStart().send({from: owner, gas: GAS});
+        const withstart = await festaking.methods.withdrawStarts().call();
+        // Make sure cannot stake
+        console.log('Setting up stakes', time, withstart, time < Number(withstart))
+        try {
+            await allow(ac1, 200);
+            await festaking.methods.stake(100).send({from: ac1, gas: GAS});
+            stake = await festaking.methods.stakeOf(ac1).call();
+            console.log('ac1 staked ', stake);
+        } catch(e) {
+            console.log('Good! Staking failed', e)
+        }
+
+        await allowX(owner, 100)
+        await festaking.methods.addReward(50, 40).send({from: owner, gas: GAS});
+        totalRewAfter = await festaking.methods.totalReward().call();
+        assert.deepStrictEqual(totalRewAfter, '150');
+    })
+
     it('Withdraw right after it opens gives no reward', async function() {
         this.timeout(0);
         await setUpStakes();
