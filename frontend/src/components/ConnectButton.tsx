@@ -19,6 +19,9 @@ import {Transactions} from '../components/transactions';
 import { Utils } from '../common/Utils';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
+import { useId, useBoolean } from '@uifabric/react-hooks';
+import {ConnectModal} from './Modal';
+import {WalletConnectControls} from './web3Controls';
 
 const Actions = {
 }
@@ -37,6 +40,8 @@ export interface NavBarProps extends Web3ConnectionState {
 interface NavBarDispatch {
     onConnect: () => void;
     clearError: () => void;
+    wcConnect: () => void;
+    onDisconnect: () => void;
 }
 
 export function mapStateToProps(state: RootState): NavBarProps {
@@ -69,6 +74,23 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     },
     clearError: () => {
         dispatch(addAction(CommonActions.CLEAR_ERROR, {}))
+    },
+    wcConnect: async () =>{
+        const client = inject<UnifyreExtensionKitClient>(UnifyreExtensionKitClient);
+        try {
+            await client.signInWithToken('');
+            dispatch(addAction(CommonActions.CONNECTION_SUCCEEDED, {}));
+            let walletConn = new WalletConnectControls
+            await walletConn.enableWallet(dispatch);
+            dispatch(addAction(CommonActions.CONNECTION_SUCCEEDED, {}));
+            const sc = inject<StakingAppClient>(StakingAppClient);
+            await sc.signInToServer(dispatch);
+        }catch(e) {
+            dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+        }
+    },
+    onDisconnect: async () => {
+        dispatch(addAction(CommonActions.DISCONNECT, {}))
     }
 } as NavBarDispatch);
 
@@ -78,6 +100,8 @@ export function connectButtonReduce(state: Web3ConnectionState = { connected: fa
             return { connected: true, error: undefined };
         case CommonActions.CONNECTION_FAILED:
             return { connected: false, error: action.payload.message };
+        case CommonActions.DISCONNECT: 
+            return {connected: false}
         case CommonActions.CLEAR_ERROR:
             return {connected: false, error: ''}
         case StakingAppServiceActions.AUTHENTICATION_FAILED:
@@ -90,6 +114,7 @@ export function connectButtonReduce(state: Web3ConnectionState = { connected: fa
 }
 
 function ConnectButton(props: NavBarProps&NavBarDispatch) {
+    const [isModalOpen, { setTrue: showModal, setFalse: hideModal }] = useBoolean(false);
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     const alert = useAlert();
@@ -100,15 +125,37 @@ function ConnectButton(props: NavBarProps&NavBarDispatch) {
         //     props.clearError()
         // }
     }, [props.error]);
+
+    
     
     return (
+        <>
              <WebThemedButton
                 text={props.connected ? 'Connected' : 'Connect'} 
                 disabled={props.connected}
-                onClick={props.onConnect} 
+                onClick={showModal} 
                 highlight={false}
                 customStyle={styles.btnStyle}
             />
+            {
+                props.connected && 
+                    <WebThemedButton
+                        text={'Disconnect'} 
+                        disabled={false}
+                        onClick={props.onDisconnect} 
+                        highlight={false}
+                        customStyle={styles.btnStyle}
+                    />
+            }
+            <ConnectModal 
+                showModal={showModal} 
+                hideModal={hideModal} 
+                isModalOpen={isModalOpen}
+                metaMaskConnect={props.onConnect}
+                walletConnect={props.wcConnect}
+                connected={props.connected}
+            />
+        </>
        
     );
 }
