@@ -1,6 +1,5 @@
 import React from 'react';
 import './App.scss';
-import {ThemeContext, ThemeConstantProvider, Theme, defaultDarkThemeConstantsBuilder,defaultGreenThemeConstantsBuilder} from 'unifyre-react-helper';
 import {
   BrowserRouter as Router,
 } from "react-router-dom";
@@ -21,23 +20,16 @@ const options = {
 }
 
 function App() {
-  let themeProvider = new ThemeConstantProvider('unifyre', defaultDarkThemeConstantsBuilder
-    .set(Theme.Font.main, "'Open Sans', sans-serif")
-    .set(Theme.Colors.themeNavBkg, "$Color.bkgShade2")
-      .set(Theme.Logo.logo, 'https://staking.ferrum.network/static/media/logo.44e552d9.png')
-    .build());  
   return (
-    <ThemeContext.Provider value={themeProvider}>
-          <Provider store={store}>
-            <Dialogue.Component />
-            <AlertProvider template={AlertTemplate} {...options}>
-              <Router>
-                <DashboardContainer />
-              </Router>
-            </AlertProvider>
-            <WaitingContainer />
-          </Provider>
-    </ThemeContext.Provider> 
+    <Provider store={store}>
+      <Dialogue.Component />
+      <AlertProvider template={AlertTemplate} {...options}>
+        <Router>
+          <DashboardContainer />
+        </Router>
+      </AlertProvider>
+      <WaitingContainer />
+    </Provider>
   )
 }
 

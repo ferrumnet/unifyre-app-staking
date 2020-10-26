@@ -6,6 +6,7 @@ import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./
 import moment from 'moment';
 import * as Sentry from "@sentry/browser";
 import { error } from "console";
+import { ApplicationMode } from "../base/ResponsivePageWrapper";
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  
@@ -21,7 +22,7 @@ export interface StakingRewards {
 }
 
 export class BackendMode {
-    static mode: 'unifyre' | 'web3' = 'unifyre';
+    static mode: ApplicationMode = 'unifyre';
 }
 
 export function logError(msg: string, err: Error) {
@@ -54,14 +55,6 @@ export class Utils {
         let base = window.location.pathname;
         const parts = base.split('/');
         return parts[1];
-    }
-
-    static platform(): 'desktop' | 'iOS' | 'android' {
-        var iOs = /Phone|iPad|iPod/i.test(navigator.userAgent);
-        var android = /Android/i.test(navigator.userAgent);
-        if (iOs) { return 'iOS'; };
-        if (android) { return 'android'; };
-        return 'desktop';
     }
 
     static ellipsis(s: string, len: number) {

@@ -5,21 +5,19 @@ import {
     Row, ThemedText, Gap, Page,
     // @ts-ignore
 } from 'unifyre-web-components';
-import { Text , teamsTheme} from '@fluentui/react-northstar';
+import { Text } from '@fluentui/react-northstar';
 import { connect } from 'react-redux';
-import { CONFIG } from '../../common/IocModule';
-import { Theme, ThemeConstantProvider, ThemeContext, WebdefaultDarkThemeConstantsBuilder } from 'unifyre-react-helper';
+import { CONFIG, IocModule } from '../../common/IocModule';
+import { Theme, ThemeConstantProvider, WebdefaultDarkThemeConstantsBuilder } from 'unifyre-react-helper';
 import { MainContainer } from '../main/WebMainContainer';
 import { StakeTokenContainer as WebStakeTokenContainer } from '../stakeToken/WebStakeToken';
 import { UnstakeTokenContainer as WebUnStakeToken } from '../unstakeToken/WebUnstakeTokenContainer';
 import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
-import { PageWrapper } from '../../components/PageWrapper';
 import { BackendMode, Utils } from '../../common/Utils';
 import { StakingContractContainer as WebStakingContractContainer } from '../stakingContract/Web/index';
-import { Provider as FluentProvider } from '@fluentui/react-northstar';
 import { Theme as FulentTheme, useTheme } from '@fluentui/react-theme-provider';
 import { WebWaitingContainer } from '../../components/WebWaiting';
-import { ConnectButtonContainer } from '../../components/ConnectButton';
+import { WebPageWrapper } from '../../components/WebPageWrapper';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -71,15 +69,22 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const themeVariables = useTheme();
     const theme = _loadTheme(themeVariables, props.customTheme);
 
-    const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><Text size={'largest'} content={'TEST MODE'}/></Row></>)
+    const testAlert = CONFIG.isProd ? undefined : (
+      <><Row withPadding><Text size={'largest'} content={'TEST MODE'}/></Row></>)
     if (props.initialized) {
         // Render the routes
         return (
             <>
-          <ThemeContext.Provider value={theme}>
-            <FluentProvider theme={teamsTheme}>
-            <PageWrapper footerHtml={props.footerHtml} homepage={props.homepage}
-              noMainPage={props.noMainPage}>
+            <WebPageWrapper
+              footerHtml={props.footerHtml} homepage={props.homepage}
+              noMainPage={props.noMainPage}
+              mode={BackendMode.mode}
+              theme={theme}
+              onConnected={props.onConnected}
+              onDisconnected={props.onDisconnected}
+              onConnectionFailed={props.onConnectionFailed}
+              container={props.initialized ? IocModule.container() : undefined}
+              >
               <Switch>
                   <Route path='/:gid/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
@@ -104,9 +109,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   </Route>
               </Switch>
               <WebWaitingContainer />
-            </PageWrapper>
-            </FluentProvider>
-            </ThemeContext.Provider>
+            </WebPageWrapper>
             </>
         );
     }
@@ -126,13 +129,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       </Row>
     );
 
-    const connect = BackendMode.mode === 'web3' ? (
-                <ConnectButtonContainer /> ) : undefined;
-
     return (
       <Page>
           {testAlert}
-          {connect}
           <Gap />
           <Gap />
           <Gap />

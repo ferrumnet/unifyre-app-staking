@@ -1,16 +1,13 @@
-import React,{useContext, useState} from 'react';
+import React,{useContext} from 'react';
 import {Theme,ThemeContext} from 'unifyre-react-helper';
-import { connect } from 'react-redux';
-import {NavBarProps, SidePaneContainer} from './ConnectButton';
-import { useBoolean } from '@uifabric/react-hooks';
-import { ActionButton, MessageBar, MessageBarType } from '@fluentui/react';
-import {mapStateToProps} from './ConnectButton';
+import { MessageBar, MessageBarType } from '@fluentui/react';
 import './nav.scss';
 import {
     Row
     //@ts-ignore
 } from 'unifyre-web-components';
-import { Utils } from '../common/Utils';
+import { ReponsivePageWrapperDispatch, ReponsivePageWrapperProps, ResponsiveConnectProps } from './PageWrapperTypes';
+import { ConnectButton } from './ConnectButton';
 
 function ErrorBar(props: {error: string}) {
     return (
@@ -28,31 +25,15 @@ function ErrorBar(props: {error: string}) {
     );
 }
 
-const NavBarContainer = (props: NavBarProps&{children: any, connect: any}) => { 
+export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDispatch&ResponsiveConnectProps&{children: any}) { 
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
-    const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
     const error = props.error ? (
         <ErrorBar error={props.error} />
     ) : undefined;
 
-    const dektopItems = Utils.platform() === 'desktop' ? (
-        <>
-            <ActionButton
-                allowDisabledFocus
-                onClick={openPanel}
-            >
-                Transactions
-            </ActionButton>
-        </>
-    ) : undefined;
-
     return (
         <>
-            <SidePaneContainer
-                isOpen={isOpen}
-                dismissPanel={dismissPanel}
-            />
             <div className="nav-bar page-container" style={{...styles.container}}>
                 <a href={props.homepage}>
                 <img
@@ -61,19 +42,19 @@ const NavBarContainer = (props: NavBarProps&{children: any, connect: any}) => {
                     style={{height: theme.get(Theme.Logo.logoHeight) > 0 ? theme.get(Theme.Logo.logoHeight) : undefined}}
                 /> 
                 </a>
-                {dektopItems}
                 {props.children}
                 <div className="nav-children">
-                    {props.connect}
+                    <ConnectButton 
+                        onConnect={props.onConnected}
+                        onConnectionFailed={props.onConnectionFailed}
+                        container={props.container}
+                    />
                 </div>
             </div>
             {error}
         </>
     )
 }
-
-export const NavBar = connect(
-    mapStateToProps, {})(NavBarContainer);
 
 //@ts-ignore
 const themedStyles = (theme) => ({

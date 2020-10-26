@@ -6,26 +6,39 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { connect } from 'react-redux';
-import { CONFIG } from '../../common/IocModule';
+import { CONFIG, IocModule } from '../../common/IocModule';
 import { MainContainer } from '../main/MainContainer';
 import { StakingContractContainer } from '../stakingContract/StakingContractContainer';
 import { StakeTokenContainer } from '../stakeToken/StakeTokenContainer';
 import { UnstakeTokenContainer } from '../unstakeToken/UnstakeTokenContainer';
 import {ConfirmTxnContainer} from '../confirmation/ConfirmTxnContainer';
-import { PageWrapper } from '../../components/PageWrapper';
-import { Utils } from '../../common/Utils';
+import { BackendMode, Utils } from '../../common/Utils';
+import { ResponsivePageWrapper } from '../../base/ResponsivePageWrapper';
+import { defaultDarkThemeConstantsBuilder, Theme, ThemeConstantProvider } from 'unifyre-react-helper';
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onLoad} = props;
     useEffect(() => {
         onLoad();
     }, [onLoad]);
+    let themeProvider = new ThemeConstantProvider('unifyre', defaultDarkThemeConstantsBuilder
+      .set(Theme.Font.main, "'Open Sans', sans-serif")
+      .set(Theme.Colors.themeNavBkg, "$Color.bkgShade2")
+        .set(Theme.Logo.logo, 'https://staking.ferrum.network/static/media/logo.44e552d9.png')
+      .build());  
 
     const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><ThemedText.H1>TEST MODE</ThemedText.H1></Row></>)
     if (props.initialized) {
         // Render the routes
         return (
             <>
-            <PageWrapper>
+            <ResponsivePageWrapper
+              container={props.initialized ? IocModule.container() : undefined}
+              mode={BackendMode.mode}
+              theme={themeProvider}
+              onConnected={props.onConnected}
+              onDisconnected={props.onDisconnected}
+              onConnectionFailed={props.onConnectionFailed}
+            >
               <Switch>
                   <Route path='/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
@@ -49,7 +62,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         }
                   </Route>
               </Switch>
-            </PageWrapper>
+            </ResponsivePageWrapper>
             </>
         );
     }

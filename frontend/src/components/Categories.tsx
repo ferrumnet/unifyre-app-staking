@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {
-    Row,Gap
+    Row,
     // @ts-ignore
 } from 'unifyre-web-components';
 import {ThemeContext, Theme} from 'unifyre-react-helper';

@@ -7,6 +7,7 @@ import { StakingAppClient } from "../../services/StakingAppClient";
 import { BackendMode, logError } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
 import { CurrencyList } from "unifyre-extension-web3-retrofit";
+import { ReponsivePageWrapperDispatch } from "../../base/PageWrapperTypes";
 
 export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
@@ -15,7 +16,7 @@ export const DashboardActions = {
 
 const Actions = DashboardActions;
 
-export interface DashboardDispatch {
+export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
     onLoad: (groupId?: string) => Promise<void>;
  }
 
@@ -71,6 +72,23 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
+    },
+    onConnected: async () => {
+        try {
+            dispatch(addAction(CommonActions.CONNECTION_SUCCEEDED, {}));
+            const sc = inject<StakingAppClient>(StakingAppClient);
+            await sc.signInToServer(dispatch);
+            return true;
+        } catch(e) {
+            dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+            throw e;
+        }
+    },
+    onConnectionFailed: (e: Error) => {
+        dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+    },
+    onDisconnected: () => {
+        dispatch(addAction(CommonActions.DISCONNECT, {}))
     },
 } as DashboardDispatch);
 

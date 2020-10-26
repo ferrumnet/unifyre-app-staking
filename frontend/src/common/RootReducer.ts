@@ -9,7 +9,7 @@ import { UnstakeToken } from "../pages/unstakeToken/UnstakeToken";
 import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { GroupData, StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
-import { connectButtonReduce } from "../components/ConnectButton";
+import { connectButtonReduce } from "../base/ConnectButton";
 import { GroupInfo } from "./Types";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {

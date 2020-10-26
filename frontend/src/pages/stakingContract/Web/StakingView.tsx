@@ -147,7 +147,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
     ) : (
         <>
             <Row>
-                <ThemedText.H3>STARKING OPENS</ThemedText.H3>
+                <ThemedText.H3>STAKING OPENS</ThemedText.H3>
             </Row>
             <Row >
                 <ThemedText.H2 >{

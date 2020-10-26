@@ -6,15 +6,12 @@ import {
   mergeStyleSets,
   FontWeights,
   IDragOptions,
-  DefaultButton,
-  Toggle,
   ContextualMenu,
   IconButton,
   IIconProps,
 } from 'office-ui-fabric-react';
 import WCLOGO from './../images/wcimage.svg';
 import MMLOGO from './../images/metamask.png';
-import { Loader } from '@fluentui/react-northstar'
 
 const dragOptions: IDragOptions = {
   moveMenuItemText: 'Move',
