@@ -41,7 +41,7 @@ export function ConnectModal (props: {
     <div>     
       <Modal
         titleAriaId={titleId}
-        isOpen={props.isModalOpen && !props.connected}
+        isOpen={props.isModalOpen}
         onDismiss={props.hideModal}
         isModeless={true}
         containerClassName={contentStyles.container}
@@ -98,7 +98,6 @@ const contentStyles = mergeStyleSets({
     alignItems: 'stretch',    
     minWidth: '30%',
     minHeight: '35%',
-    width: '30%',
     borderRadius: '25px'
   },
   header: [

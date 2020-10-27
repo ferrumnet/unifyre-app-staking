@@ -5,8 +5,7 @@ import { Big } from 'big.js';
 import { calculateReward, earlyWithdrawAnnualRate, maturityAnnualRate } from "./RewardCalculator";
 import moment from 'moment';
 import * as Sentry from "@sentry/browser";
-import { error } from "console";
-import { ApplicationMode } from "../base/ResponsivePageWrapper";
+import { ApplicationMode } from "../base/PageWrapperTypes";
 
 const LOGO_TEMPLATE = 'https://unifyre-metadata-public.s3.us-east-2.amazonaws.com/logos/{NETWORK}/{TOKEN}-white.png';
  

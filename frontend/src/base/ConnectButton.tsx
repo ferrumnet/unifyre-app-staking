@@ -35,7 +35,7 @@ interface ConnectButtonDispatch {
     metamaskConnect: (c: Container | undefined, onConnect: Connector, onError: (e: Error) => void) => void;
     clearError: () => void;
     wcConnect: (c: Container | undefined, onConnect: Connector, onError: (e: Error) => void) => void;
-    onDisconnect: () => void;
+    onDisconnect: (c: Container | undefined) => void;
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
@@ -67,15 +67,16 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
         const client = c.get<UnifyreExtensionKitClient>(UnifyreExtensionKitClient);
         try {
             const connect = c.get<Connect>(Connect)
-            const provider = enableWalletConnect();
+            let provider = new WalletConnectWeb3Provider();
             // Subscribe to session disconnection
-            provider.on("disconnect", (code: number, reason: string) => {
-                console.log('DISCONNECTED FROM WALLET CONNECT', code, reason);
+            provider.on('disconnect', (reason: string) => {
+                console.log('DISCONNECTED FROM WALLET CONNECT', reason);
                 dispatch({type: Actions.DISCONNECT, payload: {}});
             });
             connect.setProvider(provider);
-
+            console.log('ARE WE CON?', provider.connected, provider)
             await client.signInWithToken('');
+            console.log('ABOUT SIGN IN DONE')
             const res = await connector();
             if (res) {
                 dispatch({type: Actions.CONNECTION_SUCCEEDED, payload: {}});
@@ -86,12 +87,16 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
                 onError(e);
             }
         }catch(e) {
+            console.error('wsConnect', e);
             dispatch({type: Actions.CONNECTION_FAILED, payload:
                 { message: `Connection failed ${e.message}` }});
             onError(e);
         }
     },
-    onDisconnect: async () => {
+    onDisconnect: async (c) => {
+        if (!c) {return}
+        const con = c!.get<Connect>(Connect)!;
+        await con.getProvider().disconnect();
         dispatch({type: Actions.DISCONNECT, payload: {}});
     }
 } as ConnectButtonDispatch);
@@ -132,7 +137,7 @@ export function ConnectButton(props: ConnectButtonProps) {
                     <WebThemedButton
                         text={'Disconnect'} 
                         disabled={false}
-                        onClick={() => disper.onDisconnect()} 
+                        onClick={() => disper.onDisconnect(props.container)} 
                         highlight={false}
                         customStyle={styles.btnStyle}
                     />
@@ -141,8 +146,14 @@ export function ConnectButton(props: ConnectButtonProps) {
                 showModal={showModal} 
                 hideModal={hideModal} 
                 isModalOpen={isModalOpen}
-                metaMaskConnect={() => disper.metamaskConnect(props.container, props.onConnect, props.onConnectionFailed)}
-                walletConnect={() => disper.wcConnect(props.container, props.onConnect, props.onConnectionFailed)}
+                metaMaskConnect={() => {
+                    hideModal();
+                    disper.metamaskConnect(props.container, props.onConnect, props.onConnectionFailed);
+                }}
+                walletConnect={() => {
+                    hideModal();
+                    disper.wcConnect(props.container, props.onConnect, props.onConnectionFailed);
+                }}
                 connected={state.connected}
             />
         </>
