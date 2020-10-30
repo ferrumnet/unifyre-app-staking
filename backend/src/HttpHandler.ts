@@ -1,4 +1,5 @@
 import {LambdaHttpRequest, LambdaHttpResponse, UnifyreBackendProxyService} from "aws-lambda-helper";
+import { Web3ProviderConfig } from "aws-lambda-helper/dist/blockchain";
 import {LambdaHttpHandler} from "aws-lambda-helper/dist/HandlerFactory";
 import {
     JsonRpcRequest,
@@ -26,7 +27,9 @@ function handlePreflight(request: any) {
 export class HttpHandler implements LambdaHttpHandler {
     constructor(private uniBack: UnifyreBackendProxyService,
         private userSvc: StakingAppService,
-        private adminSecret: string) {
+        private adminSecret: string,
+        private networkConfig: Web3ProviderConfig,
+        ) {
     }
 
     async handle(request: LambdaHttpRequest, context: any): Promise<LambdaHttpResponse> {
@@ -69,6 +72,9 @@ export class HttpHandler implements LambdaHttpHandler {
                 case 'getAllStakingEventsForUser':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.getStakingEventsForUser(userId!, req);
+                    break;
+                case 'getHttpProviders':
+                    body = this.networkConfig;
                     break;
                 case 'getGroupInfo':
                     const {groupId} = req.data;

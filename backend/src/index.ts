@@ -104,13 +104,12 @@ export class stakingAppModule implements Module {
             new UnifyreBackendProxyModule(STAKING_APP_ID, stakingAppConfig.authRandomKey,
                 signingKeyHex!,));
 
-        container.registerSingleton(EthereumSmartContractHelper,
-            () => new EthereumSmartContractHelper(
-                {
+        const networkProviders = {
                     'ETHEREUM': stakingAppConfig.web3ProviderEthereum,
                     'RINKEBY': stakingAppConfig.web3ProviderRinkeby,
-                } as Web3ProviderConfig
-            ));
+                } as Web3ProviderConfig;
+        container.registerSingleton(EthereumSmartContractHelper,
+            () => new EthereumSmartContractHelper(networkProviders));
         container.registerSingleton(SmartContratClient,
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
         container.registerSingleton(StakingFarmContractClient,
@@ -128,6 +127,7 @@ export class stakingAppModule implements Module {
                     c.get(UnifyreBackendProxyService),
                     c.get(StakingAppService),
                     stakingAppConfig.adminSecret,
+                    networkProviders,
                     ));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
