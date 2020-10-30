@@ -40,6 +40,7 @@ export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDisp
                     className="logo_img"
                     src={theme.get(Theme.Logo.logo)  as any}
                     style={{height: theme.get(Theme.Logo.logoHeight) > 0 ? theme.get(Theme.Logo.logoHeight) : undefined}}
+                    alt="Logo"
                 /> 
                 </a>
                 {props.children}

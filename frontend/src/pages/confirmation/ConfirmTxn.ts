@@ -1,7 +1,7 @@
 import { AnyAction, Dispatch } from "redux";
 import { inject } from "../../common/IocModule";
-import { ContinuationState, RootState, StakeTokenState } from "../../common/RootState";
-import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
+import { ContinuationState, RootState } from "../../common/RootState";
+import { StakingAppClient } from "../../services/StakingAppClient";
 import { StakeEvent } from "../../common/Types";
 import { Big } from 'big.js';
 import { CommonActions } from "../../common/Actions";

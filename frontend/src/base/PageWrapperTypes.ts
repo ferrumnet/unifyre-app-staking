@@ -11,6 +11,7 @@ export interface ReponsivePageWrapperProps {
     homepage?: string;
     navBarContent?: any;
     children: any;
+    authError?: string;
 }
 
 export interface ReponsivePageWrapperDispatch {

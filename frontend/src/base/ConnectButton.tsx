@@ -9,7 +9,7 @@ import { useBoolean } from '@uifabric/react-hooks';
 import {ConnectModal} from './walletConnect/Modal';
 import { Container } from 'ferrum-plumbing';
 import { Connect } from 'unifyre-extension-web3-retrofit/dist/contract/Connect';
-import { enableWalletConnect } from './walletConnect/WalletConnectProvider';
+import { WalletConnectWeb3Provider } from 'unifyre-extension-web3-retrofit/dist/contract/WalletConnectWeb3Provider';
 
 const Actions = {
     CONNECTION_SUCCEEDED: 'CONNECTION_SUCCEEDED',
@@ -67,24 +67,17 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
         const client = c.get<UnifyreExtensionKitClient>(UnifyreExtensionKitClient);
         try {
             const connect = c.get<Connect>(Connect)
-            let provider = new WalletConnectWeb3Provider();
+            let provider = c.get<WalletConnectWeb3Provider>(WalletConnectWeb3Provider);
+            connect.setProvider(provider);
+            await client.signInWithToken('');
             // Subscribe to session disconnection
-            provider.on('disconnect', (reason: string) => {
+            provider.addEventListener('disconnect', (reason: string) => {
                 console.log('DISCONNECTED FROM WALLET CONNECT', reason);
                 dispatch({type: Actions.DISCONNECT, payload: {}});
             });
-            connect.setProvider(provider);
-            console.log('ARE WE CON?', provider.connected, provider)
-            await client.signInWithToken('');
-            console.log('ABOUT SIGN IN DONE')
             const res = await connector();
             if (res) {
                 dispatch({type: Actions.CONNECTION_SUCCEEDED, payload: {}});
-            } else {
-                const e = new Error('Connection cannot be completed');
-                dispatch({type: Actions.CONNECTION_FAILED, payload:
-                    { message: e.message }});
-                onError(e);
             }
         }catch(e) {
             console.error('wsConnect', e);
@@ -96,12 +89,12 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
     onDisconnect: async (c) => {
         if (!c) {return}
         const con = c!.get<Connect>(Connect)!;
-        await con.getProvider().disconnect();
+        await con.getProvider()!.disconnect();
         dispatch({type: Actions.DISCONNECT, payload: {}});
     }
 } as ConnectButtonDispatch);
 
-export function connectButtonReduce(state: ConnectState = {connected: false, error: '' }, action: any) {
+function connectButtonReduce(state: ConnectState = {connected: false, error: '' }, action: any) {
     switch(action.type) {
         case Actions.CONNECTION_SUCCEEDED:
             return { connected: true, error: undefined };

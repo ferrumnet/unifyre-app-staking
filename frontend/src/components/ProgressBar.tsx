@@ -35,12 +35,6 @@ export const ProgressBar = (props:{bgcolor:string,completed: number}) => {
       textAlign: 'right' as "right"
     }
   
-    const labelStyles = {
-      padding: 5,
-      color: 'white',
-      fontWeight: "bold" as "bold"
-    }
-  
     return (
       <div style={containerStyles}>
         <div style={fillerStyles}>

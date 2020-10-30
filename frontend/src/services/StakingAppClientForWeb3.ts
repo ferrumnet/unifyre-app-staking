@@ -13,8 +13,10 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
-            await this.client.signInWithToken('');
+            // await this.client.signInWithToken('');
+            console.log('GETTING USER PROF')
             const userProfile = await this.client.getUserProfile();
+            console.log('GOT USER PROF', {userProfile})
             const userAddress = userProfile.userId;
             const res = await this.api({
                 command: 'signInUsingAddress', data: {userAddress}, params: [] } as JsonRpcRequest);
@@ -26,6 +28,7 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
             this.jwtToken = unsecureSession;
             return this.loadDataAfterSignIn(dispatch, userProfile);
         } catch (e) {
+            console.error('signInToServer', e)
             dispatch(addAction(Actions.AUTHENTICATION_FAILED, {
                 message: 'Could not connect to network ' + e.message || '' }));
         } finally {
@@ -99,7 +102,6 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
         }
     }
 
-
     async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
         try {
             ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');
@@ -117,6 +119,21 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
             return;
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'loadGroupInfo' }));
+        }
+    }
+
+    async loadHttpProviders(dispatch: Dispatch<AnyAction>): Promise<any> {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'loadHttpProviders' }));
+            let providers = (await this.api({
+                command: 'getHttpProviders', data: {},
+                params: []}as JsonRpcRequest)) as any;
+            if (!providers) {
+                throw new Error('getHttpProviders returned empty');
+            }
+            return providers;
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'loadHttpProviders' }));
         }
     }
 

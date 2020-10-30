@@ -10,6 +10,7 @@ import { Web3RetrofitModule } from 'unifyre-extension-web3-retrofit/dist/Web3Ret
 import { StakingAppClientForWeb3 } from '../services/StakingAppClientForWeb3';
 import { Integrations } from "@sentry/tracing";
 import * as Sentry from "@sentry/browser";
+import { WalletConnectWeb3Provider } from 'unifyre-extension-web3-retrofit';
 
 class DummyStorage {}
 
@@ -66,6 +67,9 @@ export class IocModule {
             await c.registerModule(new Web3RetrofitModule('STAKING', [DEFAULT_TOKEN_FOR_WEB3_MODE]));
             c.registerSingleton(StakingAppClient, c =>
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
+            const client = c.get<StakingAppClient>(StakingAppClient);
+            const providers = await client.loadHttpProviders(dispatch);
+            c.registerSingleton(WalletConnectWeb3Provider, () => new WalletConnectWeb3Provider(providers))
         }
         c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());
         IntlManager.instance.load([stringsEn], 'en-US');

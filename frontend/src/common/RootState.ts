@@ -12,6 +12,7 @@ export const defaultUserPreference = {
 export interface DashboardState {
     initialized: boolean;
     fatalError?: string;
+    error?: string;
 }
 
 export interface StakeTokenState {
@@ -37,17 +38,12 @@ export interface ContinuationState {
     error?: string;
 }
 
-export interface Web3ConnectionState {
-    connected: boolean; error?: string;
-}
-
 export interface GroupData {
     info: GroupInfo,
 }
 
 export interface RootState {
     data : {
-        connection: Web3ConnectionState,
         userData: { profile: AppUserProfile },
         userPreference: UserPreference,
         stakingData: StakingDataState,

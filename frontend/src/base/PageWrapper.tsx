@@ -17,7 +17,7 @@ function DesktopPageWrapper(props: ReponsivePageWrapperProps&ReponsivePageWrappe
         <>
         <DesktopPage 
             NavBar={
-                <NavBar {...props}>
+                <NavBar {...props} error={props.authError} >
                     {props.navBarContent}
                 </NavBar>
             }

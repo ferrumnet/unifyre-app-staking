@@ -84,6 +84,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               onDisconnected={props.onDisconnected}
               onConnectionFailed={props.onConnectionFailed}
               container={props.initialized ? IocModule.container() : undefined}
+              authError={props.error}
               >
               <Switch>
                   <Route path='/:gid/confirm/:transactionId'>

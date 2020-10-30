@@ -3,7 +3,7 @@ import { IocModule, inject } from "../../common/IocModule";
 import { addAction, CommonActions } from "../../common/Actions";
 import { DashboardState, RootState } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
-import { StakingAppClient } from "../../services/StakingAppClient";
+import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { BackendMode, logError } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
 import { CurrencyList } from "unifyre-extension-web3-retrofit";
@@ -75,20 +75,19 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     },
     onConnected: async () => {
         try {
-            dispatch(addAction(CommonActions.CONNECTION_SUCCEEDED, {}));
             const sc = inject<StakingAppClient>(StakingAppClient);
-            await sc.signInToServer(dispatch);
-            return true;
+            const res = await sc.signInToServer(dispatch);
+            return !!res;
         } catch(e) {
-            dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+            dispatch(addAction(StakingAppServiceActions.AUTHENTICATION_FAILED, { message: `Connection failed ${e.message}` }))
             throw e;
         }
     },
     onConnectionFailed: (e: Error) => {
-        dispatch(addAction(CommonActions.CONNECTION_FAILED, { message: `Connection failed ${e.message}` }))
+        dispatch(addAction(StakingAppServiceActions.AUTHENTICATION_FAILED, { message: `Connection failed ${e.message}` }))
     },
     onDisconnected: () => {
-        dispatch(addAction(CommonActions.DISCONNECT, {}))
+        dispatch(addAction(StakingAppServiceActions.AUTHENTICATION_FAILED, { message: 'Disconnected' }))
     },
 } as DashboardDispatch);
 
@@ -102,6 +101,11 @@ function reduce(state: DashboardState = defaultDashboardState, action: AnyAction
             return {...state, initialized: false, fatalError: action.payload.message};
         case Actions.INIT_SUCCEED:
             return {...state, initialized: true, fatalError: undefined};
+        case StakingAppServiceActions.GET_STAKING_CONTRACT_FAILED:
+        case StakingAppServiceActions.AUTHENTICATION_FAILED:
+            return {...state, error: action.payload.message};
+        case StakingAppServiceActions.AUTHENTICATION_COMPLETED:
+            return {...state, error: undefined};
         default:
             return state;
     }

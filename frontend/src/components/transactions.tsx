@@ -22,7 +22,7 @@ interface transactionsProps {
 export const Transactions = (props:transactionsProps) => {
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
-    const [expand,setExpand] = useState(false);
+    const [expand] = useState(false);
     const title = props.type === 'stake' ? (
         `${props.type} ${props.amount} ${props.symbol}`
     ) : (
@@ -37,7 +37,10 @@ export const Transactions = (props:transactionsProps) => {
                 <div style={styles.btnContainer}>
                     <div style={styles.tokenInfo}>
                         <div style={styles.tokenSymbol}>
-                            <img style={{"width":'30px'}} src={props.type==="stake"?stakeImg:unstakeImg}/>
+                            <img 
+                            style={{"width":'30px'}} src={props.type==="stake"?stakeImg:unstakeImg}
+                            alt="token"
+                            />
                         </div>
                         <div style={{display:'flex', flexDirection: 'column', alignItems:'stretch', flex: 1}}>
                             <div 

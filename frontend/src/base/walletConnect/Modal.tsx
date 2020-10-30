@@ -61,30 +61,20 @@ export function ConnectModal (props: {
           !selected &&
           <>
             <div className={contentStyles.body} onClick={()=>props.metaMaskConnect()}>
-              <p>
-                  Connect Using MetaMask.{' '}
-              </p>
-                <img src={MMLOGO} alt="Icon"/>
+              <span>
+                  Connect Using MetaMask{' '}
+              </span>
+                <img src={MMLOGO} alt="Metamask" className={contentStyles.img}/>
             </div>
             <div className={contentStyles.body} onClick={()=>props.walletConnect()}>
 
-              <p>
-                Connect Using Wallet Connect.{' '}
-              </p>
-                <img src={WCLOGO} alt="Icon"/>
+              <span>
+                Connect Using Wallet Connect{' '}
+              </span>
+                <img src={WCLOGO} alt="WalletConnect" className={contentStyles.img}/>
             </div>
           </>
         }
-        {
-          props.connected && 
-          <div className={contentStyles.body}>
-              <p>
-                Connected Using {wallet}.{' '}
-              </p>
-                <img src={WCLOGO} alt="Icon"/>
-          </div>
-        }
-        
       </Modal>
     </div>
   );
@@ -113,13 +103,21 @@ const contentStyles = mergeStyleSets({
   ],
   body: {
     flex: '4 4 auto',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: '0 24px 24px 24px',
+    cursor: 'pointer',
     overflowY: 'hidden',
     selectors: {
-      p: { margin: '14px 0' },
+      span: { margin: '14px 0' },
       'p:first-child': { marginTop: 0 },
       'p:last-child': { marginBottom: 0 },
     },
+  },
+  img: {
+    with: '30px',
+    height: '30px',
   },
 });
 const toggleStyles = { root: { marginBottom: '20px' } };

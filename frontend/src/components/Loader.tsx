@@ -2,12 +2,9 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Dispatch, AnyAction } from 'redux';
-import { addAction } from '../common/Actions';
 import { inject } from '../common/IocModule';
 import { RootState } from '../common/RootState';
-import { DashboardActions } from '../pages/dashboard/Dashboard';
 import { StakingAppClient } from '../services/StakingAppClient';
-import { loadThemeForGroup } from '../themeLoader';
 
 interface LoaderParams {
     network: string;

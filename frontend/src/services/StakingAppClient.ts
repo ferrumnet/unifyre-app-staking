@@ -243,6 +243,10 @@ export class StakingAppClient implements Injectable {
         throw new Error('loadGroupInfo: Not implemented');
     }
 
+    async loadHttpProviders(dispatch: Dispatch<AnyAction>): Promise<any> {
+        throw new Error('loadHttpProviders: Not implemented');
+    }
+
     protected async api(req: JsonRpcRequest): Promise<any> {
         try {
             const res = await fetch(CONFIG.poolDropBackend, {
