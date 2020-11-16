@@ -65,6 +65,9 @@ export class HttpHandler implements LambdaHttpHandler {
                 case 'getStakingsForToken':
                     body = await this.getStakingsForToken(req);
                     break;
+                case 'getStakingByContractAddress':
+                    body = await this.getStakingsByContractAddress(req);
+                    break;
                 case 'getStakingContractForUser':
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.getStakingContractForUser(userId!, req);
@@ -163,6 +166,12 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(['staking', 'stakeFarming'].indexOf(contractType) >= 0, '"contractType" must be provided');
         return await this.userSvc.saveStakeInfo(network, contractType, contractAddress, groupId, color, logo,
             backgroundImage, minContribution, maxContribution, emailWhitelist);
+    }
+
+    async getStakingsByContractAddress(req: JsonRpcRequest) {
+        const {contractAddress} = req.data;
+        ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
+        return await this.userSvc.getStakingByContractAddress(contractAddress);
     }
 
     async getStakingsForToken(req: JsonRpcRequest) {

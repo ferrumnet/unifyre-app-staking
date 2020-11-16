@@ -1,6 +1,6 @@
 import { MongooseConnection } from "aws-lambda-helper";
 import { Connection, Model, Document } from "mongoose";
-import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
+import { Injectable, LocalCache, Network, ValidationUtils } from "ferrum-plumbing";
 import { CustomTransactionCallRequest, UnifyreExtensionKitClient } from "unifyre-extension-sdk";
 import { GroupInfo, StakeEvent, StakingApp, StakingContractType, UserStake } from "./Types";
 import { GroupInfoModel, StakeEventModel, StakingAppModel } from "./MongoTypes";
@@ -10,6 +10,7 @@ import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { Big } from 'big.js';
 
 const SIGNATURE_TIMEOUT = 1000 * 45;
+const PUBLIC_STAKING_INFO_CACHE_TIMEOUT = 1000 * 60;
 
 async function undefinedOnTimeout<T>(fun: () => Promise<T|undefined>) {
     try {
@@ -25,6 +26,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     private stakingModel: Model<StakingApp & Document, {}> | undefined;
     private stakeEventModel: Model<StakeEvent & Document, {}> | undefined;
     private groupInfoModel: Model<GroupInfo & Document, {}> | undefined;
+    private cache = new LocalCache();
     constructor(
         private uniClientFac: () => UnifyreExtensionKitClient,
         private stakingContract: SmartContratClient,
@@ -58,6 +60,17 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             color, logo, backgroundImage, groupId, minContribution,
             maxContribution, emailWhitelist,
         });
+    }
+
+    async getStakingByContractAddress(contractAddress: string): Promise<StakingApp|undefined> {
+        this.verifyInit();
+        return this.cache.getAsync(`PUBLIC_STAKE.${contractAddress}`, async () => {
+            const cot = await this.getStaking(contractAddress);
+            if (!cot) { return undefined; }
+            const fromCont = await this.contract(cot!.contractType).contractInfo(
+                cot!.network, contractAddress);
+            return {...cot, ...fromCont};
+        }, PUBLIC_STAKING_INFO_CACHE_TIMEOUT);
     }
 
     async getStakingsForToken(currency: string): Promise<StakingApp[]> {
