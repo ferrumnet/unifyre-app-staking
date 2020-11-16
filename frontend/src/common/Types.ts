@@ -10,6 +10,7 @@ export interface StakingApp {
     groupId: string;
     symbol: string;
     rewardSymbol?: string;
+    rewardTokenPrice?: string;
     contractAddress: string;
     name: string;
     tokenAddress: string;

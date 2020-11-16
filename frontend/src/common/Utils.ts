@@ -18,6 +18,7 @@ export interface StakingRewards {
     maturityMaxAmount: string;
     tokenSymbol: string;
     rewardSybol: string;
+    rewardPrice: string;
 }
 
 export class BackendMode {
@@ -116,21 +117,24 @@ export class Utils {
                 earlyWithdrawAnnual: '0%',
                 maturityAnnual: '0%',
                 maturityMaxAmount: '0',
+                rewardPrice: '',
             } as StakingRewards;
         }
         // Percentage rewards
         const stakingCap = new Big(contract.stakingCap || '0');
         const earlyWithdrawReward = new Big(contract.earlyWithdrawReward || '0');
         const totalReward = new Big(contract.totalReward || '0');
+        const price = !!contract.rewardTokenPrice ? new Big(contract.rewardTokenPrice) :
+            new Big('1');
         return {
             earlyWithdrawAnnual: earlyWithdrawAnnualRate(
                 stakingCap,
-                earlyWithdrawReward,
+                earlyWithdrawReward.times(price),
                 contract.withdrawEnds,
                 contract.stakingEnds).times(100).toFixed(2),
             maturityAnnual: maturityAnnualRate(
                 stakingCap,
-                totalReward,
+                totalReward.times(price),
                 contract.withdrawEnds,
                 contract.stakingEnds,
             ).times(100).toFixed(2),
@@ -138,15 +142,16 @@ export class Utils {
             contractType: contract.contractType,
             rewardSybol: contract.rewardSymbol,
             tokenSymbol: contract.symbol,
+            rewardPrice: contract.rewardTokenPrice,
         } as StakingRewards;
     }
 
     static rewardSentence(annualPct: string, reward: StakingRewards): string {
-        if (reward.contractType === 'stakeFarming') {
+        if (reward.contractType === 'stakeFarming' && !reward.rewardPrice) {
             const rate = formatter.format(new Big(annualPct || '0').div(new Big(100)).toFixed(4), false);
             return `${rate} ${reward.rewardSybol}/${reward.tokenSymbol}`;
         } else {
-            return `${annualPct}%`;
+            return `${annualPct}% APY`;
         }
     }
 

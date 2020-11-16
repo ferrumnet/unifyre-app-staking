@@ -1,12 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App-web3';
+import App from './App-unifyre';
 import * as serviceWorker from './serviceWorker';
 import './fonts/SawarabiGothic-Regular.ttf';
-import { BackendMode } from './common/Utils';
-
-BackendMode.mode = 'web3';
 
 ReactDOM.render(
   <React.StrictMode>

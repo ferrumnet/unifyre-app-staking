@@ -4,7 +4,7 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
-import {formatter,dataFormat,Utils} from '../common/Utils';
+import {formatter, Utils} from '../common/Utils';
 import { StakingApp } from "./../common/Types";
 import { StakeCompletionProgress } from './ProgressBar';
 import moment from 'moment';
