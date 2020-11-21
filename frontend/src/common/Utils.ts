@@ -14,7 +14,9 @@ export type StakingState = 'pre-stake' | 'stake' | 'pre-withdraw' | 'withdraw' |
 export interface StakingRewards {
     contractType: StakingContractType;
     earlyWithdrawAnnual: string;
+    earlyWithdrawSentenceOverwrite?: string;
     maturityAnnual: string;
+    maturitySentenceOverwrite?: string;
     maturityMaxAmount: string;
     tokenSymbol: string;
     rewardSybol: string;
@@ -127,12 +129,14 @@ export class Utils {
         const price = !!contract.rewardTokenPrice ? new Big(contract.rewardTokenPrice) :
             new Big('1');
         return {
-            earlyWithdrawAnnual: earlyWithdrawAnnualRate(
+            earlyWithdrawSentenceOverwrite: contract.earlyWithdrawRewardSentence,
+            earlyWithdrawAnnual: contract.earlyWithdrawRewardSentence || earlyWithdrawAnnualRate(
                 stakingCap,
                 earlyWithdrawReward.times(price),
                 contract.withdrawEnds,
                 contract.stakingEnds).times(100).toFixed(2),
-            maturityAnnual: maturityAnnualRate(
+            maturitySentenceOverwrite: contract.totalRewardSentence,
+            maturityAnnual: contract.totalRewardSentence || maturityAnnualRate(
                 stakingCap,
                 totalReward.times(price),
                 contract.withdrawEnds,
@@ -147,6 +151,12 @@ export class Utils {
     }
 
     static rewardSentence(annualPct: string, reward: StakingRewards): string {
+        if (!!reward.earlyWithdrawSentenceOverwrite && annualPct === reward.earlyWithdrawAnnual) {
+            return reward.earlyWithdrawSentenceOverwrite;
+        }
+        if (!!reward.maturitySentenceOverwrite && annualPct === reward.maturityAnnual) {
+            return reward.maturitySentenceOverwrite;
+        }
         if (reward.contractType === 'stakeFarming' && !reward.rewardPrice) {
             const rate = formatter.format(new Big(annualPct || '0').div(new Big(100)).toFixed(4), false);
             return `${rate} ${reward.rewardSybol}/${reward.tokenSymbol}`;
