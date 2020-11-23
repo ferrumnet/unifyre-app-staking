@@ -42,6 +42,7 @@ export async function handler(event: any, context: any) {
             body: e.message,
             headers: {
                 'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Accept-Encoding, Accept-Language, Authorization, Host',
             },
             isBase64Encoded: false,
             statusCode: 500,
