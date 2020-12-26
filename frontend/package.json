@@ -10,7 +10,7 @@
     "@sentry/browser": "^5.24.2",
     "@sentry/tracing": "^5.24.2",
     "big.js": "^5.2.2",
-    "desktop-components-library": "https://github.com/ferrumnet/desktop-components-library.git",
+    "desktop-components-library": "git+https://github.com/ferrumnet/desktop-components-library.git",
     "ethers": "^5.0.19",
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
     "got": "^11.3.0",

@@ -38,7 +38,28 @@ export function StakingContractDetails(props: {logo?: string, name?: string,}) {
     );
 }
 
-export function StakingContractAddress(props: {network: string, userAddress?: string, contractAddress?: string}) {
+export function StakingContractAddress(props: {
+    network: string, userAddress?: string, contractAddress?: string,
+    rewardContinuationAddress?: string,
+}) {
+    const rewCon = props.rewardContinuationAddress ? (
+        <>
+            <Gap size='small' />
+            <Row >
+                <ThemedText.H3>REWARD CONTINUATION ADDRESS</ThemedText.H3>
+            </Row>
+            <Row >
+                <TextField 
+                underlined
+                value={props.rewardContinuationAddress}
+                readOnly
+                suffix={'🔗'}
+                onClick={() => props.rewardContinuationAddress &&
+                    window.open(Utils.linkForAddress(props.network, props.rewardContinuationAddress!))}
+                />
+            </Row>
+        </>
+    ) : undefined;
     return (
         <>
             <Row >
@@ -66,6 +87,7 @@ export function StakingContractAddress(props: {network: string, userAddress?: st
                 onClick={() => props.contractAddress && window.open(Utils.linkForAddress(props.network, props.contractAddress!))}
                 />
             </Row>
+            {rewCon}
         </>
     );
 }

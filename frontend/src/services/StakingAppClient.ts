@@ -208,6 +208,32 @@ export class StakingAppClient implements Injectable {
         }
     }
 
+    async takeRewardsSignAndSend(
+        dispatch: Dispatch<AnyAction>,
+        network: Network,
+        contractAddress: string,
+        userAddress: string,): Promise<string|undefined> {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'takeRewardsSignAndSend' }));
+            const token = this.getToken(dispatch);
+            if (!token) { return; }
+            let {requestId} = (await this.api({
+                command: 'takeRewardsSignAndSend', data: {
+                    token, network, contractAddress, userAddress},
+                params: []}as JsonRpcRequest)) as {requestId: string, stakeEvent?: StakeEvent};
+            if (!requestId) {
+                dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not send a sign request.' }));
+            }
+            openUnifyre();
+            await this.processRequest(dispatch, requestId);
+            return 'success' as string;
+        } catch (e) {
+            logError('Error signAndSend', e);
+            dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could send a sign request. ' + e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'takeRewardsSignAndSend' }));
+        }
+    }
 
     async processRequest(dispatch: Dispatch<AnyAction>, 
         requestId: string) {
@@ -220,7 +246,6 @@ export class StakingAppClient implements Injectable {
             }
             const txIds = (response.response || []).map(r => r.transactionId);
             const payload = response.requestPayload || {};
-            console.log('RESPONSED IS ', response)
             const { amount, contractAddress, action } = payload;
             const res = await this.api({
                 command: 'stakeEventProcessTransactions', data: {token, amount, eventType: action || 'stake',

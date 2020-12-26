@@ -107,6 +107,14 @@ export class HttpHandler implements LambdaHttpHandler {
                     ValidationUtils.isTrue(!!userId, 'user must be signed in');
                     body = await this.unstakeTokenSignAndSend(req);
                     break;
+                case 'takeRewardsSignAndSendGetTransaction':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.takeRewardsSignAndSendGetTransaction(req);
+                    break;
+                case 'takeRewardsSignAndSend':
+                    ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                    body = await this.takeRewardsSignAndSend(req);
+                    break;
                 // TODO: Implement
                 // case 'saveTransaction':
                 //     ValidationUtils.isTrue(!!userId, 'user must be signed in');
@@ -252,5 +260,24 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
         return await this.userSvc.unstakeTokenSignAndSend(token, network, contractAddress, userAddress, amount);
+    }
+
+    async takeRewardsSignAndSend(req: JsonRpcRequest): Promise<{requestId: string}> {
+        const {token, network, contractAddress, userAddress} = req.data;
+        ValidationUtils.isTrue(!!token, '"token" must be provided');
+        ValidationUtils.isTrue(!!network, '"network" must be provided');
+        ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
+        ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
+        return await this.userSvc.takeRewardsSignAndSend(token, network, contractAddress, userAddress);
+    }
+
+    async takeRewardsSignAndSendGetTransaction(req: JsonRpcRequest):
+    Promise<CustomTransactionCallRequest[]> {
+        const {amount, network, contractAddress, userAddress} = req.data;
+        ValidationUtils.isTrue(!!network, '"network" must be provided');
+        ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
+        ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
+        return await this.userSvc.takeRewardsSignAndSendGetTransaction(
+            network, contractAddress, userAddress);
     }
 }

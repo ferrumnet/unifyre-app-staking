@@ -12,6 +12,9 @@ export interface StakingApp {
     rewardSymbol?: string;
     rewardTokenPrice?: string;
     contractAddress: string;
+    rewardContinuationAddress?: string;
+    rewardContinuationCurrency?: string;
+    rewardContinuationSymbol?: string;
     name: string;
     tokenAddress: string;
     rewardTokenAddress?: string;
@@ -30,6 +33,7 @@ export interface StakingApp {
     minContribution?: string;
     maxContribution?: string;
     emailWhitelist?: string;
+    addressWhitelist?: string;
     logo?: string;
     color?: string;
     backgroundImage?: string;
@@ -67,6 +71,7 @@ export interface UserStake {
     userAddress: string;
     contractAddress: string;
     amountInStake: string;
+    continuationRewards?: string;
 }
 
 export interface GroupInfo {

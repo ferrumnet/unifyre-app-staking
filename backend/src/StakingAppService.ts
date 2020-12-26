@@ -103,6 +103,18 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             userAddress,
             userId,
         } as UserStake;
+        if (stakingContract.rewardContinuationAddress) {
+            const contCur = stakingContract.rewardContinuationCurrency ||
+                    stakingContract.rewardCurrency ||
+                        stakingContract.currency;
+            const continuationRewards = await this.contract(stakingContract!.contractType)
+                .continuationRewardsOf(network, stakingContract.rewardContinuationAddress!,
+                contCur,
+                userAddress);
+            userStake.continuationRewards = continuationRewards;
+            stakingContract.rewardContinuationSymbol = await this.contract(
+                stakingContract!.contractType).helper.symbol(contCur);
+        }
         // Get all user stakes
         const stakeEvents = await this.userStakesForContracts(userId, contractAddress);
         return [userStake, stakingContract!, stakeEvents];
@@ -153,6 +165,14 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             const emails = stakingContract.emailWhitelist!.split(',').map(e => e.trim().toLocaleLowerCase());
             ValidationUtils.isTrue(emails.indexOf(email.toLocaleLowerCase())>=0,
                 'Your email is not whitelisted');
+        }
+        if (stakingContract.addressWhitelist) {
+            const addresses = stakingContract.addressWhitelist!.split(',')
+                .map(e => e.trim().toLocaleLowerCase()).filter(a => !!a);
+            ValidationUtils.isTrue(
+                addresses.indexOf(userAddress.toLocaleLowerCase())>=0 ||
+                    addresses.indexOf(userId.toLocaleLowerCase())>=0,
+                'Your address is not whitelisted');
         }
         return await this.contract(stakingContract.contractType).checkAllowanceAndStake(
             stakingContract,
@@ -222,7 +242,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     private async processTransaction(
         eventType: 'stake' | 'unstake',
         mainTxId: string,
-        allocationTxIds: string[],
+        otherTxIds: string[],
         stakingContract: StakingApp,
         userAddress: string,
         amount: string,
@@ -232,7 +252,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return await this.registerOrUpdateUserStake(
             eventType,
             mainTxId,
-            allocationTxIds,
+            otherTxIds,
             stakingContract,
             userAddress,
             userId,
@@ -286,6 +306,31 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return {requestId};
     };
 
+    async takeRewardsSignAndSend(
+            token: string,
+            network: Network, contractAddress: string, userAddress: string):
+            Promise<{requestId: string}> {
+        const txs = await this.takeRewardsSignAndSendGetTransaction(
+            network, contractAddress, userAddress,
+        );
+        const payload = { network, userAddress, amount: '0', contractAddress, action: 'unstake' };
+        const client = this.uniClientFac();
+        await client.signInWithToken(token);
+        const requestId = await client.sendTransactionAsync(network, txs, payload);
+        return {requestId};
+    };
+
+    async takeRewardsSignAndSendGetTransaction(
+            network: Network, contractAddress: string, userAddress: string):
+            Promise<CustomTransactionCallRequest[]> {
+        const stakingContract = (await this.getStaking(contractAddress))!
+        ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
+        return this.contract(stakingContract.contractType).takeRewards(
+            stakingContract,
+            userAddress,
+        );
+    }
+
     private async updateUserStake(
         mainTxId: string,
     ): Promise<StakeEvent|undefined> {
@@ -310,7 +355,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     private async registerOrUpdateUserStake(
         eventType: 'stake' | 'unstake',
         mainTxId: string,
-        approveTxIds: string[],
+        otherTxIds: string[],
         contract: StakingApp,
         userAddress: string,
         userId: string,
@@ -345,7 +390,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
                 rewardCurrency: contract.rewardCurrency,
                 rewardSymbol: contract.rewardSymbol,
                 mainTxId,
-                approveTxIds,
+                approveTxIds: otherTxIds,
                 userAddress,
                 userId,
                 email,

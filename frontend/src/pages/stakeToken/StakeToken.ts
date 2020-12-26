@@ -37,6 +37,7 @@ export interface StakeTokenProps extends StakeTokenState {
     unstakeRewardsMaturity: string;
     filled: boolean;
     groupId?: string;
+    isRewardZero: boolean;
 }
 
 export interface StakeTokenDispatch {
@@ -54,6 +55,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
     const stakeOf = state?.data?.stakingData?.userStake || {} as any as UserStake;
     const totB = new Big(contract.stakedTotal || '0');
     const capB = new Big(contract.stakingCap || '0');
+    const isRewardZero = contract.totalReward == '0';
     return {
         ...state.ui.stakeToken,
         network: address.network,
@@ -79,6 +81,7 @@ function mapStateToProps(state: RootState): StakeTokenProps {
             Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol || ''}`,
         filled: capB.minus(totB).lte(new Big(0)),
         groupId: state.data.groupData.info?.groupId,
+        isRewardZero,
     };
 }
 

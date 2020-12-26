@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
@@ -22,6 +22,12 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const error = props.error ? (
         <Row withPadding>
             <ErrorMessage text={props.error} />
+        </Row>
+    ) : undefined;
+
+    const whitelisted = (!!props.contract.emailWhitelist || !!props.contract.addressWhitelist) ? (
+        <Row withPadding centered>
+            <ThemedText.H3>You must be on the whiltelist to stake in this contract</ThemedText.H3>
         </Row>
     ) : undefined;
 
@@ -58,6 +64,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                     />
             </Row>
             {error}
+            {whitelisted}
             <Row>
                 <PrimaryButton
                     text={'Submit stake'}

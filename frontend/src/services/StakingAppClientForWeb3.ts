@@ -102,6 +102,36 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
         }
     }
 
+    async takeRewardsSignAndSend(
+        dispatch: Dispatch<AnyAction>, 
+        network: Network,
+        contractAddress: string,
+        userAddress: string,
+        ): Promise<string|undefined> {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'takeRewardsSignAndSend' }));
+            let txs = (await this.api({
+                command: 'takeRewardsSignAndSendGetTransaction', data: {
+                    network, contractAddress, userAddress},
+                params: []}as JsonRpcRequest)) as CustomTransactionCallRequest[];
+            if (!txs || !txs.length) {
+                dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not create an un-stake transaction.' }));
+            }
+            const requestId = await this.client.sendTransactionAsync(network, txs,
+                {amount: '0', contractAddress, action: 'unstake'});
+            if (!requestId) {
+                dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not submit transaction.' }));
+            }
+            await this.processRequest(dispatch, requestId);
+            return 'success';
+        } catch (e) {
+            logError('Error takeRewardsSsignAndSend', e);
+            dispatch(addAction(Actions.UN_STAKING_FAILED, { message: 'Could not send a sign request. ' + e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'takeRewardsSignAndSend' }));
+        }
+    }
+
     async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
         try {
             ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');

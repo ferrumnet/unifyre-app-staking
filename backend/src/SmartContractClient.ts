@@ -1,5 +1,6 @@
 import { Injectable, HexString, ValidationUtils } from "ferrum-plumbing";
 import stakingAbi from './resources/Festaking-abi.json';
+import stakingContinuationAbi from './resources/FestakedRewardContinuation-abi.json';
 import Big from 'big.js';
 import { StakingApp, StakingContractType } from "./Types";
 import { EthereumSmartContractHelper } from 'aws-lambda-helper/dist/blockchain';
@@ -86,18 +87,61 @@ export class SmartContratClient implements Injectable {
         const stakeOf = await this.stakeOf(network, contractAddress, currency, userAddress);
         ValidationUtils.isTrue(new Big(stakeOf).gte(new Big(amount)),
             `Not enough stake balance to unstake from. Current stake balance is ${stakeOf} but ${amount} was requested.`);
-        const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
+
+        const requests: CustomTransactionCallRequest[] = [];
+        let nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
+        if (stakingContract.rewardContinuationAddress) {
+            const [takeRewards, takeRewardsGas] = await  this.takeContinuationRewards(
+                network,
+                stakingContract.rewardContinuationAddress,
+                userAddress,);
+            requests.push(
+                Helper.callRequest(stakingContract.rewardContinuationAddress,
+                    stakingContract.rewardContinuationCurrency || stakingContract.rewardCurrency || stakingContract.currency,
+                    userAddress,
+                    takeRewards,
+                    takeRewardsGas.toFixed(),
+                    nonce,
+                    `To take continuation rewards from ${name}`));
+            nonce ++;
+        }
         const [unstake, unstakeGas] = await this.unstakeToken(
             network,
             contractAddress,
             currency,
             userAddress,
             amount);
-        const requests: CustomTransactionCallRequest[] = [];
         requests.push(
             Helper.callRequest(contractAddress, currency, userAddress, unstake, unstakeGas.toFixed(), nonce,
                 `To un-stake ${amount} ${symbol} from ${name}`,),
         );
+        return requests;
+    }
+
+    async takeRewards(
+        stakingContract: StakingApp,
+        userAddress: string,
+    ): Promise<CustomTransactionCallRequest[]> {
+        ValidationUtils.isTrue(!!stakingContract, '"stakingContract" must be provided');
+        ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
+        
+        const { name, network, contractAddress, currency, symbol } = stakingContract;
+        ValidationUtils.isTrue(!!stakingContract.rewardContinuationAddress, 'Contract has no continuation');
+
+        const requests: CustomTransactionCallRequest[] = [];
+        let nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
+        const [takeRewards, takeRewardsGas] = await  this.takeContinuationRewards(
+            network,
+            stakingContract.rewardContinuationAddress!,
+            userAddress,);
+        requests.push(
+            Helper.callRequest(stakingContract.rewardContinuationAddress!,
+                stakingContract.rewardContinuationCurrency || stakingContract.rewardCurrency || stakingContract.currency,
+                userAddress,
+                takeRewards,
+                takeRewardsGas.toFixed(),
+                nonce,
+                `To take continuation rewards from ${name}`));
         return requests;
     }
 
@@ -148,13 +192,23 @@ export class SmartContratClient implements Injectable {
         return this.helper.amountToHuman(currency, val.toString());
     }
 
+    async continuationRewardsOf(network: string, contractAddress: string,
+        currency: string, address: string) {
+        const val = await this.stakingContinuationApp(network, contractAddress)
+            .methods.rewardOf(address).call();
+        return await this.helper.amountToHuman(currency, val.toString());
+    }
+
     async transactionLog(network: string, transactionId: string): Promise<[StakedEvent|undefined, PaidOutEvent|undefined]> {
         const web3 = this.helper.web3(network) as Eth;
         const rec = await web3.getTransactionReceipt(transactionId);
-        console.log('GOT TX RECEIPT', rec);
         if (!rec) { return [undefined, undefined]};
-        console.log('GOT TX RECEIPT', rec);
         return this.processLog(network, rec.logs);
+    }
+
+    protected stakingContinuationApp(network: string, contractAddress: string) {
+        const web3 = this.helper.web3(network);
+        return new web3.Contract(stakingContinuationAbi, contractAddress);
     }
 
     protected stakingApp(network: string, contractAddress: string) {
@@ -184,6 +238,17 @@ export class SmartContratClient implements Injectable {
         console.log('About to UNstake', {network, contractAddress, userAddress, amount});
         const amountRaw = await this.helper.amountToMachine(currency, amount);
         const m = this.stakingApp(network, contractAddress).methods.withdraw(amountRaw);
+        const gas = await m.estimateGas({from: userAddress});
+        return [m.encodeABI(), gas];
+    }
+
+    private async takeContinuationRewards(network: string,
+        continuationContractAddress: string,
+        userAddress: string,):
+        Promise<[HexString, number]> {
+        console.log('About to take continuation', {network, continuationContractAddress, userAddress});
+        const m = this.stakingContinuationApp(network, continuationContractAddress)
+            .methods.withdrawRewards();
         const gas = await m.estimateGas({from: userAddress});
         return [m.encodeABI(), gas];
     }
@@ -218,12 +283,27 @@ export class SmartContratClient implements Injectable {
         const events = paidOutRaw.events;
         const token  = events[0].value.toString().toLowerCase();
         const currency = Helper.toCurrency(network, token);
-        const amount = await this.helper.amountToHuman(currency, events[2].value.toString());
-        const reward = await this.helper.amountToHuman(currency, events[3].value.toString());
+        let rewardToken = token;
+        let rewardCurrency = currency;
+        let amountValue = events[2].value.toString();
+        let rewardValue = events[3].value.toString();
+        let staker = events[1].value.toString();
+        if (events.length == 5) {
+            // Separate reward token
+            rewardToken = events[1].value.toString().toLowerCase();
+            rewardCurrency = Helper.toCurrency(network, rewardToken);
+            amountValue = events[3].value.toString();
+            rewardValue = events[4].value.toString();
+            staker = events[2];
+        }
+        const amount = await this.helper.amountToHuman(currency, amountValue);
+        const reward = await this.helper.amountToHuman(rewardCurrency, rewardValue);
         return {
             token,
+            rewardToken,
             symbol: await this.helper.symbol(currency),
-            staker: events[1].value.toString(),
+            rewardSymbol: await this.helper.symbol(rewardCurrency),
+            staker,
             amount,
             reward,
         } as PaidOutEvent;

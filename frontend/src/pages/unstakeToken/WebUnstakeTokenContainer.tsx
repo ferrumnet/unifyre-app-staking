@@ -6,7 +6,6 @@ import {
     // @ts-ignore
 } from 'unifyre-web-components';
 import { formatter } from "../../common/Utils";
-import { Big } from 'big.js';
 import { LoaderContainer } from '../../components/Loader';
 import './stake.scss';
 import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './UnstakeToken';
@@ -21,6 +20,16 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
         <Row withPadding>
             <ErrorMessage text={props.error} />
         </Row>
+    ) : undefined;
+
+    const takeRewards = props.contract.rewardContinuationAddress ? (
+        <>
+            <span>&bnsp;</span> 
+            <PrimaryButton
+                text={'Take Rewards Only'}
+                onClick ={()=> props.onTakeRewards(history, props)}
+            />
+        </>
     ) : undefined;
 
     const inputBox = (
@@ -50,10 +59,10 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                     text={'Un-stake'}
                     onClick ={()=> props.onUnstakeToken(history,props)}
                 />
+                {takeRewards}
             </Row>
         </LeftBox>
     );
-
 
     const infoBox = (
         <WithdrawViewInfoBox
@@ -61,6 +70,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
             unstakeRewardsMaturity={props.unstakeRewardsMaturity}
             unstakeRewardsNow={props.unstakeRewardsNow}
             userStake={props.userStake || {} as any}
+            isZeroReward={props.isRewardZero}
         />
     );
 

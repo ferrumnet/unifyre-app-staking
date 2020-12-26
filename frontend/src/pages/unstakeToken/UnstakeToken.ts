@@ -20,6 +20,7 @@ export interface UnstakeTokenProps extends StakeTokenProps {
 
 export interface UnstakeTokenDispatch {
     onUnstakeToken: (history: History, props: UnstakeTokenProps) => Promise<void>;
+    onTakeRewards: (history: History, props: UnstakeTokenProps) => Promise<void>;
     onAmountToUnstakeChanged: (v: string) => Promise<void>;
 }
 
@@ -63,6 +64,28 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     },
     onAmountToUnstakeChanged: async (v: string) => {
         dispatch(addAction(Actions.AMOUNT_TO_UN_STAKE_CHANGED, { amount: v }));
+    },
+    onTakeRewards: async (history, props) => {
+        try{
+            dispatch(addAction(CommonActions.WAITING, { source: 'takeRewards' }));
+            await IocModule.init(dispatch);
+            const client = inject<StakingAppClient>(StakingAppClient);
+            const data = await client.takeRewardsSignAndSend(
+                dispatch,
+                props.contract.network,
+                props.contract.contractAddress,
+                props.userAddress,
+                );
+            if (!!data) {
+                const gidPrefix = props.groupId ? `/${props.groupId}` : '';
+                history.replace(`${gidPrefix}/continuation`);
+            }
+        } catch (e) {
+            logError('StakeToken.mapDispatchToProps', e);
+            dispatch(addAction(StakingAppServiceActions.UN_STAKING_FAILED, { message: e.toString() }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeToken' }));
+        }
     },
 } as UnstakeTokenDispatch);
 

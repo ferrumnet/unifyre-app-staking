@@ -25,6 +25,7 @@ export interface StakingContractProps {
     unstakeRewardsMaturity: string;
     filled: boolean;
     groupId?: string;
+    isZeroReward: boolean;
 }
 
 export interface StakingContractDispatch {
@@ -61,6 +62,7 @@ function mapStateToProps(state: RootState): StakingContractProps {
             Utils.unstakeRewardsAt(contract, stakeOf.amountInStake, contract.withdrawEnds * 1000 + 1))} ${contract.rewardSymbol || contract.symbol || ''}`,
         filled: capB.minus(totB).lte(new Big(0)),
         groupId: state.data.groupData.info.groupId,
+        isZeroReward: contract.totalReward == '0',
     };
 }
 

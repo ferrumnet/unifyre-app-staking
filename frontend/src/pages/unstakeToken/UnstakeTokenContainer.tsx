@@ -7,21 +7,21 @@ import {
 import { formatter } from "../../common/Utils";
 import { LoaderContainer } from '../../components/Loader';
 import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './UnstakeToken';
-import Big from 'big.js';
 import { useHistory } from 'react-router-dom';
 import {ThemeContext} from 'unifyre-react-helper';
 
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
-    // const stakeInfo = props.props.stakingData.find((e:any)=> e.contractAddress === '0x36850161766d7a1738358291b609eF02E2Ee0375')
-    const {symbol,stakingCap} = props.contract;   
     const history = useHistory();
-    const {contract} = props;
-    var utcSeconds = contract.stakingStarts;
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const error = props.error ? (
         <Row withPadding>
             <ErrorMessage text={props.error} />
+        </Row>
+    ) : undefined;
+    const takeRewards = props.contract.rewardContinuationAddress ? (
+        <Row withPadding>
+            <ThemedButton text={`Take Rewards Only`} onClick={()=>{props.onTakeRewards(history, props)}}/>
         </Row>
     ) : undefined;
     return (
@@ -64,6 +64,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Row withPadding>
                         <ThemedButton text={`UnStake`} onClick={()=>{props.onUnstakeToken(history, props)}}/>
                   </Row>
+                  {takeRewards}
               </>
             }        
         </Page>
