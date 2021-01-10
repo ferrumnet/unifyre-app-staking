@@ -34,6 +34,8 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     logo: String,
     color: String,
     filled: Boolean,
+    rewardContinuationParagraph: String,
+    gasLimitOverride: String,
 });
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({

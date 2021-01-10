@@ -54,7 +54,7 @@ export class SmartContratClient implements Injectable {
         ValidationUtils.isTrue(!!stakingContract, '"stakingContract" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
-        const { name, network, contractAddress, currency, symbol } = stakingContract;
+        const { name, network, contractAddress, currency, symbol, gasLimitOverride } = stakingContract;
         const [nonce, requests] = await this.helper.approveRequests(
             currency,
             userAddress,
@@ -67,7 +67,9 @@ export class SmartContratClient implements Injectable {
             contractAddress,
             currency,
             userAddress,
-            amount);
+            amount,
+            gasLimitOverride,
+            );
         requests.push(
             Helper.callRequest(contractAddress, currency, userAddress, staking, stakingGas.toFixed(), nonce,
                 `${amount} ${symbol} to be staked into ${name}`,),
@@ -220,12 +222,13 @@ export class SmartContratClient implements Injectable {
         contractAddress: string,
         currency: string,
         userAddress: string,
-        amount: string):
+        amount: string,
+        gasLimitOverride?: string,):
         Promise<[HexString, number]> {
         console.log('About to stake', {network, contractAddress, userAddress, amount});
         const amountRaw = await this.helper.amountToMachine(currency, amount);
         const m = this.stakingApp(network, contractAddress).methods.stake(amountRaw);
-        const gas = STAKE_GAS;
+        const gas = Number(gasLimitOverride) || STAKE_GAS;
         return [m.encodeABI(), gas];
     }
 

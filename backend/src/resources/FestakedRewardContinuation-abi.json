@@ -26,25 +26,6 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "previousOwner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "OwnershipTransferred",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
 				"name": "token",
 				"type": "address"
 			},
@@ -204,24 +185,6 @@
 	},
 	{
 		"inputs": [],
-		"name": "lockInfo",
-		"outputs": [
-			{
-				"internalType": "uint64",
-				"name": "lockWindowSecs",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint32",
-				"name": "minimumLockWindows",
-				"type": "uint32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "name",
 		"outputs": [
 			{
@@ -231,26 +194,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "renounceOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -296,24 +239,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint64",
-				"name": "_lockWindowSecs",
-				"type": "uint64"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_minimumLockWindows",
-				"type": "uint32"
-			}
-		],
-		"name": "setLockInfo",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -373,30 +298,6 @@
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "staker",
-				"type": "address"
-			}
-		],
-		"name": "stakeUnlockSchedule",
-		"outputs": [
-			{
-				"internalType": "uint64[]",
-				"name": "",
-				"type": "uint64[]"
-			},
-			{
-				"internalType": "uint128[]",
-				"name": "",
-				"type": "uint128[]"
 			}
 		],
 		"stateMutability": "view",
@@ -496,21 +397,8 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "uint256",
-				"name": "amount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
@@ -541,6 +429,25 @@
 	{
 		"inputs": [],
 		"name": "withdrawRewards",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "staker",
+				"type": "address"
+			}
+		],
+		"name": "withdrawRewardsFor",
 		"outputs": [
 			{
 				"internalType": "uint256",
