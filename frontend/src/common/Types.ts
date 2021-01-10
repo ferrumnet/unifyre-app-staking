@@ -39,6 +39,8 @@ export interface StakingApp {
     backgroundImage?: string;
     backgroundImageDesktop?: string;
     filled: boolean;
+    rewardContinuationParagraph?: string;
+    gasLimitOverride?: string;
 }
 
 export interface StakeEvent {

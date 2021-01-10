@@ -24,13 +24,27 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
 
     const takeRewards = props.contract.rewardContinuationAddress ? (
         <>
-            <span>&bnsp;</span> 
+            <span>&nbsp;</span> 
             <PrimaryButton
                 text={'Take Rewards Only'}
                 onClick ={()=> props.onTakeRewards(history, props)}
             />
         </>
     ) : undefined;
+    const extraNotes = props.contract.rewardContinuationAddress ? 
+        props.contract.rewardContinuationParagraph ? (
+            <Row>
+                <p>{props.contract.rewardContinuationParagraph}</p>
+            </Row>
+        ) : (
+            <Row>
+            <p>This staking supports rewards continuation. <br/>
+            If you unstake you get the current rewards but you will NOT get any future rewards. <br/>
+            Alternatively you can just take rewards and keep your original staked amount to qualify
+            for future rewards.
+            </p>
+            </Row>
+        ) : undefined;
 
     const inputBox = (
         <LeftBox>
@@ -61,6 +75,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                 />
                 {takeRewards}
             </Row>
+            {extraNotes}
         </LeftBox>
     );
 
