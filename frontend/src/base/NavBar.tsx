@@ -3,11 +3,17 @@ import {Theme,ThemeContext} from 'unifyre-react-helper';
 import { MessageBar, MessageBarType } from '@fluentui/react';
 import './nav.scss';
 import {
-    Row
+    WebThemedButton
+    // @ts-ignore
+} from 'desktop-components-library';
+import {
+    Row,
     //@ts-ignore
 } from 'unifyre-web-components';
 import { ReponsivePageWrapperDispatch, ReponsivePageWrapperProps, ResponsiveConnectProps } from './PageWrapperTypes';
-import { ConnectButton } from './ConnectButton';
+import { ConnectorContainer } from '../connect/ConnectContainer';
+import { RootState } from '../common/RootState';
+import { Utils } from '../common/Utils';
 
 function ErrorBar(props: {error: string}) {
     return (
@@ -25,12 +31,40 @@ function ErrorBar(props: {error: string}) {
     );
 }
 
+function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string}) {
+    const theme = useContext(ThemeContext);   
+    const styles = themedStyles(theme);
+    return (
+        <>
+            <WebThemedButton
+                text={props.connected ? Utils.shorten(props.address) : 'Connect'} 
+                disabled={props.connected}
+                onClick={props.onClick} 
+                highlight={false}
+                customStyle={styles.btnStyle}
+            />
+            {
+                props.connected && 
+                    <WebThemedButton
+                        text={'Disconnect'} 
+                        disabled={false}
+                        onClick={props.onClick} 
+                        highlight={false}
+                        customStyle={styles.btnStyle}
+                    />
+            }
+        </>
+    )
+}
+
 export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDispatch&ResponsiveConnectProps&{children: any}) { 
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     const error = props.error ? (
         <ErrorBar error={props.error} />
     ) : undefined;
+
+    const ConBot = ConnectorContainer.Connect(props.container, ConButton);
 
     return (
         <>
@@ -45,10 +79,12 @@ export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDisp
                 </a>
                 {props.children}
                 <div className="nav-children">
-                    <ConnectButton 
+                    <ConBot 
                         onConnect={props.onConnected}
                         onConnectionFailed={props.onConnectionFailed}
-                        container={props.container}
+                        dataSelector={(state: RootState) => state.data.userData}
+                        // appInitialized={props.initialized}
+                        appInitialized={true}
                     />
                 </div>
             </div>
@@ -63,4 +99,7 @@ const themedStyles = (theme) => ({
         color: theme.get(Theme.Colors.textColor),
         backgroundColor: theme.get(Theme.Colors.themeNavBkg),
     },
+    btnStyle: {
+        padding: '1rem'
+    }
 })

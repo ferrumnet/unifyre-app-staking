@@ -216,6 +216,11 @@ export class Utils {
         a2.forEach(a => { rv.set(keyFun(a), a); });
         return Array.from(rv.keys()).map(k => rv.get(k)!);
     }
+
+    static parseCurrency(cur: string): [string, string] {
+        const pars = cur.split(':', 2);
+        return [pars[0], pars[1]];
+    }
 }
 
 export class CurrencyFormatter {

@@ -10,6 +10,7 @@ import {ConfirmTxn} from '../pages/confirmation/ConfirmTxn'
 import { GroupData, StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
 import { GroupInfo } from "./Types";
+import { ConnectorContainer } from "../connect/ConnectContainer";
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -69,7 +70,7 @@ function groupData(state: GroupData = { info: {} as any }, action: AnyAction): G
 }
 
 const data = combineReducers({
-    userData,
+    userData: ConnectorContainer.reduceData,
     stakingData,
     userPreference: userPreferenceReducer,
     groupData: groupData,

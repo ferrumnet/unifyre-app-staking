@@ -4,7 +4,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { DashboardState, RootState } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
-import { BackendMode, logError } from "../../common/Utils";
+import { BackendMode, logError, Utils } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
 import { CurrencyList } from "unifyre-extension-web3-retrofit";
 import { ReponsivePageWrapperDispatch } from "../../base/PageWrapperTypes";
@@ -12,12 +12,14 @@ import { ReponsivePageWrapperDispatch } from "../../base/PageWrapperTypes";
 export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
     INIT_SUCCEED: 'INIT_SUCCEED',
+    CLEAR_ERROR: 'CLEAR_ERROR',
 };
 
 const Actions = DashboardActions;
 
 export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
     onLoad: (groupId?: string) => Promise<void>;
+    onClearError: () => void;
  }
 
 export interface DashboardProps extends DashboardState {
@@ -60,6 +62,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                     dispatch(addAction(Actions.INIT_FAILED, {message: 'No group info'}));
                     return;
                 }
+                
                 const currencyList = inject<CurrencyList>(CurrencyList);
                 currencyList.set([groupInfo.defaultCurrency]);
                 loadThemeForGroup(groupInfo.themeVariables);
@@ -89,6 +92,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onDisconnected: () => {
         dispatch(addAction(StakingAppServiceActions.AUTHENTICATION_FAILED, { message: 'Disconnected' }))
     },
+    onClearError: () => dispatch(addAction(Actions.CLEAR_ERROR, {})),
 } as DashboardDispatch);
 
 const defaultDashboardState = {
@@ -101,6 +105,8 @@ function reduce(state: DashboardState = defaultDashboardState, action: AnyAction
             return {...state, initialized: false, fatalError: action.payload.message};
         case Actions.INIT_SUCCEED:
             return {...state, initialized: true, fatalError: undefined};
+        case Actions.CLEAR_ERROR:
+            return {...state, error: undefined};
         case StakingAppServiceActions.GET_STAKING_CONTRACT_FAILED:
         case StakingAppServiceActions.AUTHENTICATION_FAILED:
             return {...state, error: action.payload.message};

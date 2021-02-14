@@ -86,6 +86,25 @@ export class StakingAppClient implements Injectable {
         return userProfile;
     }
 
+    async selectStakingContractByAddress(dispatch: Dispatch<AnyAction>,
+            contractAddress: string): Promise<[UserStake,{}]|undefined> {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'selectStakingContractByAddress' }));
+            const stakingContract = await this.api({
+                command: 'getStakingByContractAddress', data: {contractAddress}, params: [] } as JsonRpcRequest);
+            if (!stakingContract) {
+                dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could not get the staking contract data' }));
+                return;
+            }
+            dispatch(addAction(Actions.STAKING_CONTACT_RECEIVED, { stakingContract }));
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could get the staking contract data' + e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'selectStakingContractByAddress' }));
+        }
+    }
+
     async selectStakingContract(dispatch: Dispatch<AnyAction>, network: string,
             contractAddress: string, userAddress: string): Promise<[UserStake,{}]|undefined> {
         try {
