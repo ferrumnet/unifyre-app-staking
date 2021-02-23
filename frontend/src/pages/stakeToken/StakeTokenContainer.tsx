@@ -83,6 +83,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
                         <ThemedButton
                             highlight={true}
                             text={`Sign and Submit Stake`}
+                            disabled={!props.userAddress}
                             onClick={()=>{
                                 props.onStakeToken(history,props)}}
                             textStyle={styles.btnText}/>

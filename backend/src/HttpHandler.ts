@@ -166,14 +166,18 @@ export class HttpHandler implements LambdaHttpHandler {
             color,
             logo, backgroundImage, groupId, minContribution,
             maxContribution, emailWhitelist,
+            earlyWithdrawRewardSentence, totalRewardSentence,
             adminSecret} = req.data;
         ValidationUtils.isTrue(adminSecret === this.adminSecret, 'Not authorized');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!contractType, '"contractType" must be provided');
         ValidationUtils.isTrue(['staking', 'stakeFarming'].indexOf(contractType) >= 0, '"contractType" must be provided');
-        return await this.userSvc.saveStakeInfo(network, contractType, contractAddress, groupId, color, logo,
-            backgroundImage, minContribution, maxContribution, emailWhitelist);
+        return await this.userSvc.saveStakeInfo(
+            network, contractType, contractAddress, groupId, color, logo,
+            backgroundImage, minContribution, maxContribution, emailWhitelist,
+            earlyWithdrawRewardSentence, totalRewardSentence,
+            );
     }
 
     async getStakingsByContractAddress(req: JsonRpcRequest) {

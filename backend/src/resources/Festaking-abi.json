@@ -370,6 +370,21 @@
 	{
 		"constant": true,
 		"inputs": [],
+		"name": "rewardsTotal",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
 		"name": "totalReward",
 		"outputs": [
 			{

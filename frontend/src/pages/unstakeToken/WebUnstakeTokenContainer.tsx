@@ -71,6 +71,8 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
             <Row>
                 <PrimaryButton
                     text={'Un-stake'}
+                    disabled={!props.userAddress || (
+                        props.state !== 'withdraw' && props.state !== 'maturity')}
                     onClick ={()=> props.onUnstakeToken(history,props)}
                 />
                 {takeRewards}

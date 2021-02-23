@@ -9,6 +9,7 @@ import { Big } from 'big.js';
 import { LocaleManager } from "unifyre-react-helper";
 
 export interface StakingContractProps {
+    userAddress: string;
     balance: string;
     symbol: string;
     contract: StakingApp;
@@ -42,6 +43,7 @@ function mapStateToProps(state: RootState): StakingContractProps {
     const totB = new Big(contract.stakedTotal || '0');
     const capB = new Big(contract.stakingCap || '0');
     return {
+        userAddress: address.humanReadableAddress || address.address,
         balance: address.balance,
         symbol: address.symbol,
         contract,

@@ -82,6 +82,10 @@ contract FestakingFarm {
         return true;
     }
 
+    function addMarginalReward(uint256 amount) public _before(withdrawStarts) {
+
+    }
+
     function stakeOf(address account) public view returns (uint256) {
         return _stakes[account];
     }

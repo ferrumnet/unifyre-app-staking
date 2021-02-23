@@ -51,6 +51,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         minContribution?: string,
         maxContribution?: string,
         emailWhitelist?: string,
+        earlyWithdrawRewardSentence?: string,
+        totalRewardSentence?: string,
         ): Promise<StakingApp> {
         let response = await this.contract(contractType).contractInfo(network, contractAddress.toLowerCase());
         console.log('Got contract info to save', response); 
@@ -59,6 +61,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             contractType,
             color, logo, backgroundImage, groupId, minContribution,
             maxContribution, emailWhitelist,
+            earlyWithdrawRewardSentence, totalRewardSentence,
         });
     }
 
@@ -69,7 +72,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             if (!cot) { return undefined; }
             const fromCont = await this.contract(cot!.contractType).contractInfo(
                 cot!.network, contractAddress);
-            return {...cot, ...fromCont};
+            return {...fromCont, ...cot};
         }, PUBLIC_STAKING_INFO_CACHE_TIMEOUT);
     }
 
@@ -92,7 +95,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         ValidationUtils.isTrue(!!stakingContract, 'Contract not registerd');
         const fromCont = await this.contract(stakingContract!.contractType).contractInfo(
             stakingContract!.network, contractAddress);
-        stakingContract = {...stakingContract, ...fromCont};
+        stakingContract = {...stakingContract, ...fromCont,
+            name: stakingContract!.name};
         const currency = stakingContract!.currency;
         const stakeOf = await this.contract(stakingContract!.contractType).stakeOf(network, contractAddress, currency, userAddress);
         const userStake = {

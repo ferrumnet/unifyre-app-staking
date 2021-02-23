@@ -1,4 +1,4 @@
-import { PaidOutEvent, SmartContratClient } from "./SmartContractClient";
+import { PaidOutEvent, SmartContratClient, tryEither } from "./SmartContractClient";
 import stakingFarmAbi from './resources/FestakingFarm-abi.json';
 import Big from 'big.js';
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
@@ -25,7 +25,11 @@ export class StakingFarmContractClient extends SmartContratClient {
         const rewardTokenAddress = (await contractInstance.rewardTokenAddress().call()).toString().toLowerCase();
         const rewardCurrency = Helper.toCurrency(network, rewardTokenAddress);
         const rewardBalanceRaw = (await contractInstance.rewardBalance().call()).toString();
-        const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
+        const totalRewardRaw = (await tryEither(
+                async () => await contractInstance.totalReward().call(),
+                async () => await contractInstance.rewardsTotal().call(),
+            )).toString();
+        // const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
         const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
         return {
             ...result,

@@ -21,7 +21,9 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     ) : undefined;
     const takeRewards = props.contract.rewardContinuationAddress ? (
         <Row withPadding>
-            <ThemedButton text={`Take Rewards Only`} onClick={()=>{props.onTakeRewards(history, props)}}/>
+            <ThemedButton
+                disabled={!props.userAddress}
+                text={`Take Rewards Only`} onClick={()=>{props.onTakeRewards(history, props)}}/>
         </Row>
     ) : undefined;
     return (
@@ -62,7 +64,8 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   <Gap/>
                   {error}
                   <Row withPadding>
-                        <ThemedButton text={`UnStake`} onClick={()=>{props.onUnstakeToken(history, props)}}/>
+                        <ThemedButton
+                            text={`UnStake`} onClick={()=>{props.onUnstakeToken(history, props)}}/>
                   </Row>
                   {takeRewards}
               </>

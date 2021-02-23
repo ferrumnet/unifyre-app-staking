@@ -185,7 +185,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
             <Gap size='small' />
             <StakingContractAddress network={props.contract.network}
                 contractAddress={props.contract.contractAddress}
-                userAddress={props.userStake?.userAddress}
+                userAddress={props.userAddress}
                 />
             <Gap />
             {btn}

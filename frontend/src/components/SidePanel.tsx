@@ -49,4 +49,4 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void}&SidePan
 }
 
 export const SidePaneContainer = connect(
-mapStateToProps, () => {})(StakingSidePane);
+mapStateToProps, () => ({}))(StakingSidePane);

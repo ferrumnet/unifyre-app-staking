@@ -97,12 +97,14 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
             <StakingContractAddress network={props.contract.network}
                 contractAddress={props.contract.contractAddress}
                 rewardContinuationAddress={props.contract.rewardContinuationAddress}
-                userAddress={props.userStake?.userAddress}
+                userAddress={props.userAddress}
                 />
             <Gap />
             <Row>
-                <PrimaryButton text={'Un-stake'}
-                    disabled={props.state !== 'withdraw' && props.state !== 'maturity'}
+                <PrimaryButton
+                    text={'Un-stake'}
+                    disabled={!props.userAddress || 
+                        (props.state !== 'withdraw' && props.state !== 'maturity')}
                     onClick={() => props.onContractSelected(
                         history,props.contract.contractAddress, true, props.groupId)}
                     />

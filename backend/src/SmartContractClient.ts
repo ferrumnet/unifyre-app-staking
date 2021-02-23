@@ -31,6 +31,13 @@ export interface PaidOutEvent {
     reward: string;
 }
 
+export async function tryEither(fun1: () => Promise<any>, fun2: () => Promise<any>) {
+    try {
+        return await fun1();
+    } catch (e) {
+        return await fun2();
+    }
+}
 
 export class SmartContratClient implements Injectable {
     constructor(
@@ -159,7 +166,11 @@ export class SmartContratClient implements Injectable {
         const stakingCapRaw = (await contractInstance.stakingCap().call()).toString();
         const stakedTotalRaw = (await contractInstance.stakedTotal().call()).toString();
         const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
-        const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
+        // const totalRewardRaw = (await contractInstance.rewardsTotal().call()).toString();
+        const totalRewardRaw = (await tryEither(
+                async () => await contractInstance.totalReward().call(),
+                async () => await contractInstance.rewardsTotal().call(),
+            )).toString();
         const withdrawStarts = (await contractInstance.withdrawStarts().call());
         const withdrawEnds = (await contractInstance.withdrawEnds().call());
         const stakingStarts = (await contractInstance.stakingStarts().call());
