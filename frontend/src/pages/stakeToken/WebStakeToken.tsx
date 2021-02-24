@@ -5,13 +5,12 @@ import {
     Row, ThemedText, Gap, ErrorMessage
     // @ts-ignore
 } from 'unifyre-web-components';
-import { dataFormat,formatter } from "../../common/Utils";
+import { formatter } from "../../common/Utils";
 import { StakeToken, StakeTokenDispatch, StakeTokenProps } from './StakeToken';
 import { Big } from 'big.js';
 import { LoaderContainer } from '../../components/Loader';
 import './stake.scss';
-import {List} from '../../components/list';
-import { LeftBox, RightBox } from '../../components/WebBoxes';
+import { LeftBox } from '../../components/WebBoxes';
 import { PrimaryButton, TextField } from '@fluentui/react';
 import { StakingRight } from '../stakingContract/Web/StakingView';
 

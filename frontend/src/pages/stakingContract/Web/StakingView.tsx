@@ -1,4 +1,4 @@
-import React,{useContext,useEffect,useState} from 'react';
+import React,{useContext} from 'react';
 import { useHistory } from 'react-router-dom';
 import { StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import './staking.scss';
@@ -88,10 +88,12 @@ export function StakingContractAddress(props: {
                 />
             </Row>
             {rewCon}
+            <Row >
+                <small className="error">NEVER SEND TOKENS TO THE CONTRACT, THEY WILL BE LOCKED FOREVER. ONLY USE THIS UI TO STAKE.</small>
+            </Row>
         </>
     );
 }
-
 
 export function StakingRight(props: {contract: StakingApp, userStake?: UserStake}) {
     const rewards = Utils.stakingRewards(props.contract);
