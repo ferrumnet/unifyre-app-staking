@@ -6,6 +6,7 @@ export type StakingContractType = 'staking' | 'stakeFarming';
 export interface StakingApp {
     contractType: StakingContractType;
     network: Network;
+    _id: string;
     currency: string;
     rewardCurrency?: string;
     groupId: string;
@@ -42,6 +43,7 @@ export interface StakingApp {
     filled: boolean;
     rewardContinuationParagraph?: string;
     gasLimitOverride?: string;
+    _v: number
 }
 
 export interface StakeEvent {
@@ -91,6 +93,7 @@ export interface StakingAppConfig {
 }
 
 export interface GroupInfo {
+  _id: string;
   groupId: string;
   themeVariables: any;
   defaultCurrency: string;

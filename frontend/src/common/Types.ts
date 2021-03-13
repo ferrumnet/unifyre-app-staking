@@ -1,8 +1,9 @@
 import { Network } from "ferrum-plumbing";
 
-export type StakingContractType = 'staking' | 'stakeFarming';
+export type StakingContractType = 'staking' | 'stakeFarming' ;
 
 export interface StakingApp {
+    _id?: string,
     contractType: StakingContractType;
     network: Network;
     currency: string;
@@ -77,6 +78,7 @@ export interface UserStake {
 }
 
 export interface GroupInfo {
+  _id?: string;
   groupId: string;
   themeVariables: any;
   defaultCurrency: string;
@@ -84,4 +86,5 @@ export interface GroupInfo {
   noMainPage: boolean; // Main page should redirect to home page
   headerHtml?: string;
   footerHtml?: string;
+  mainLogo?: string
 }

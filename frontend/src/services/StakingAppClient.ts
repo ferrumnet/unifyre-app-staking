@@ -7,6 +7,7 @@ import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { GroupInfo, StakeEvent, UserStake } from "../common/Types";
 import { Big } from 'big.js';
+import { StakingApp } from '../common/Types';
 
 export const StakingAppServiceActions = {
     TOKEN_NOT_FOUND_ERROR: 'TOKEN_NOT_FOUND_ERROR',
@@ -65,6 +66,170 @@ export class StakingAppClient implements Injectable {
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
         }
+    }
+
+    async checkAdminToken(dispatch: Dispatch<AnyAction>): Promise<any>{
+        const token = localStorage.getItem('ADMIN_SIGNIN_TOKEN');
+        try{
+            if(token){
+                dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+                const session = await this.api({command: 'checkAdminToken', data: {token}, params: []})
+                if(session){
+                    return session;
+                }
+                return;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async signInAdmin(dispatch: Dispatch<AnyAction>,secret?:string): Promise<any>{
+        try{
+            dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+            const session = await this.api({command: 'signInAdmin', data: {secret}, params: []})            
+            if(session?.resp){
+                localStorage.setItem('ADMIN_SIGNIN_TOKEN', session?.resp!);
+                return session;
+            }
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Wrong admin secret provided' }));
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async signOut(dispatch: Dispatch<AnyAction>): Promise<any>{
+        try{
+            dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+            localStorage.removeItem('ADMIN_SIGNIN_TOKEN');
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Could not connect to Unifyre' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async getStakingsForToken(dispatch: Dispatch<AnyAction>,currency: string){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async addNewStakingToGroup(dispatch: Dispatch<AnyAction>,stake: StakingApp){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'adminSaveStakingContractInfo', data: {...stake,adminSecret:'TEST_SECRET'}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async updateStakingInfo(dispatch: Dispatch<AnyAction>,stake: StakingApp){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'adminUpdateStakingContractInfo', data: {...stake,adminSecret:'TEST_SECRET'}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+
+    async getAllGroupInfos(dispatch: Dispatch<AnyAction>){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'getAllGroupInfos', data: {}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+
+       
+    }
+
+    async updateGroupInfos(dispatch: Dispatch<AnyAction>,info: GroupInfo){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'updateGroupInfo', data: {info}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
+
+    async addGroupInfos(dispatch: Dispatch<AnyAction>,infos: GroupInfo){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        const theme = JSON.parse(infos.themeVariables);
+        //@ts-ignore
+        theme['mainLogoUrl'] = infos.mainLogoUrl;
+        try {
+            const res = await this.api({
+                command: 'addGroupInfo', data: {info: {
+                    groupId: infos.groupId,themeVariables: JSON.parse(infos.themeVariables),
+                    homepage: infos.homepage,defaultCurrency: infos.defaultCurrency
+                }}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+
+       
     }
 
     async loadStakingsForToken(dispatch: Dispatch<AnyAction>, currency: string) {

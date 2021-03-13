@@ -19,6 +19,7 @@ const Actions = DashboardActions;
 
 export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
     onLoad: (groupId?: string) => Promise<void>;
+    onAdminLoad: (h:any) => Promise<void>;
     onClearError: () => void;
  }
 
@@ -40,6 +41,25 @@ function mapStateToProps(state: RootState): DashboardProps {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
+    onAdminLoad: async (h:any) => {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
+            await IocModule.init(dispatch);
+            const client = inject<StakingAppClient>(StakingAppClient);
+            const res = await client.checkAdminToken(dispatch);
+            if(!res){
+                dispatch(addAction(Actions.INIT_FAILED, { message: 'Session Expired' }));
+                h.push('/admin/login');
+                return;
+            }
+            dispatch(addAction(Actions.INIT_SUCCEED, {}));
+        } catch (error) {
+            logError('Dashboard.mapDispatchToProps', error);
+            dispatch(addAction(Actions.INIT_FAILED, { message: error.toString() }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
+        }
+    },
     onLoad: async (groupId) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));

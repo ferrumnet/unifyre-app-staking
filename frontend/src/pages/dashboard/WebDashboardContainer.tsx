@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import {useHistory} from 'react-router';
 import { Dashboard, DashboardDispatch, DashboardProps } from './Dashboard';
 import { Switch, Route } from 'react-router-dom';
 import {
@@ -18,6 +19,10 @@ import { StakingContractContainer as WebStakingContractContainer } from '../stak
 import { Theme as FulentTheme, useTheme } from '@fluentui/react-theme-provider';
 import { WebWaitingContainer } from '../../components/WebWaiting';
 import { WebPageWrapper } from '../../components/WebPageWrapper';
+import { AdminDashContainer } from "../admin/dashboard";
+import { LoginContainer } from "../admin/dashboard/login";
+import { GroupInfoContainer } from "../admin/groupInfo";
+import { StakingInfoContainer } from "../admin/stakings";
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -58,13 +63,19 @@ function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
 }
 
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
-    const {onLoad, fatalError} = props;
+    const {onLoad,onAdminLoad, fatalError} = props;
     const groupId = Utils.getGroupIdFromHref();
+    const history = useHistory();
     useEffect(() => {
       // Prevent infinite loop if onLoad causes error
-      if (!fatalError) {
-        onLoad(groupId).catch(console.error);
+      if(groupId === 'admin'){
+        onAdminLoad(history);
+      }else{
+        if (!fatalError) {
+          onLoad(groupId).catch(console.error);
+        }
       }
+ 
     }, [onLoad, groupId, fatalError]);
     const themeVariables = useTheme();
     const theme = _loadTheme(themeVariables, props.customTheme);
@@ -102,6 +113,18 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   <Route path="/:gid/continuation">
                     <ConfirmTxnContainer />
                   </Route>
+                  <Route path='/admin/login'>
+                    <LoginContainer/>
+                  </Route>
+                  <Route path='/admin/staking'>
+                    <StakingInfoContainer/>
+                  </Route>
+                  <Route path='/admin/groupInfo'>
+                    <GroupInfoContainer/>
+                  </Route>
+                  <Route path='/admin'>
+                    <AdminDashContainer/>
+                  </Route>
                   <Route path='/'>
                         {
                           Utils.getQueryparam('continuation') ? 
@@ -123,6 +146,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         <Row withPadding centered>
             <Text size={'medium'} content={fatalError} />
         </Row>
+        {
+           groupId === 'admin' && <LoginContainer/>
+        }
       </>
     ) : (
       <Row withPadding centered>

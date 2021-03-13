@@ -1,5 +1,8 @@
 import { combineReducers, AnyAction } from "redux";
 import { Dashboard } from "../pages/dashboard/Dashboard";
+import { GroupInfo as Group } from "../pages/admin/groupInfo/groupinfo";
+import { SaerchStakingGroupInfo } from "../pages/admin/stakings/stakings";
+import { AdminDash } from "../pages/admin/dashboard/adminDash";
 import { CommonActions } from "./Actions";
 import { userPreferenceReducer } from "../services/UserPreferenceService";
 import {  StakingAppServiceActions } from "../services/StakingAppClient";
@@ -82,6 +85,9 @@ const ui = combineReducers({
     stakeToken: StakeToken.reduce,
     unstakeToken: UnstakeToken.reduce,
     continuation: ConfirmTxn.reduce,
+    adminGroupInfo: Group.reduce,
+    adminStakings: SaerchStakingGroupInfo.reduce,
+    adminDash: AdminDash.reduce
 });
 
 export const rootReducer = combineReducers({ data, ui });

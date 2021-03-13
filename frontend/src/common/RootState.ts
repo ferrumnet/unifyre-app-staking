@@ -1,5 +1,8 @@
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { GroupInfo, StakeEvent, StakingApp, UserStake } from "./Types";
+import { GroupInfoState } from '../pages/admin/groupInfo/groupinfo';
+import { SaerchStakingGroupInfoState } from '../pages/admin/stakings/stakings';
+import { adminDashState as AdminDashState } from '../pages/admin/dashboard/adminDash';
 
 export interface UserPreference {
     lastRedirectLink?: string;
@@ -57,5 +60,8 @@ export interface RootState {
         stakeToken: StakeTokenState,
         unstakeToken: StakeTokenState,
         continuation: ContinuationState,
+        adminGroupInfo: GroupInfoState
+        adminStakings: SaerchStakingGroupInfoState,
+        adminDash: AdminDashState
     }
 }

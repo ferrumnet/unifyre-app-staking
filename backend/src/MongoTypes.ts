@@ -36,6 +36,7 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     filled: Boolean,
     rewardContinuationParagraph: String,
     gasLimitOverride: String,
+    _v: Number
 });
 
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
@@ -64,6 +65,7 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
 const groupInfoSchema: Schema = new Schema<GroupInfo>({
   groupId: String,
   ThemeVariables: Object,
+  homepage: String,
   defaultCurrency: String,
 });
 
