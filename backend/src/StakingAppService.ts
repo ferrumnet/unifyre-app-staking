@@ -65,6 +65,11 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         });
     }
 
+    async updateStakeInfo(data: StakingApp): Promise<StakingApp> {
+        ValidationUtils.isTrue(!!data._id, 'id is required')
+        return await this.adminUpdateStakingInfo({...data});
+    }
+
     async getStakingByContractAddress(contractAddress: string): Promise<StakingApp|undefined> {
         this.verifyInit();
         return this.cache.getAsync(`PUBLIC_STAKE.${contractAddress}`, async () => {
@@ -137,6 +142,41 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const r = await this.groupInfoModel!.findOne({groupId}).exec();
         if (r) {
             return r.toJSON();
+        }
+        return;
+    }
+
+    async addGroupInfo(info: GroupInfo): Promise<GroupInfo|undefined> {
+        this.verifyInit();
+        ValidationUtils.isTrue(!!info.groupId, '"groupId" must be provided');
+        ValidationUtils.isTrue(!!info.homepage, '"homepage" must be provided');
+        ValidationUtils.isTrue(!!info.themeVariables, '"themeVariables" must be provided');
+        ValidationUtils.isTrue(!!info.defaultCurrency, '"defaultCurrency" must be provided');
+        const r = await new this.groupInfoModel!({...info,ThemeVariables: info.themeVariables}).save();
+        if (r) {
+            return r;
+        }
+        return;
+    }
+
+    async updateGroupInfo(info: GroupInfo): Promise<GroupInfo|undefined> {
+        this.verifyInit();
+        ValidationUtils.isTrue(!!info.groupId, '"groupId" must be provided');
+        ValidationUtils.isTrue(!!info.homepage, '"homepage" must be provided');
+        ValidationUtils.isTrue(!!info.themeVariables, '"themeVariables" must be provided');
+        ValidationUtils.isTrue(!!info.defaultCurrency, '"defaultCurrency" must be provided');
+        const r = await this.updateGroupInfoItem(info);
+        if (r) {
+            return r;
+        }
+        return;
+    }
+
+    async getAllGroupInfo(): Promise<GroupInfo[]|undefined> {
+        this.verifyInit();
+        const r = await this.groupInfoModel!.find({}).sort({'_id':'-1'}).exec();
+        if (r) {
+            return r;
         }
         return;
     }
@@ -416,6 +456,30 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         { '$set': { ...newPd } }).exec();
         console.log('UPDATING EVENT ', updated, stakeEvent.mainTxId, version);
         ValidationUtils.isTrue(!!updated, 'Error updating StakeEvent. Update returned empty. Retry');
+        return updated?.toJSON();
+    }
+
+    private async adminUpdateStakingInfo(stake : StakingApp) {
+        this.verifyInit();
+        const st = {...stake};
+        const version = stake._v;
+        st._v = (version || 0) + 1;
+        const updated = await this.stakingModel!.findOneAndUpdate({
+            "$and": [{ _id: stake._id }] },
+        { '$set': { ...st } }).exec();
+        console.log('UPDATING STAKE INFO ', updated, st._id, version);
+        ValidationUtils.isTrue(!!updated, 'Error updating Stake Info. Update returned empty. Retry');
+        return updated?.toJSON();
+    }
+
+    private async updateGroupInfoItem(info: GroupInfo) {
+        this.verifyInit();
+        const newPd = {...info};
+        const updated = await this.groupInfoModel!.findOneAndUpdate({
+            "$and": [{ _id: info._id } ] },
+        { '$set': { ...newPd } }).exec();
+        console.log('UPDATING EVENT ', updated, info.groupId);
+        ValidationUtils.isTrue(!!updated, 'Error updating GroupInfo. Update returned empty. Retry');
         return updated?.toJSON();
     }
 

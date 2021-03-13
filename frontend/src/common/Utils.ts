@@ -252,3 +252,54 @@ export const dateFromNow = (data:number) => {
 }
 
 export const formatter = new CurrencyFormatter();
+
+
+  export const editableStakingFields = [
+    "name", //editable
+    "minContribution", //editable
+    "maxContribution", //editable
+    "emailWhitelist", //editable
+    "addressWhitelist", //editable
+    "logo",//editable
+    "color",//editable
+    "backgroundImage",//editable
+    "rewardTokenPrice", //editable
+    "earlyWithdrawRewardSentence", //editable
+    "totalRewardSentence", //editable
+    "rewardContinuationParagraph", //editable
+    "gasLimitOverride", //editable
+  ];
+
+  export const newStaking = [
+    "network", //editable
+    "contractType", //editable
+    "contractAddress", //editable
+  ];
+
+  export const stakingFields = [
+        "contractType",
+        "network",
+        "currency",
+        "rewardCurrency",
+        "groupId",
+        "symbol",
+        "rewardSymbol",
+        "contractAddress",
+        "rewardContinuationAddress",
+        "rewardContinuationCurrency",
+        "rewardContinuationSymbol",
+        "tokenAddress",
+        "rewardTokenAddress",
+        "stakedBalance",
+        "rewardBalance",
+        "stakingCap",
+        "stakedTotal",
+        "earlyWithdrawReward",
+        "totalReward",
+        "withdrawStarts",
+        "withdrawEnds",
+        "stakingStarts",
+        "stakingEnds",
+        "backgroundImageDesktop",
+        "filled",     
+  ];
