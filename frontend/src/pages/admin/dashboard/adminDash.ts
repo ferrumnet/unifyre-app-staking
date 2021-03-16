@@ -24,7 +24,7 @@ export const adminDashActions = {
 const Actions = adminDashActions;
 
 export interface adminDashDispatch {
-    checkToken: (token:string) => Promise<void>;
+    checkToken: () => Promise<void>;
     signIn: (secret:string, h: any) => Promise<void>;
     onChangeSecret: (secret:string) => void;
     signOut: (h: any) => any;
@@ -45,16 +45,12 @@ function mapStateToProps(state: RootState): adminDashProps {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    checkToken: async (token:string) => {
+    checkToken: async () => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
             const res = await client.checkAdminToken(dispatch);
-            if(res){
-
-            }
-
         } catch (error) {
             console.log(error);
         } finally {

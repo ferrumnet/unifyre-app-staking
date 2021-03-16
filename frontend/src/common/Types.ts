@@ -80,6 +80,7 @@ export interface UserStake {
 export interface GroupInfo {
   _id?: string;
   groupId: string;
+  network: string;
   themeVariables: any;
   defaultCurrency: string;
   homepage: string;

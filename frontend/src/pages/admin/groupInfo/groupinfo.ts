@@ -21,7 +21,8 @@ export const GroupInfoActions = {
     INFO_RESET:'INFO_RESET',
     RETURN : 'RETURN',
     INFO_SELECTED: 'INFO_SELECTED',
-    SELECTED_INFO_CHANGED: 'SELECTED_INFO_CHANGED'
+    SELECTED_INFO_CHANGED: 'SELECTED_INFO_CHANGED',
+    ERROR: 'ERROR',
 }
 
 const Actions = GroupInfoActions;
@@ -37,17 +38,18 @@ export interface GroupInfoDispatch {
 }
 
 export interface GroupInfoProps{
-    infos: InfoType[]
-    groupInfos: InfoType[]
-    selected: boolean
-    selectedInfo: InfoType
-    originalInfo : InfoType
+    infos: InfoType[];
+    groupInfos: InfoType[];
+    selected: boolean;
+    selectedInfo: InfoType;
+    originalInfo : InfoType;
+    error?: string;
 }
 
 
 function mapStateToProps(state: RootState): GroupInfoProps {
     return {
-        ...state.ui.dashboard,
+        ...state.ui.adminGroupInfo,
         infos: state.ui.adminGroupInfo.groupInfos,
         groupInfos: state.ui.adminGroupInfo.groupInfos,
         selected: state.ui.adminGroupInfo.selected,
@@ -60,7 +62,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     fetchGroups: async () => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
-            await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
             const res = await client.getAllGroupInfos(dispatch);
             if(res)
@@ -83,25 +84,25 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     updateGroupInfo: async (infos: InfoType,cb:()=>void) => {        
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
-            await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
+            //@ts-ignore
+            infos.defaultCurrency = `${infos.network}:${(infos as any)['contractAddress'].toLowerCase()}`
             const res = await client.updateGroupInfos(dispatch,infos);
             if(res){
                 cb();
                 dispatch(addAction(GroupInfoActions.RETURN,{}))
             }
         } catch (error) {
-            
+            dispatch(addAction(GroupInfoActions.ERROR,{ message: error.message }))
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
     addGroupInfo: async (infos: InfoType,cb:()=>void) => {        
         try {
-            dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
-            await IocModule.init(dispatch);
+            // dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             const client = inject<StakingAppClient>(StakingAppClient);
-            infos.themeVariables["mainLogo"] = infos.mainLogo;
             //@ts-ignore
-            infos.defaultCurrency = `${infos['Network']}:${infos['contractAddress']}`
+            infos.defaultCurrency = `${infos.network}:${infos['contractAddress'].toLowerCase()}`
             const res = await client.addGroupInfos(dispatch,infos);
             if(res){
                 cb();
@@ -109,7 +110,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
             dispatch(addAction(GroupInfoActions.RETURN,{}))
         } catch (error) {
-            
+            dispatch(addAction(GroupInfoActions.ERROR,{ message: error.message }))
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
     onReturn : (cb:()=>void) => {
@@ -131,6 +133,7 @@ const defaultGroupInfoState = {
     info: [],
     selected: false,
     originalInfo:{
+        network: '',
         _id: '',
         groupId: '', 
         themeVariables: '', 
@@ -139,6 +142,7 @@ const defaultGroupInfoState = {
         noMainPage: true
     },
     selectedInfo: {
+        network: '',
         _id: '',
         groupId: '', 
         themeVariables: '', 
@@ -164,6 +168,8 @@ function reduce(state:GroupInfoState = defaultGroupInfoState  , action:AnyAction
             return {...state, selected: !state.selected, selectedInfo: defaultGroupInfoState.selectedInfo,}
         case Actions.SELECTED_INFO_CHANGED:
             return {...state,selectedInfo: {...state.selectedInfo,[action.payload.field]: action.payload.value}}
+        case Actions.ERROR:
+            return {...state, error: action.payload.message}
         default:
             return state
     }

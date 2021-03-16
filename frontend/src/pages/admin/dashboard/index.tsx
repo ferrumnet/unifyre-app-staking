@@ -1,4 +1,4 @@
-import React,{} from 'react';
+import React,{ useEffect } from 'react';
 import { useHistory } from 'react-router';
 import './dash.scss';
 import {AdminDash,adminDashDispatch,adminDashProps} from './adminDash'
@@ -6,6 +6,9 @@ import { connect } from 'react-redux';
 
 function AdminDashboard(props: adminDashDispatch&adminDashProps){
     const history = useHistory();
+    useEffect(() => { props.checkToken().catch(console.error);
+            return (() => { });
+         }, []);
     return (
         <div >
             <div className="admin-content">

@@ -128,6 +128,7 @@ export class stakingAppModule implements Module {
                     c.get(UnifyreBackendProxyService),
                     c.get(StakingAppService),
                     stakingAppConfig.adminSecret,
+                    stakingAppConfig.authRandomKey,
                     networkProviders,
                     ));
         container.registerSingleton("LambdaSqsHandler",

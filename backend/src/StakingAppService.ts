@@ -66,7 +66,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     async updateStakeInfo(data: StakingApp): Promise<StakingApp> {
-        ValidationUtils.isTrue(!!data._id, 'id is required')
+        ValidationUtils.isTrue(!!data.contractAddress, 'contractAddress is required')
         return await this.adminUpdateStakingInfo({...data});
     }
 
@@ -464,9 +464,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const st = {...stake};
         const version = stake._v;
         st._v = (version || 0) + 1;
-        const updated = await this.stakingModel!.findOneAndUpdate({
-            "$and": [{ _id: stake._id }] },
-        { '$set': { ...st } }).exec();
+        const updated = await this.stakingModel!.findOneAndUpdate({ contractAddress: stake.contractAddress },
+            { '$set': { ...st } }).exec();
         console.log('UPDATING STAKE INFO ', updated, st._id, version);
         ValidationUtils.isTrue(!!updated, 'Error updating Stake Info. Update returned empty. Retry');
         return updated?.toJSON();

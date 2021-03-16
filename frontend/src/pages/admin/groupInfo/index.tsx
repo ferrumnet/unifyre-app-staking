@@ -14,7 +14,6 @@ import ReactJson from 'react-json-view'
 
 
 function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
-
     useEffect(()=>{
         props.fetchGroups();
     },[]);
@@ -53,8 +52,8 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                         <Divider/>
                         <Gap size={"small"}/>
                         {
+                            //@ts-ignore
                             props.infos.map(
-                                //@ts-ignore
                                 (e,i) => infoCards(e,i)
                             )
                         }
@@ -85,18 +84,18 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                     <div>
                         <div> Network </div>
                         <TextField
-                            onChange={(e, v) => props.onSelectedInfoChange(v || '','Network')}
+                            onChange={(e, v) => props.onSelectedInfoChange(v || '','network')}
                             placeholder='Enter project contract Network (ETHERUEN,RINKEBY)'
                             //@ts-ignore
-                            value={props.selectedInfo.Network || ''}
+                            value={props.selectedInfo.network || ''}
                         />
                         <Gap/>
                     </div>
                     <div>
-                        <div> ContractAddress </div>
+                        <div> Token Address </div>
                         <TextField
                             onChange={(e, v) => props.onSelectedInfoChange(v || '','contractAddress')}
-                            placeholder='Enter project contract Address'
+                            placeholder='Enter the token Address'
                             //@ts-ignore
                             value={props.selectedInfo.contractAddress || ''}
                         />
@@ -152,6 +151,7 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                         > 
                             {props.selectedInfo._id ? 'Update Group Id' : 'Add New Group Info'}
                         </PrimaryButton>
+                        {props.error}
                     </div>
                     <Gap/>
                     <Gap/>

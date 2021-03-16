@@ -25,7 +25,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
 
     const option = {
         "staking":"staking",
-        "liquidity":"stakingFarming"
+        "liquidity":"stakeFarming"
     }
 
     useEffect(()=>{

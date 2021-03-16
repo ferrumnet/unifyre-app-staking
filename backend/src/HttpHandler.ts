@@ -8,8 +8,8 @@ import {
 import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 import { StakingAppService } from "./StakingAppService";
 import { StakeEvent } from "./Types";
-import jwt from 'jsonwebtoken';
 import { getEnv } from "./MongoTypes";
+import Web3 from "web3";
 
 function handlePreflight(request: any) {
     if (request.method === 'OPTIONS' || request.httpMethod === 'OPTIONS') {
@@ -27,11 +27,14 @@ function handlePreflight(request: any) {
 }
 
 export class HttpHandler implements LambdaHttpHandler {
+    private adminHash: string;
     constructor(private uniBack: UnifyreBackendProxyService,
         private userSvc: StakingAppService,
         private adminSecret: string,
+        private authRandomKey: string,
         private networkConfig: Web3ProviderConfig,
         ) {
+        this.adminHash = Web3.utils.sha3('__ADMIN__' + this.adminSecret)!;
     }
 
     async handle(request: LambdaHttpRequest, context: any): Promise<LambdaHttpResponse> {
@@ -60,20 +63,24 @@ export class HttpHandler implements LambdaHttpHandler {
                     console.log(userProfile);
                     body = {userProfile, session};
                     break;
-                case 'checkAdminToken':
-                    const res = await this.checkAdminToken(req.data.token);
-                    body = {res}
-                    break;
                 case 'signInAdmin':
                     let {secret} = req.data;
                     const resp = await this.signInAdmin(secret);
-                    body = {resp}
+                    body = {session: resp}
+                    break;
+                case 'checkAdminToken':
+                    let {savedSession} = req.data;
+                    const uid = await this.uniBack.signInUsingToken(savedSession);
+                    ValidationUtils.isTrue(uid === this.adminHash, 'Bad admin hash');
+                    body = {session: savedSession}
                     break;
                 case 'adminSaveStakingContractInfo':
+                    ValidationUtils.isTrue(userId === this.adminHash, 'Bad admin hash');
                     //admin save new contract
                     body = await this.adminSaveStakingContactInfo(req);
                     break;
                 case 'adminUpdateStakingContractInfo':
+                    ValidationUtils.isTrue(userId === this.adminHash, 'Bad admin hash');
                     //admin save new contract
                     body = await this.adminUpdateStakingContactInfo(req);
                     break;
@@ -99,9 +106,11 @@ export class HttpHandler implements LambdaHttpHandler {
                     body = await this.userSvc.getGroupInfo(groupId);
                     break;
                 case 'addGroupInfo':
+                    ValidationUtils.isTrue(userId === this.adminHash, 'Bad admin hash');
                     body = await this.userSvc.addGroupInfo(req.data.info);
                     break;
                 case 'updateGroupInfo':
+                    ValidationUtils.isTrue(userId === this.adminHash, 'Bad admin hash');
                     body = await this.userSvc.updateGroupInfo(req.data.info);
                     break;
                 case 'getAllGroupInfos':
@@ -192,13 +201,12 @@ export class HttpHandler implements LambdaHttpHandler {
             maxContribution, emailWhitelist,
             earlyWithdrawRewardSentence, totalRewardSentence,
             adminSecret} = req.data;
-        ValidationUtils.isTrue(adminSecret === this.adminSecret, 'Not authorized');
         ValidationUtils.isTrue(!!network, '"network" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!contractType, '"contractType" must be provided');
         ValidationUtils.isTrue(['staking', 'stakeFarming'].indexOf(contractType) >= 0, '"contractType" must be provided');
         return await this.userSvc.saveStakeInfo(
-            network, contractType, contractAddress, groupId, color, logo,
+            network, contractType, (contractAddress || '').toLowerCase(), groupId, color, logo,
             backgroundImage, minContribution, maxContribution, emailWhitelist,
             earlyWithdrawRewardSentence, totalRewardSentence,
             );
@@ -207,25 +215,12 @@ export class HttpHandler implements LambdaHttpHandler {
     async adminUpdateStakingContactInfo(req: JsonRpcRequest) {
         const {network,
             contractType,
-            contractAddress,
-            color,
-            name,
-            logo, backgroundImage, groupId, minContribution,
-            maxContribution, emailWhitelist,
-            earlyWithdrawRewardSentence, totalRewardSentence,
-            adminSecret,_id} = req.data;
-        ValidationUtils.isTrue(adminSecret === this.adminSecret, 'Not authorized');
+            contractAddress} = req.data;
         ValidationUtils.isTrue(!!network, '"network" must be provided');
-        ValidationUtils.isTrue(!!_id, '"id" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!contractType, '"contractType" must be provided');
         ValidationUtils.isTrue(['staking', 'stakeFarming'].indexOf(contractType) >= 0, '"contractType" must be provided');
-        return await this.userSvc.updateStakeInfo(
-            //@ts-ignore
-            {network, contractType, contractAddress, groupId, color, logo,
-            backgroundImage, minContribution, maxContribution, emailWhitelist,
-            earlyWithdrawRewardSentence, totalRewardSentence,_id,name
-            });
+        return await this.userSvc.updateStakeInfo(req.data as any);
     }
 
 
@@ -236,17 +231,10 @@ export class HttpHandler implements LambdaHttpHandler {
     }
 
     signInAdmin(secret?: string): undefined | string {
-        if(secret === getEnv('admin_secret')){
-            const token = jwt.sign({secret}, 'random', { expiresIn: '24h' });
-            return token;
+        if(secret === this.adminSecret){
+            return this.uniBack.newSession(this.adminHash);
         }
         return
-    }
-
-    async checkAdminToken(jsonToken: string){
-        const res = jwt.verify(jsonToken, 'random') as any;
-        ValidationUtils.isTrue(!!res || !res.secret, 'Error authenticating using JWT token');
-        return res!.secret;
     }
 
     async getStakingsForToken(req: JsonRpcRequest) {

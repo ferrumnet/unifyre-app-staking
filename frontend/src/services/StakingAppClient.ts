@@ -69,12 +69,13 @@ export class StakingAppClient implements Injectable {
     }
 
     async checkAdminToken(dispatch: Dispatch<AnyAction>): Promise<any>{
-        const token = localStorage.getItem('ADMIN_SIGNIN_TOKEN');
+        const savedSession = localStorage.getItem('ADMIN_SIGNIN_TOKEN');
         try{
-            if(token){
+            if(savedSession){
                 dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
-                const session = await this.api({command: 'checkAdminToken', data: {token}, params: []})
+                const session = await this.api({command: 'checkAdminToken', data: {savedSession}, params: []})
                 if(session){
+                    this.jwtToken = session.session;
                     return session;
                 }
                 return;
@@ -92,9 +93,10 @@ export class StakingAppClient implements Injectable {
         try{
             dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
             const session = await this.api({command: 'signInAdmin', data: {secret}, params: []})            
-            if(session?.resp){
-                localStorage.setItem('ADMIN_SIGNIN_TOKEN', session?.resp!);
-                return session;
+            if(session?.session){
+                localStorage.setItem('ADMIN_SIGNIN_TOKEN', session?.session!);
+                this.jwtToken = session.session;
+                return session.session;
             }
             dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'Wrong admin secret provided' }));
             return;
@@ -157,7 +159,7 @@ export class StakingAppClient implements Injectable {
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
             const res = await this.api({
-                command: 'adminUpdateStakingContractInfo', data: {...stake,adminSecret:'TEST_SECRET'}, params: [] } as JsonRpcRequest);
+                command: 'adminUpdateStakingContractInfo', data: {...stake}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
             }
@@ -222,9 +224,6 @@ export class StakingAppClient implements Injectable {
                 return res;
             }
             return;
-        } catch (e) {
-            logError('Error sigining in', e);
-            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
         }
