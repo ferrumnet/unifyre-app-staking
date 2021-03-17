@@ -51,7 +51,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
     )    
 
     const groups = [...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId})`)]
-
+    console.log(props);
     return(
         <div>
             {   
@@ -64,6 +64,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                             items={groups}
                             placeholder="Select Group Currency"
                             checkable
+                            search
                             onChange={(e:any, selectedOption) => props.onChangeCurrency( getCurrency(selectedOption.value?.toString() || ''), props.groupInfos, props.fetchStakings ) }
                         />
                         

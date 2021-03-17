@@ -205,9 +205,13 @@ export class Utils {
         var days = m.diff(d2, 'days');
         m.add(-days, 'days');
         var hours = m.diff(d2, 'hours');
+        m.add(-hours, 'hours');
+        var minutes = m.diff(d2, 'minutes');
+        m.add(-minutes, 'minutes');
+
       
         return [years*12 + months,
-          days, hours];
+          days, hours, minutes];
     }
 
     static union<T>(a1: T[], a2: T[], keyFun: (v: T) => string): T[] {
@@ -303,3 +307,29 @@ export const formatter = new CurrencyFormatter();
         "backgroundImageDesktop",
         "filled",     
   ];
+
+export const defaultvar = `{"themePrimary": "",
+    "themeLighterAlt": "",
+    "themeLighter": "",
+    "themeLight": "",
+    "themeTertiary": "",
+    "themeSecondary": "",
+    "themeDarkAlt": "",
+    "themeDark": "",
+    "themeDarker": "",
+    "neutralLighterAlt": "",
+    "neutralLighter": "",
+    "neutralLight": "",
+    "neutralQuaternaryAlt": "",
+    "neutralQuaternary": "",
+    "neutralTertiaryAlt": "",
+    "neutralTertiary": "",
+    "neutralSecondary": "",
+    "neutralPrimaryAlt": "",
+    "neutralPrimary": "",
+    "neutralDark": "",
+    "black": "",
+    "white": ""
+}`
+
+export const Networks = ['ETHEREUM','RINKEBY']

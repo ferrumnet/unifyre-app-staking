@@ -174,7 +174,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
 
     async getAllGroupInfo(): Promise<GroupInfo[]|undefined> {
         this.verifyInit();
-        const r = await this.groupInfoModel!.find({}).sort({'_id':'-1'}).exec();
+        const r = await this.groupInfoModel!.find({}).sort({'groupId':'asc'}).exec();
         if (r) {
             return r;
         }
@@ -476,7 +476,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const newPd = {...info};
         const updated = await this.groupInfoModel!.findOneAndUpdate({
             "$and": [{ _id: info._id } ] },
-        { '$set': { ...newPd } }).exec();
+        { '$set': { ...newPd,ThemeVariables: info.themeVariables } }).exec();
         console.log('UPDATING EVENT ', updated, info.groupId);
         ValidationUtils.isTrue(!!updated, 'Error updating GroupInfo. Update returned empty. Retry');
         return updated?.toJSON();

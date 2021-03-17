@@ -194,6 +194,9 @@ export class StakingAppClient implements Injectable {
 
     async updateGroupInfos(dispatch: Dispatch<AnyAction>,info: GroupInfo){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        if(typeof info['themeVariables'] === "string"){
+            info['themeVariables'] = JSON.parse(info.themeVariables);
+        }
         try {
             const res = await this.api({
                 command: 'updateGroupInfo', data: {info}, params: [] } as JsonRpcRequest);
@@ -213,12 +216,15 @@ export class StakingAppClient implements Injectable {
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         const theme = JSON.parse(infos.themeVariables);
         //@ts-ignore
-        theme['mainLogoUrl'] = infos.mainLogoUrl;
+        theme['mainLogo'] = infos.mainLogo;
         try {
             const res = await this.api({
                 command: 'addGroupInfo', data: {info: {
-                    groupId: infos.groupId,themeVariables: JSON.parse(infos.themeVariables),
-                    homepage: infos.homepage,defaultCurrency: infos.defaultCurrency
+                    groupId: infos.groupId.toLowerCase(),
+                    themeVariables: theme,
+                    homepage: infos.homepage.toLowerCase(),
+                    defaultCurrency: infos.defaultCurrency,
+                    noMainPage: true
                 }}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
