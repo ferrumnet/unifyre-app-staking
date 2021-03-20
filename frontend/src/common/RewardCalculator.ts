@@ -54,21 +54,28 @@ export function calculateReward (
   convertedDate: number,
   earlyWithdrawReward: Big,
   totalReward: Big,
+  rewardBalance: Big,
   deployedWithdrawEnd: number,
   deployedStakingEnd: number,
   stakedTotal: Big,
-  percentEarlyUnstake: number,
+  stakedBalance: Big,
+  legacy: boolean,
 ) {
   const zero = new Big(0);
   if (amount.eq(zero) || stakedTotal.eq(zero)) {
     return zero;
   }
   if (convertedDate > Number(deployedWithdrawEnd)) {
-    const others = stakedTotal.minus(amount).times(new Big(1 - percentEarlyUnstake / 100));
-    const remainingReward = totalReward.minus(
-      earlyWithdrawReward.times(new Big(percentEarlyUnstake / 100)).div(new Big(2))); // Averaging early withdraws
-    return remainingReward.gt(new Big(0)) ?
-      amount.times(remainingReward.div(amount.plus(others))) : new Big(0);
+    if (legacy) {
+      const others = stakedTotal.minus(amount).times(new Big(1 - /*percentEarlyUnstake*/ 0 / 100));
+      const remainingReward = totalReward.minus(
+        earlyWithdrawReward.times(new Big(/*percentEarlyUnstake*/ 0 / 100)).div(new Big(2))); // Averaging early withdraws
+      return remainingReward.gt(new Big(0)) ?
+        amount.times(remainingReward.div(amount.plus(others))) : new Big(0);
+    }
+    // uint256 rewBal = rewardState.rewardBalance;
+    // uint256 reward = (rewBal.mul(amount)).div(state.stakedBalance);
+    return rewardBalance.times(amount).div(stakedBalance);
   }
   const earlyRate = earlyWithdrawAnnualRate(
     stakedTotal,

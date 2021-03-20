@@ -74,15 +74,31 @@ export class Utils {
     }
 
     static linkForAddress(network: string, addr: string) {
-        return  (network === 'RINKEBY') ?
-            `https://rinkeby.etherscan.io/address/${addr}` :
-            `https://etherscan.io/address/${addr}`;
+        switch (network.toLocaleLowerCase()) {
+            case 'rinkeby':
+                return `https://rinkeby.etherscan.io/address/${addr}`;
+            case 'ethereum':
+                return `https://etherscan.io/address/${addr}`;
+            case 'bsc':
+                return `https://bscscan.com/address/${addr}`;
+            case 'bsc_testnet':
+                return `https://testnet.bscscan.com/address/${addr}`;
+        }
+        return '';
     }
 
     static linkForTransaction(network: string, tid: string) {
-        return  (network === 'RINKEBY') ?
-            `https://rinkeby.etherscan.io/tx/${tid}` :
-            `https://etherscan.io/tx/${tid}`;
+        switch (network.toLocaleLowerCase()) {
+            case 'rinkeby':
+                return `https://rinkeby.etherscan.io/tx/${tid}`;
+            case 'ethereum':
+                return `https://etherscan.io/tx/${tid}`;
+            case 'bsc':
+                return `https://bscscan.com/tx/${tid}`;
+            case 'bsc_testnet':
+                return `https://testnet.bscscan.com/tx/${tid}`;
+        }
+        return '';
     }
 
     static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {        
@@ -172,10 +188,12 @@ export class Utils {
             time / 1000,
             new Big(contract!.earlyWithdrawReward),
             new Big(contract.totalReward),
+            new Big(contract.rewardBalance),
             contract.withdrawEnds,
             contract.stakingEnds,
             new Big(contract.stakedTotal),
-            0
+            new Big(contract.stakedBalance),
+            contract.isLegacy,
         ).toPrecision(6);
     }
 

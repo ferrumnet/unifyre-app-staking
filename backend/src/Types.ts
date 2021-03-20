@@ -43,6 +43,7 @@ export interface StakingApp {
     filled: boolean;
     rewardContinuationParagraph?: string;
     gasLimitOverride?: string;
+    isLegacy: boolean;
     _v: number
 }
 
@@ -87,6 +88,8 @@ export interface StakingAppConfig {
     signingKey?: EncryptedData;
     web3ProviderRinkeby: string;
     web3ProviderEthereum: string;
+    web3ProviderBsc: string;
+    web3ProviderBscTestnet: string;
     backend: string;
     cmkKeyArn: string;
     adminSecret: string;

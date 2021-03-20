@@ -42,6 +42,7 @@ export interface StakingApp {
     filled: boolean;
     rewardContinuationParagraph?: string;
     gasLimitOverride?: string;
+    isLegacy: boolean;
 }
 
 export interface StakeEvent {

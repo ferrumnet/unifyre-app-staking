@@ -1,4 +1,4 @@
-import React,{useContext} from 'react';
+import React,{useContext, useState} from 'react';
 import { useHistory } from 'react-router-dom';
 import { StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import './staking.scss';
@@ -42,6 +42,7 @@ export function StakingContractAddress(props: {
     network: string, userAddress?: string, contractAddress?: string,
     rewardContinuationAddress?: string,
 }) {
+    const [showAddress, setShowAddress] = useState(false);
     const rewCon = props.rewardContinuationAddress ? (
         <>
             <Gap size='small' />
@@ -63,6 +64,10 @@ export function StakingContractAddress(props: {
     return (
         <>
             <Row >
+                <ThemedText.H3>CONNECTED TO <b>{props.network}</b> NETWORK</ThemedText.H3>
+            </Row>
+            <Gap size='small' />
+            <Row >
                 <ThemedText.H3>YOUR ADDRESS</ThemedText.H3>
             </Row>
             <Row >
@@ -74,6 +79,8 @@ export function StakingContractAddress(props: {
                 onClick={() => props.userAddress && window.open(Utils.linkForAddress(props.network, props.userAddress!))}
                 />
             </Row>
+            {showAddress && (
+                <>
             <Gap size='small' />
             <Row >
                 <ThemedText.H3>CONTRACT ADDRESS</ThemedText.H3>
@@ -90,6 +97,14 @@ export function StakingContractAddress(props: {
             {rewCon}
             <Row >
                 <small className="error">NEVER SEND TOKENS TO THE CONTRACT, THEY WILL BE LOCKED FOREVER. ONLY USE THIS UI TO STAKE.</small>
+            </Row>
+                </>
+            )}
+            <Gap size='small' />
+            <Row>
+                <a onClick={() => setShowAddress(!showAddress)}>
+                    <ThemedText.H4>{showAddress ? 'HIDE CONTRACT ADDRESS' : 'SHOW CONTRACT ADDRESS'}</ThemedText.H4>
+                </a>
             </Row>
         </>
     );

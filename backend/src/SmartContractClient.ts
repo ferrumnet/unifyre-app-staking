@@ -31,11 +31,12 @@ export interface PaidOutEvent {
     reward: string;
 }
 
-export async function tryEither(fun1: () => Promise<any>, fun2: () => Promise<any>) {
+export async function tryEither(fun1: () => Promise<any>, fun2: () => Promise<any>):
+    Promise<[any, boolean]> {
     try {
-        return await fun1();
+        return [await fun1(), true];
     } catch (e) {
-        return await fun2();
+        return [await fun2(), false];
     }
 }
 
@@ -167,10 +168,10 @@ export class SmartContratClient implements Injectable {
         const stakedTotalRaw = (await contractInstance.stakedTotal().call()).toString();
         const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
         // const totalRewardRaw = (await contractInstance.rewardsTotal().call()).toString();
-        const totalRewardRaw = (await tryEither(
+        const [totalRewardRaw, hasTotalReward] = await tryEither(
                 async () => await contractInstance.totalReward().call(),
                 async () => await contractInstance.rewardsTotal().call(),
-            )).toString();
+            );
         const withdrawStarts = (await contractInstance.withdrawStarts().call());
         const withdrawEnds = (await contractInstance.withdrawEnds().call());
         const stakingStarts = (await contractInstance.stakingStarts().call());
@@ -187,12 +188,13 @@ export class SmartContratClient implements Injectable {
             stakingCap: await this.helper.amountToHuman(currency, stakingCapRaw),
             stakedTotal: await this.helper.amountToHuman(currency, stakedTotalRaw),
             earlyWithdrawReward: await this.helper.amountToHuman(currency, earlyWithdrawRewardRaw),
-            totalReward: await this.helper.amountToHuman(currency, totalRewardRaw),
+            totalReward: await this.helper.amountToHuman(currency, totalRewardRaw.toString()),
             withdrawStarts,
             withdrawEnds,
             stakingStarts,
             stakingEnds,
-        } as StakingApp;
+            legacy: hasTotalReward,
+        } as any as StakingApp;
         return await this.populateFurtherContractInfo(inst, result);
     }
 

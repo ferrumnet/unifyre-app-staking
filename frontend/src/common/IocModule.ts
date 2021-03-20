@@ -66,7 +66,7 @@ export class IocModule {
             c.registerSingleton(StakingAppClient,
                 c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
         } else {
-            await c.registerModule(new Web3RetrofitModule('STAKING', [DEFAULT_TOKEN_FOR_WEB3_MODE]));
+            await c.registerModule(new Web3RetrofitModule('STAKING', []));
             c.registerSingleton(StakingAppClient, c =>
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
             const client = c.get<StakingAppClient>(StakingAppClient);

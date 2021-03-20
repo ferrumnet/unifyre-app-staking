@@ -25,20 +25,20 @@ export class StakingFarmContractClient extends SmartContratClient {
         const rewardTokenAddress = (await contractInstance.rewardTokenAddress().call()).toString().toLowerCase();
         const rewardCurrency = Helper.toCurrency(network, rewardTokenAddress);
         const rewardBalanceRaw = (await contractInstance.rewardBalance().call()).toString();
-        const totalRewardRaw = (await tryEither(
+        const [totalRewardRaw, hasTotalReward] = await tryEither(
                 async () => await contractInstance.totalReward().call(),
                 async () => await contractInstance.rewardsTotal().call(),
-            )).toString();
-        // const totalRewardRaw = (await contractInstance.totalReward().call()).toString();
+            );
         const earlyWithdrawRewardRaw = (await contractInstance.earlyWithdrawReward().call()).toString();
         return {
             ...result,
             rewardTokenAddress,
             rewardCurrency,
             rewardBalance: await this.helper.amountToHuman(rewardCurrency, rewardBalanceRaw),
-            totalReward: await this.helper.amountToHuman(rewardCurrency, totalRewardRaw),
+            totalReward: await this.helper.amountToHuman(rewardCurrency, totalRewardRaw.toString()),
             rewardSymbol: await this.helper.symbol(rewardCurrency),
             earlyWithdrawReward: await this.helper.amountToHuman(rewardCurrency, earlyWithdrawRewardRaw),
+            isLegacy: hasTotalReward,
         };
     }
 
