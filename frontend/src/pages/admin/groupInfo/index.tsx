@@ -1,9 +1,8 @@
 import React,{useEffect} from 'react';
 import { PrimaryButton, TextField } from '@fluentui/react';
-import { Button,Divider,TextArea,Dropdown } from '@fluentui/react-northstar'
+import { Divider,TextArea,Dropdown } from '@fluentui/react-northstar'
 import {
-    Page,PageTopPart,  Row, ThemedText, Gap, InputCurrency, ThemedButton, ErrorMessage,
-    InputGroupAddon, ThemedLink
+    Row, ThemedText, Gap, 
     // @ts-ignore
 } from 'unifyre-web-components';
 import './groupinfo.scss';
@@ -125,12 +124,12 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                         <Gap/>
                     </div>
                     <div>
-                        <div> ThemeVariables </div>
+                        <div> Theme Variables </div>
                         {
                             (props.originalInfo.themeVariables)  &&
                             <ReactJson
                                 onEdit={(v:any) => props.onSelectedInfoChange(v || '','themeVariables')}
-                                src={props.selectedInfo.themeVariables}
+                                src={JSON.parse(props.selectedInfo.themeVariables || '{}')}
                             />
                         }
                         {

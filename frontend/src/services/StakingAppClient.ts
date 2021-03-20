@@ -197,6 +197,7 @@ export class StakingAppClient implements Injectable {
         if(typeof info['themeVariables'] === "string"){
             info['themeVariables'] = JSON.parse(info.themeVariables);
         }
+        info.themeVariables.mainLogo = info.mainLogo;
         try {
             const res = await this.api({
                 command: 'updateGroupInfo', data: {info}, params: [] } as JsonRpcRequest);

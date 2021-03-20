@@ -67,7 +67,7 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
 
 const groupInfoSchema: Schema = new Schema<GroupInfo>({
   groupId: String,
-  ThemeVariables: Object,
+  themeVariables: Object,
   homepage: String,
   defaultCurrency: String,
 });

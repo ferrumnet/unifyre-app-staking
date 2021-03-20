@@ -152,7 +152,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         ValidationUtils.isTrue(!!info.homepage, '"homepage" must be provided');
         ValidationUtils.isTrue(!!info.themeVariables, '"themeVariables" must be provided');
         ValidationUtils.isTrue(!!info.defaultCurrency, '"defaultCurrency" must be provided');
-        const r = await new this.groupInfoModel!({...info,ThemeVariables: info.themeVariables}).save();
+        const r = await new this.groupInfoModel!({...info}).save();
         if (r) {
             return r;
         }
@@ -476,7 +476,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const newPd = {...info};
         const updated = await this.groupInfoModel!.findOneAndUpdate({
             "$and": [{ _id: info._id } ] },
-        { '$set': { ...newPd,ThemeVariables: info.themeVariables } }).exec();
+        { '$set': { ...newPd } }).exec();
         console.log('UPDATING EVENT ', updated, info.groupId);
         ValidationUtils.isTrue(!!updated, 'Error updating GroupInfo. Update returned empty. Retry');
         return updated?.toJSON();

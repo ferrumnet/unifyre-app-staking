@@ -98,6 +98,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             const client = inject<StakingAppClient>(StakingAppClient);
             //@ts-ignore
             infos.defaultCurrency = `${infos.network}:${(infos as any)['contractAddress'].toLowerCase()}`
+            console.log('About to update gi', infos)
             const res = await client.updateGroupInfos(dispatch,infos);
             if(res){
                 cb();
@@ -181,8 +182,8 @@ function reduce(state:GroupInfoState = defaultGroupInfoState  , action:AnyAction
                     ...action.payload.info,
                     network: action.payload.info.defaultCurrency.split(':')[0] || '',
                     contractAddress: action.payload.info.defaultCurrency.split(':')[1] || '',
-                    mainLogo: action.payload.info?.ThemeVariables['mainLogo'] || '',
-                    themeVariables: JSON.stringify(action.payload.info?.ThemeVariables) || ''
+                    mainLogo: action.payload.info?.themeVariables?.mainLogo || '',
+                    themeVariables: JSON.stringify(action.payload.info?.themeVariables) || ''
                 },
                 selected: !state.selected, 
                 originalInfo: action.payload.info
