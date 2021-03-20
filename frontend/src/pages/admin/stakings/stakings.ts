@@ -20,12 +20,12 @@ export interface SaerchStakingGroupInfoState{
 export const SaerchStakingGroupInfoActions = {
     FETCHING_GROUPS_INFOS: 'FETCHING_GROUPS_INFOS',
     STAKING_INFOS_FECTHED : 'STAKING_INFOS_FECTHED',
-    GROUP_INFO_FETCH_FAILED: 'GROUP_INFO_FETCH_FAILED',
-    INFO_CHANGED: 'INFO_CHANGED',
-    INFO_RESET:'INFO_RESET',
+    GROUP_STAKING_FETCH_FAILED: 'GROUP_STAKING_FETCH_FAILED',
+    STAKING_CHANGED: 'STAKING_CHANGED',
+    STAKING_RESET:'STAKING_RESET',
     RETURN : 'RETURN',
-    INFO_SELECTED: 'INFO_SELECTED',
-    SELECTED_INFO_CHANGED: 'SELECTED_INFO_CHANGED',
+    STAKING_SELECTED: 'STAKING_SELECTED',
+    SELECTED_STAKING_CHANGED: 'SELECTED_STAKING_CHANGED',
     GROUP_INFOS_FECTHED: 'GROUP_INFOS_FECTHED',
     STAKING_INFOS_SAVED: 'STAKING_INFOS_SAVED',
     NEW:'NEW'
@@ -63,7 +63,7 @@ function mapStateToProps(state: RootState): SaerchStakingGroupInfoProps {
         ...state.ui.dashboard,
         infos: state.ui.adminGroupInfo.groupInfos,
         groupInfos: state.ui.adminStakings.groupInfos,
-        selected: state.ui.adminGroupInfo.selected,
+        selected: state.ui.adminStakings.selected,
         selectedStaking: state.ui.adminStakings.selectedStaking,
         currency: state.ui.adminStakings.currency,
         stakings: state.ui.adminStakings.stakings,
@@ -129,6 +129,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const client = inject<StakingAppClient>(StakingAppClient);
+            delete staking._id
             const res = await client.updateStakingInfo(dispatch,staking);
             if(res)
             {
@@ -144,10 +145,10 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     },
     onChangeCurrency: async (val:string,infos: InfoType[],w: (c:string)=>void) => {        
         if(val){
-            dispatch(addAction(SaerchStakingGroupInfoActions.INFO_CHANGED,{val}))
+            dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_CHANGED,{val}))
             w(val);
         }else{
-            dispatch(addAction(SaerchStakingGroupInfoActions.INFO_RESET,{val: infos}))
+            dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_RESET,{val: infos}))
         }
     },
     updateGroupInfo: async (infos: InfoType,cb:()=>void) => {        
@@ -186,10 +187,10 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         dispatch(addAction(SaerchStakingGroupInfoActions.RETURN,{}))
     },
     onSelect: (val:any,infos: StakingApp[]) => {
-        dispatch(addAction(SaerchStakingGroupInfoActions.INFO_SELECTED,{info: infos[val] }))
+        dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_SELECTED,{info: infos[val] }))
     },
     onSelectedInfoChange: (val:any,field: string) => {
-        dispatch(addAction(SaerchStakingGroupInfoActions.SELECTED_INFO_CHANGED,{value: val,field: field}))
+        dispatch(addAction(SaerchStakingGroupInfoActions.SELECTED_STAKING_CHANGED,{value: val,field: field}))
     },
 })
 
@@ -243,11 +244,11 @@ function reduce(state:SaerchStakingGroupInfoState = defaultGroupInfoState  , act
             return {...state, stakings: action.payload.data}
         case Actions.GROUP_INFOS_FECTHED:
             return {...state, groupInfos: action.payload.data}
-        case Actions.INFO_CHANGED:
+        case Actions.STAKING_CHANGED:
             return {...state, currency: action.payload.val}
-        case Actions.INFO_RESET:
+        case Actions.STAKING_RESET:
             return {...state, groupInfos: state.stakings}
-        case Actions.INFO_SELECTED:
+        case Actions.STAKING_SELECTED:
             return {...state, selectedStaking: action.payload.info,selected: !state.selected, new: false }
         case Actions.STAKING_INFOS_SAVED:
             return {...state}
@@ -255,9 +256,8 @@ function reduce(state:SaerchStakingGroupInfoState = defaultGroupInfoState  , act
             return {...state, selected: !state.selected, new: !state.new }
         case Actions.RETURN: 
             return {...state, selected: !state.selected, selectedStaking: defaultGroupInfoState.selectedStaking, new: false }
-        case Actions.SELECTED_INFO_CHANGED:
-            return {...state, selectedStaking: {...state.selectedStaking,currency: state.currency,
-                tokenAddress: state.currency.split(':')[1],network: state.currency.split(':')[0],[action.payload.field]: action.payload.value}}
+        case Actions.SELECTED_STAKING_CHANGED:
+            return {...state, selectedStaking: {...state.selectedStaking,currency: state.currency,[action.payload.field]: action.payload.value}}
         default:
             return state
     }

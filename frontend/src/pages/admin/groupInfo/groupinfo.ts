@@ -1,9 +1,10 @@
 import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../../common/RootState";
-import { IocModule, inject } from "../../../common/IocModule";
+import { inject } from "../../../common/IocModule";
 import { addAction, CommonActions } from "../../../common/Actions";
-import { StakingAppClient, StakingAppServiceActions } from "../../../services/StakingAppClient";
+import { StakingAppClient } from "../../../services/StakingAppClient";
 import { GroupInfo as InfoType} from '../../../common/Types';
+import { ValidationUtils } from "ferrum-plumbing";
 
 export interface GroupInfoState{
     groupInfos: InfoType[],
@@ -46,6 +47,16 @@ export interface GroupInfoProps{
     error?: string;
 }
 
+function checkEmpty(data: InfoType){
+    if( data.groupId  === '' 
+        || data.homepage  === '' 
+        || data.network === ''
+        || data.mainLogo  === ''
+    ){
+        return true
+    }
+    return false
+}
 
 function mapStateToProps(state: RootState): GroupInfoProps {
     return {
@@ -103,12 +114,13 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             const client = inject<StakingAppClient>(StakingAppClient);
             //@ts-ignore
             infos.defaultCurrency = `${infos.network}:${infos['contractAddress'].toLowerCase()}`
+            const error = checkEmpty(infos);
+            ValidationUtils.isTrue(!error, 'A required field is empty' );
             const res = await client.addGroupInfos(dispatch,infos);
             if(res){
                 cb();
                 dispatch(addAction(GroupInfoActions.RETURN,{}))
             }
-            dispatch(addAction(GroupInfoActions.RETURN,{}))
         } catch (error) {
             dispatch(addAction(GroupInfoActions.ERROR,{ message: error.message }))
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
@@ -154,6 +166,7 @@ const defaultGroupInfoState = {
     }
 }
 
+//@ts-ignore
 function reduce(state:GroupInfoState = defaultGroupInfoState  , action:AnyAction){
     switch (action.type) {
         case Actions.GROUP_INFOS_FECTHED:
@@ -163,11 +176,21 @@ function reduce(state:GroupInfoState = defaultGroupInfoState  , action:AnyAction
         case Actions.INFO_RESET:
             return {...state, groupInfos: state.info}
         case Actions.INFO_SELECTED:
-            return {...state, selectedInfo: action.payload.info,selected: !state.selected, originalInfo: action.payload.info}
+            return {...state, 
+                selectedInfo: {
+                    ...action.payload.info,
+                    network: action.payload.info.defaultCurrency.split(':')[0] || '',
+                    contractAddress: action.payload.info.defaultCurrency.split(':')[1] || '',
+                    mainLogo: action.payload.info?.ThemeVariables['mainLogo'] || '',
+                    themeVariables: JSON.stringify(action.payload.info?.ThemeVariables) || ''
+                },
+                selected: !state.selected, 
+                originalInfo: action.payload.info
+            }
         case Actions.RETURN: 
             return {...state, selected: !state.selected, selectedInfo: defaultGroupInfoState.selectedInfo,}
         case Actions.SELECTED_INFO_CHANGED:
-            return {...state,selectedInfo: {...state.selectedInfo,[action.payload.field]: action.payload.value}}
+            return {...state,selectedInfo: {...state.selectedInfo, [action.payload.field]: action.payload.value},error: ''}
         case Actions.ERROR:
             return {...state, error: action.payload.message}
         default:

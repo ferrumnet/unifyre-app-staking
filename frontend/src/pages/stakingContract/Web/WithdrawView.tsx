@@ -61,13 +61,33 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
             fields.splice(2, 2);
         }
     }
-    const [tillMon, tillDay, tillHour] = Utils.tillDate(props.contract.withdrawEnds);
+    const [tillMon, tillDay, tillHour,tillMinutes,tillSeconds] = Utils.tillDate(props.contract.withdrawEnds);
     const maturityTracker = ((props.contract.withdrawEnds || 0) * 1000 <= Date.now()) ? undefined : (
-        <Row centered>
-            <span className="staking-maturity-counter" style={styles.text}>
-                {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
-            </span>
-        </Row>
+        <>
+            {
+                Number(tillHour) > 0 ?
+                    <Row centered>
+                         <span className="staking-maturity-counter" style={styles.text}>
+                            {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity
+                        </span>
+                    </Row>
+                   
+                :  
+                    <>
+                        <Row centered>
+                            <span className="staking-maturity-counter" style={styles.text}>
+                                {tillMinutes} minutes to maturity
+                            </span>
+                        </Row>
+                        <Row centered>
+                            <span className="staking-maturity-counter" style={styles.text}>
+                                Do not rush to unstake at the moment of maturity.<br></br>
+                                Small time differences may cause your transaction to be mined before the maturity moment and you may not receive rewards.
+                            </span>
+                        </Row>
+                    </>
+            }        
+        </>
     );
 
     return (
