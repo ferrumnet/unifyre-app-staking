@@ -10,9 +10,10 @@ import { Web3RetrofitModule } from 'unifyre-extension-web3-retrofit/dist/Web3Ret
 import { StakingAppClientForWeb3 } from '../services/StakingAppClientForWeb3';
 import { Integrations } from "@sentry/tracing";
 import * as Sentry from "@sentry/browser";
-import { Connect, CurrencyList } from 'unifyre-extension-web3-retrofit';
+import { Connect, CurrencyList, UnifyreExtensionWeb3Client } from 'unifyre-extension-web3-retrofit';
 import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract/Web3ModalProvider';
 import { ConnectorContainer } from '../connect/ConnectContainer';
+import { PairAddressService } from '../tokenBridge/PairAddressService';
 
 class DummyStorage {}
 
@@ -83,6 +84,10 @@ export class IocModule {
 
         // init other dependencies
         c.get<UserPreferenceService>(UserPreferenceService).init(dispatch);
+
+        // PairAddressService
+        c.registerSingleton(PairAddressService, c => new PairAddressService(
+            c.get(UnifyreExtensionWeb3Client), c.get(Connect)));
     }
 
     static container() {

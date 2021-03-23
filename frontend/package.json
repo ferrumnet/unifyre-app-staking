@@ -12,6 +12,7 @@
     "@walletconnect/web3-provider": "^1.3.6",
     "big.js": "^5.2.2",
     "desktop-components-library": "git+https://github.com/ferrumnet/desktop-components-library.git",
+    "eth-sig-util": "^3.0.1",
     "ethers": "^5.0.19",
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
     "got": "^11.3.0",
