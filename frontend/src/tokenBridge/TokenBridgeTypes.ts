@@ -48,3 +48,37 @@ export function domainSeparator(network: string): DomainSeparator {
         version: '0.1.0',
     });
 };
+
+
+// Balance related types
+
+// Every transaction sent by user using a paired address to the bridge contract,
+// will produced a Withdrawable Balance Item
+export interface UserBridgeWithdrawableBalanceItem {
+    id: string; // same as signedWithdrawHash
+    timestamp: number;
+    receiveNetwork: string;
+    receiveCurrency: string;
+    receiveAddress: string;
+    receiveAmount: string;
+    salt: string;
+    signedWithdrawHash: string;
+    signedWithdrawSignature: string;
+
+    sendNetwork: string;
+    sendAddress: string;
+    sendTimestamp: number;
+    sendTransactionId: string;
+    sendCurrency: string;
+    sendAmount: string;
+
+    used: ''|'pending'|'failed'|'completed';
+    useTransactionIds: string[];
+}
+
+export interface UserBridgeLiquidityItem {
+    network: string;
+    address: string;
+    currency: string;
+    liquidity: string;
+}
