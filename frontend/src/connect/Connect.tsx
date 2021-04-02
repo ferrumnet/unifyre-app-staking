@@ -6,6 +6,7 @@ import { WalletConnectWeb3Provider } from 'unifyre-extension-web3-retrofit/dist/
 import { AppUserProfile } from 'unifyre-extension-sdk/dist/client/model/AppUserProfile';
 import { ValidationUtils } from 'ferrum-plumbing';
 import { AnyAction } from 'redux';
+import { CurrencyList } from 'unifyre-extension-web3-retrofit';
 
 export const ConnectActions = {
     CONNECTION_SUCCEEDED: 'CONNECTION_SUCCEEDED',
@@ -15,6 +16,13 @@ export const ConnectActions = {
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
 }
 
+export const DEFAULT_TOKEN_FOR_WEB3_MODE = {
+    4: 'RINKEBY:0x93698a057cec27508a9157a946e03e277b46fe56',
+    1: 'ETHEREUM:0xe5caef4af8780e59df925470b050fb23c43ca68c',
+    97: 'BSC_TESTNET:0xae13d989dac2f0debff460ac112a837c89baa7cd',
+    56: 'BSC:0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
+};
+
 const Actions = ConnectActions;
 
 type Connector = () => Promise<boolean>;
@@ -22,6 +30,7 @@ type Connector = () => Promise<boolean>;
 export interface IConnectDpendencies {
     client: UnifyreExtensionKitClient;
     connect: Connect;
+    currencyList: CurrencyList;
     provider: WalletConnectWeb3Provider;
 }
 
@@ -82,6 +91,11 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         }
         dep.connect.setProvider(dep.provider);
         await dep.client.signInWithToken('');
+        const net = await dep.connect.getProvider()!.netId();
+            console.log(`Connected to net id ${net} with no defined currency`);
+        if (net && dep.currencyList.get().length == 0) {
+            dep.currencyList.set([(DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any]]);
+        }
         
         // Subscribe to session disconnection
         dep.connect.getProvider()!.addEventListener('disconnect', (reason: string) => {

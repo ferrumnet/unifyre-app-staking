@@ -80,6 +80,10 @@ export interface UserStake {
     continuationRewards?: string;
 }
 
+export interface TokenBridgeConfig {
+  contractClient: {[k: string]: string};
+}
+
 export interface StakingAppConfig {
     database: MongooseConfig;
     region: string;
@@ -93,6 +97,7 @@ export interface StakingAppConfig {
     backend: string;
     cmkKeyArn: string;
     adminSecret: string;
+    bridgeConfig: TokenBridgeConfig;
 }
 
 export interface GroupInfo {

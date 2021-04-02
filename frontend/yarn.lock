@@ -15590,7 +15590,7 @@ unicode-property-aliases-ecmascript@^1.0.4:
 
 "unifyre-web-components@git+https://github.com/ferrumnet/unifyre-web-components.git":
   version "1.0.0"
-  resolved "git+https://github.com/ferrumnet/unifyre-web-components.git#713875d50d89320d954ae2bd719d46c120ed18d1"
+  resolved "git+https://github.com/ferrumnet/unifyre-web-components.git#e9e125579aee58619117f4caf185cb288becbf1e"
   dependencies:
     react-icons "^3.10.0"
     unifyre-react-helper "git+https://github.com/ferrumnet/unifyre-react-helper.git"

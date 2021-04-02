@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { AnyAction } from "redux";
 import { UnifyreExtensionKitClient } from "unifyre-extension-sdk";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
-import { Connect, WalletConnectWeb3Provider } from "unifyre-extension-web3-retrofit";
+import { Connect, CurrencyList, WalletConnectWeb3Provider } from "unifyre-extension-web3-retrofit";
 import { ConnectActions, ConnectButtonWapper, IConnectDispatch,
     IConnectDpendencies, IConnectOwnProps, IConnectProps } from "./Connect";
 
@@ -28,6 +28,7 @@ export class ConnectorContainer implements Injectable {
     constructor(
         private client: UnifyreExtensionKitClient,
         private connect: Connect,
+        private currencyList: CurrencyList,
         private provider: WalletConnectWeb3Provider,
         ) {
     }
@@ -41,6 +42,7 @@ export class ConnectorContainer implements Injectable {
         return ({
             dep : {
                 client: this.client, connect: this.connect, provider: this.provider,
+                currencyList: this.currencyList,
             } as IConnectDpendencies,
             connected: !!st.profile && !!st.profile.userId,
             address: addr?.humanReadableAddress || addr?.address,

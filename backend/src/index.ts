@@ -1,6 +1,6 @@
 import {
     LambdaGlobalContext, UnifyreBackendProxyModule,
-    UnifyreBackendProxyService, KmsCryptor, AwsEnvs, SecretsProvider,
+    UnifyreBackendProxyService, KmsCryptor, AwsEnvs, SecretsProvider, MongooseConfig,
 } from 'aws-lambda-helper';
 import {HttpHandler} from "./HttpHandler";
 import {
@@ -16,6 +16,9 @@ import { KMS } from 'aws-sdk';
 import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 import { StakingFarmContractClient } from './StakingFarmContractClient';
+import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
+import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
+import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
 
 const global = { init: false };
 const STAKING_APP_ID = 'STAKING';
@@ -61,7 +64,7 @@ export class stakingAppModule implements Module {
             stakingAppConfig = {
                 database: {
                     connectionString: getEnv('MONGOOSE_CONNECTION_STRING'),
-                },
+                } as MongooseConfig,
                 authRandomKey: getEnv('RANDOM_SECRET'),
                 signingKeyHex: getEnv('REQUEST_SIGNING_KEY'),
                 web3ProviderEthereum: getEnv('WEB3_PROVIDER_ETHEREUM'),
@@ -71,7 +74,15 @@ export class stakingAppModule implements Module {
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
-                adminSecret: getEnv('ADMIN_SECRET')
+                adminSecret: getEnv('ADMIN_SECRET'),
+                bridgeConfig: {
+                    contractClient: {
+                        'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
+                        'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
+                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC'),
+                        'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
+                    }
+                }
             } as StakingAppConfig;
         }
         // makeInjectable('CloudWatch', CloudWatch);
@@ -134,11 +145,20 @@ export class stakingAppModule implements Module {
                     stakingAppConfig.adminSecret,
                     stakingAppConfig.authRandomKey,
                     networkProviders,
+                    c.get(TokenBridgeHttpHandler),
                     ));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
+        container.registerSingleton(TokenBridgeHttpHandler,
+            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService)))
+        container.registerSingleton(TokenBridgeService,
+            c => new TokenBridgeService(c.get(EthereumSmartContractHelper),
+                c.get(TokenBridgeContractClinet)));
+        container.registerSingleton(TokenBridgeContractClinet, c => new TokenBridgeContractClinet(
+            c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,
+        ));
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
     }
 }

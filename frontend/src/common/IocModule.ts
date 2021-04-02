@@ -43,8 +43,6 @@ const PROD_CONF = {
     isProd: true,
 } as Config;
 
-export const DEFAULT_TOKEN_FOR_WEB3_MODE = process.env.STAKE_CURRENCY || 'RINKEBY:0x93698a057cec27508a9157a946e03e277b46fe56';
-
 const DEV_USES_LOCAL: boolean = true;
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -76,7 +74,7 @@ export class IocModule {
         }
 
         c.register(ConnectorContainer, c => new ConnectorContainer(
-            c.get(UnifyreExtensionKitClient), c.get(Connect), c.get('Web3ModalProvider')));
+            c.get(UnifyreExtensionKitClient), c.get(Connect), c.get(CurrencyList), c.get('Web3ModalProvider')));
 
         c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());
         IntlManager.instance.load([stringsEn], 'en-US');

@@ -1,14 +1,16 @@
-import { Network } from "ferrum-plumbing";
+import { Injectable, Network } from "ferrum-plumbing";
 import { Connect, UnifyreExtensionWeb3Client } from "unifyre-extension-web3-retrofit";
 import { eip712Json, eipTransactionRequest } from "unifyre-extension-web3-retrofit/dist/client/Eip712";
 import { domainSeparator, PairedAddress, PairedAddressType, SignedPairAddress } from "./TokenBridgeTypes";
 import { PairAddressUtils } from "./PairAddressUtils";
 
-export class PairAddressService {
+export class PairAddressService implements Injectable {
     constructor(
         private client: UnifyreExtensionWeb3Client,
         private connect: Connect,
     ) {}
+
+    __name__() { return 'PairAddressService'; }
 
     async signPair(network: Network, pair: PairedAddress) {
         const jsonData = eip712Json(domainSeparator(network), PairedAddressType, 'Pair', pair);

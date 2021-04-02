@@ -247,6 +247,11 @@ export class StakingAppClient implements Injectable {
     }
 
     protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>, userProfile: AppUserProfile) {
+        console.log('UP is ', userProfile)
+        if (!userProfile || !userProfile.accountGroups[0]) {
+            console.info('loadDataAfterSignIn: Not signed in');
+            return;
+        }
         let currency = userProfile.accountGroups[0].addresses[0].currency;
         await this.loadStakingsForToken(dispatch, currency);
         const events = await this.api({

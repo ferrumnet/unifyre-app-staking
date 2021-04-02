@@ -2,17 +2,19 @@ import { EthereumSmartContractHelper } from 'aws-lambda-helper/dist/blockchain';
 import {abi as bridgeAbi} from './resources/BridgePool.json';
 //@ts-ignore
 import abiDecoder from 'abi-decoder';
-import { HexString, ValidationUtils } from 'ferrum-plumbing';
+import { HexString, Injectable, ValidationUtils } from 'ferrum-plumbing';
 import { CustomTransactionCallRequest } from 'unifyre-extension-sdk';
 const Helper = EthereumSmartContractHelper;
 
-export class TokenBridgeContractClinet {
+export class TokenBridgeContractClinet implements Injectable {
     constructor(
         private helper: EthereumSmartContractHelper,
         private contractAddress: {[network: string]: string},
     ) {
         abiDecoder.addABI(bridgeAbi);
     }
+
+    __name__() { return 'TokenBridgeContractClinet'; }
 
     private instance(network: string){
         const address = this.contractAddress[network];

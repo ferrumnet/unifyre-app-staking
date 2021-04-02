@@ -6,7 +6,7 @@ import { intl } from "unifyre-react-helper";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { BackendMode, logError, Utils } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
-import { CurrencyList } from "unifyre-extension-web3-retrofit";
+import { Connect, CurrencyList } from "unifyre-extension-web3-retrofit";
 import { ReponsivePageWrapperDispatch } from "../../base/PageWrapperTypes";
 
 export const DashboardActions = {
@@ -20,6 +20,7 @@ const Actions = DashboardActions;
 export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
     onLoad: (groupId?: string) => Promise<void>;
     onAdminLoad: (h:any) => Promise<void>;
+    onBridgeLoad: () => Promise<void>;
     onClearError: () => void;
  }
 
@@ -41,6 +42,18 @@ function mapStateToProps(state: RootState): DashboardProps {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
+    onBridgeLoad: async () => {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
+            await IocModule.init(dispatch);
+            dispatch(addAction(Actions.INIT_SUCCEED, {}));
+        } catch (error) {
+            logError('Dashboard.mapDispatchToProps', error);
+            dispatch(addAction(Actions.INIT_FAILED, { message: error.toString() }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
+        }
+    },
     onAdminLoad: async (h:any) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));

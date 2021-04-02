@@ -23,6 +23,7 @@ import { AdminDashContainer } from "../admin/dashboard";
 import { LoginContainer } from "../admin/dashboard/login";
 import { GroupInfoContainer } from "../admin/groupInfo";
 import { StakingInfoContainer } from "../admin/stakings";
+import { BridgeContainer } from '../dummy/TempBridge';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -63,14 +64,16 @@ function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
 }
 
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
-    const {onLoad,onAdminLoad, fatalError} = props;
+    const {onLoad, onAdminLoad, onBridgeLoad, fatalError} = props;
     const groupId = Utils.getGroupIdFromHref();
     const history = useHistory();
     useEffect(() => {
       // Prevent infinite loop if onLoad causes error
       if(groupId === 'admin'){
-        onAdminLoad(history);
-      }else{
+        onAdminLoad(history).catch(console.error);
+      } else if (groupId === 'bridge') {
+        onBridgeLoad().catch(console.error);
+      } else {
         if (!fatalError) {
           onLoad(groupId).catch(console.error);
         }
@@ -98,6 +101,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               authError={props.error}
               >
               <Switch>
+                  <Route path='/bridge'>
+                    <BridgeContainer/>
+                  </Route>
                   <Route path='/:gid/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
                   </Route>
