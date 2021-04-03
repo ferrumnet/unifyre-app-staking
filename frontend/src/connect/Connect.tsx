@@ -92,9 +92,10 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         dep.connect.setProvider(dep.provider);
         await dep.client.signInWithToken('');
         const net = await dep.connect.getProvider()!.netId();
-            console.log(`Connected to net id ${net} with no defined currency`);
         if (net && dep.currencyList.get().length == 0) {
-            dep.currencyList.set([(DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any]]);
+            const defaultCur = (DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any];
+            console.log(`Connected to net id ${net} with no defined currency: ${defaultCur}`);
+            dep.currencyList.set([defaultCur]);
         }
         
         // Subscribe to session disconnection

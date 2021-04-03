@@ -198,6 +198,7 @@ export class StakingAppClient implements Injectable {
             info['themeVariables'] = JSON.parse(info.themeVariables);
         }
         info.themeVariables.mainLogo = info.mainLogo;
+        info.noMainPage = true;
         try {
             const res = await this.api({
                 command: 'updateGroupInfo', data: {info}, params: [] } as JsonRpcRequest);
@@ -218,6 +219,7 @@ export class StakingAppClient implements Injectable {
         const theme = JSON.parse(infos.themeVariables);
         //@ts-ignore
         theme['mainLogo'] = infos.mainLogo;
+        infos.noMainPage = true;
         try {
             const res = await this.api({
                 command: 'addGroupInfo', data: {info: {

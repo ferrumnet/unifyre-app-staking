@@ -15,9 +15,9 @@ export interface SignedPairAddress {
 
 export const PairedAddressType: Eip712TypeDefinition =  {
     Pair: [
-        { name: 'network1', type: 'bytes32' },
+        { name: 'network1', type: 'string' },
         { name: 'address1', type: 'address' },
-        { name: 'network2', type: 'bytes32' },
+        { name: 'network2', type: 'string' },
         { name: 'address2', type: 'address' },
     ],
 };

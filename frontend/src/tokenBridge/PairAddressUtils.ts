@@ -7,8 +7,10 @@ export class PairAddressUtils {
     static verifyPairSignatureForNetwork(network: Network, pair: PairedAddress, signature: string): boolean {
         // Verify both signatures...
         PairAddressUtils.validatePair(pair);
-        const jsonData = eip712Json(domainSeparator(network), PairedAddressType, 'Pair', pair);
+        const jsonData = JSON.parse(eip712Json(domainSeparator(network), PairedAddressType, 'Pair', pair));
+        console.log('VERIFICATION JSON DATA', jsonData);
         const recoveredAddress = recoverTypedSignature_v4({data: jsonData, sig: signature});
+        console.log('RECOVERED ADDARDOO ', {recoveredAddress})
         ValidationUtils.isTrue(!!recoveredAddress, 'recoverTypedSignature_v4 could not recover an address');
         const from = network === pair.network1 ? pair.address1 : pair.address2;
         return recoveredAddress.toLowerCase() === from.toLocaleLowerCase();

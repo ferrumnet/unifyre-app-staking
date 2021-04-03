@@ -70,6 +70,7 @@ const groupInfoSchema: Schema = new Schema<GroupInfo>({
   themeVariables: Object,
   homepage: String,
   defaultCurrency: String,
+  noMainPage: String,
 });
 
 export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
