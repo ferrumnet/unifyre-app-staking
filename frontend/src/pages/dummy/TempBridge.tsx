@@ -6,6 +6,7 @@ import { Connect } from 'unifyre-extension-web3-retrofit';
 import { PairedAddress, SignedPairAddress } from '../../tokenBridge/TokenBridgeTypes';
 // @ts-ignore
 import { Row } from 'unifyre-web-components';
+import { PairAddressSignatureVerifyre } from '../../tokenBridge/PairAddressSignatureVerifyer';
 
 const TEST_PAIRED_ADDRESS: PairedAddress = {
         address1: '',
@@ -67,9 +68,9 @@ async function signAddressPairing(expectedNetwork: string) {
 }
 
 async function verifyAddressPairing() {
-    const svc = inject<PairAddressService>(PairAddressService);
+    const vfy = inject<PairAddressSignatureVerifyre>(PairAddressSignatureVerifyre);
     console.log('About to verify', TEST_DATA);
-    const res = await svc.verify(TEST_DATA.sig);
+    const res = await vfy.verify(TEST_DATA.sig);
     if (res) {
         alert('All good!');
     } else {

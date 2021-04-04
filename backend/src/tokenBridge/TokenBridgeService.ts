@@ -2,6 +2,7 @@ import { MongooseConnection } from "aws-lambda-helper";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { Injectable, ValidationUtils } from "ferrum-plumbing";
 import { Connection, Document, Model } from "mongoose";
+import { PairAddressSignatureVerifyre } from "./common/PairAddressSignatureVerifyer";
 import { TokenBridgeContractClinet } from "./TokenBridgeContractClient";
 import { RequestMayNeedApprove, SignedPairAddress, SignedPairAddressSchemaModel, UserBridgeWithdrawableBalanceItem, UserBridgeWithdrawableBalanceItemModel } from "./TokenBridgeTypes";
 
@@ -11,6 +12,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
     constructor(
         private helper: EthereumSmartContractHelper,
         private contract: TokenBridgeContractClinet,
+        private verifyer: PairAddressSignatureVerifyre,
     ) {
         super();
     }
@@ -108,9 +110,11 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         ValidationUtils.isTrue(!!pair.signature1 || !!pair.signature2, 'At least one signature is required');
         if (pair.signature1) {
             //Verify signature
+            ValidationUtils.isTrue(!!this.verifyer.verify1(pair), 'Invalid signature 1');
         }
         if (pair.signature2) {
             //Verify signature
+            ValidationUtils.isTrue(!!this.verifyer.verify2(pair), 'Invalid signature 2');
         }
         await this.signedPairAddressModel!.update(
             {'pair.address1': pair.pair.address1}, pair, {upsert: true});

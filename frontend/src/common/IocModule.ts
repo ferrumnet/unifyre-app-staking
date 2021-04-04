@@ -14,6 +14,7 @@ import { Connect, CurrencyList, UnifyreExtensionWeb3Client } from 'unifyre-exten
 import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract/Web3ModalProvider';
 import { ConnectorContainer } from '../connect/ConnectContainer';
 import { PairAddressService } from '../tokenBridge/PairAddressService';
+import { PairAddressSignatureVerifyre } from '../tokenBridge/PairAddressSignatureVerifyer';
 
 class DummyStorage {}
 
@@ -86,6 +87,7 @@ export class IocModule {
         // PairAddressService
         c.registerSingleton(PairAddressService, c => new PairAddressService(
             c.get(UnifyreExtensionWeb3Client), c.get(Connect)));
+        c.registerSingleton(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
     }
 
     static container() {

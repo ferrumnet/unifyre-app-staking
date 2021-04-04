@@ -19,6 +19,7 @@ import { StakingFarmContractClient } from './StakingFarmContractClient';
 import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
 import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
 import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
+import { PairAddressSignatureVerifyre } from './tokenBridge/common/PairAddressSignatureVerifyer';
 
 const global = { init: false };
 const STAKING_APP_ID = 'STAKING';
@@ -160,5 +161,8 @@ export class stakingAppModule implements Module {
             c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,
         ));
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
+
+        // Paired address
+        container.register(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
     }
 }

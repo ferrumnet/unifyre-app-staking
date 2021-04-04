@@ -28,11 +28,4 @@ export class PairAddressService implements Injectable {
         PairAddressUtils.validatePair(pair);
         return this.signPair(pair.network2 as Network, pair);
     }
-    
-    verify(pairWithSignature: SignedPairAddress) {
-        return PairAddressUtils.verifyPairSignatureForNetwork(pairWithSignature.pair.network1 as Network,
-                pairWithSignature.pair, pairWithSignature.signature1) &&
-                PairAddressUtils.verifyPairSignatureForNetwork(pairWithSignature.pair.network2 as Network,
-                pairWithSignature.pair, pairWithSignature.signature2);
-    }
 }
