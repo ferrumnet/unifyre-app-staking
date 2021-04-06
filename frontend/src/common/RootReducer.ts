@@ -14,6 +14,8 @@ import { GroupData, StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
 import { GroupInfo } from "./Types";
 import { ConnectorContainer } from "../connect/ConnectContainer";
+import { Main } from  '../tokenBridge/pages/main/main';
+import { Swap } from '../tokenBridge/pages/swap/swap';
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -87,7 +89,9 @@ const ui = combineReducers({
     continuation: ConfirmTxn.reduce,
     adminGroupInfo: Group.reduce,
     adminStakings: SaerchStakingGroupInfo.reduce,
-    adminDash: AdminDash.reduce
+    adminDash: AdminDash.reduce,
+    bridgeMain: Main.reduce,
+    swapToken: Swap.reduce
 });
 
 export const rootReducer = combineReducers({ data, ui });

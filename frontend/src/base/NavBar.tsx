@@ -31,7 +31,7 @@ function ErrorBar(props: {error: string}) {
     );
 }
 
-function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string}) {
+export function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string}) {
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     return (
@@ -56,6 +56,35 @@ function ConButton(props: {connected: boolean, address: string, onClick: () => v
         </>
     )
 }
+
+export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDispatch&ResponsiveConnectProps&{children: any}){
+    const theme = useContext(ThemeContext);   
+    const styles = themedStyles(theme);
+    const error = props.error ? (
+        <ErrorBar error={props.error} />
+    ) : undefined;
+
+    const ConBot = ConnectorContainer.Connect(props.container, ConButton);
+
+    return(
+        <>
+            <div className="nav-bar page-container" style={{...styles.container,backgroundColor: 'transparent'}}>
+                <img src="https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png"/>
+                <div className="nav-children no-display">
+                    <ConBot 
+                        onConnect={props.onConnected}
+                        onConnectionFailed={props.onConnectionFailed}
+                        dataSelector={(state: RootState) => state.data.userData}
+                        // appInitialized={props.initialized}
+                        appInitialized={true}
+                    />
+                </div>
+            </div>
+            {error}
+        </>
+    )
+}
+
 
 export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDispatch&ResponsiveConnectProps&{children: any}) { 
     const theme = useContext(ThemeContext);   
@@ -101,5 +130,11 @@ const themedStyles = (theme) => ({
     },
     btnStyle: {
         padding: '1rem'
+    },
+    navTxt: {
+        display: 'flex',
+        color: 'white',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })

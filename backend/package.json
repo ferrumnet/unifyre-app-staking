@@ -40,11 +40,13 @@
     "big.js": "^5.2.2",
     "cross-fetch": "^3.0.4",
     "dotenv": "^8.2.0",
+    "eth-sig-util": "^3.0.1",
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
     "got": "^11.3.0",
     "mongoose": "^5.7.7",
     "swarm-js": "^0.1.40",
     "unifyre-extension-sdk": "git+https://github.com/ferrumnet/unifyre-extension-sdk.git",
+    "unifyre-extension-web3-retrofit": "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git",
     "web3": "^1.2.9"
   },
   "resolutions": {
