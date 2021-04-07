@@ -3,8 +3,9 @@ import { AnyAction, Dispatch } from "redux";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { addAction, CommonActions } from "../common/Actions";
 import { ApiClient } from "./ApiClient";
+import { SignedPairAddress } from "./TokenBridgeTypes";
 
-const TokenBridgeActions = {
+export const TokenBridgeActions = {
     AUTHENTICATION_FAILED: 'AUTHENTICATION_FAILED',
     BRIDGE_BALANCE_LOADED: 'BRIDGE_BALANCE_LOADED',
     BRIDGE_ADDING_TRANSACTION_FAILED: 'BRIDGE_ADDING_TRANSACTION_FAILED',
@@ -18,6 +19,8 @@ const Actions = TokenBridgeActions;
 export class TokenBridgeClient extends ApiClient implements Injectable {
     private network?: string;
     private userAddress?: string;
+    private currency?: string;
+
     __name__() { return 'TokenBridgeClient'; }
 
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
@@ -27,6 +30,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             const userAddress = userProfile.userId;
             this.network = userProfile.accountGroups[0].addresses[0].network;
             this.userAddress = userProfile.accountGroups[0].addresses[0].address;
+            this.currency = userProfile.accountGroups[0].addresses[0].currency;
             const res = await this.api({
                 command: 'signInUsingAddress', data: {userAddress}, params: [] } as JsonRpcRequest);
             const { unsecureSession } = res;
@@ -48,7 +52,8 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
 
     protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>) {
         await this.loadUserPairedAddress(dispatch,);
-        await this.loadUserBridgeBalance(dispatch, this.userAddress!);
+        //not implemented
+        //await this.loadUserBridgeLiquidity(dispatch, this.userAddress!,this.currency!);
     }
 
     private async loadUserPairedAddress(dispatch: Dispatch<AnyAction>) {
@@ -66,7 +71,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         try {
             // Get the liquidity from web3...
             const res = await this.api({
-                command: 'loadUserBridgeBalance', data: {userAddress, currency}, params: [] } as JsonRpcRequest);
+                command: 'getLiquidity', data: {userAddress, currency}, params: [] } as JsonRpcRequest);
             const { liquidity } = res;
             ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
             dispatch(addAction(Actions.BRIDGE_LIQUIDITY_FOR_USER_LOADED, {liquidity}))
@@ -100,6 +105,36 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             const { withdrawableBalanceItem } = res;
             ValidationUtils.isTrue(!withdrawableBalanceItem, 'Error updating balance item');
             dispatch(addAction(Actions.BRIDGE_BALANCE_ITEM_UPDATED, {withdrawableBalanceItem}))
+        } catch(e) {
+            dispatch(addAction(Actions.BRIDGE_ADDING_TRANSACTION_FAILED, {
+                message: e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'withdrawableBalanceItemAddTransaction' }));
+        }
+    }
+
+    /**
+     * Loads liquidity added by user
+     */
+     async updateUserPairedAddress(dispatch: Dispatch<AnyAction>, pair: SignedPairAddress) {
+        const res = await this.api({
+            command: 'updateUserPairedAddress', data: {pair}, params: [] } as JsonRpcRequest);
+        return res;
+    }
+
+    /**
+     * Loads liquidity added by user
+     */
+     async unpairUserPairedAddress(dispatch: Dispatch<AnyAction>, pair: SignedPairAddress) {
+        const res = await this.api({
+            command: 'unpairUserPairedAddress', data: {pair}, params: [] } as JsonRpcRequest);
+        return res;
+    }
+
+    async getUserWithdrawItems(dispatch: Dispatch<AnyAction>, network: string) {
+        try {
+            const res = await this.api({command: 'getUserWithdrawItems', data: { network }, params: [] } as JsonRpcRequest);
+            return res;
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_ADDING_TRANSACTION_FAILED, {
                 message: e.message || '' }));

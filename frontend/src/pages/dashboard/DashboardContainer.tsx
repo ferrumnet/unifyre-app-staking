@@ -25,7 +25,6 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       .set(Theme.Colors.themeNavBkg, "$Color.bkgShade2")
         .set(Theme.Logo.logo, 'https://staking.ferrum.network/static/media/logo.44e552d9.png')
       .build());  
-
     const testAlert = CONFIG.isProd ? undefined : (<><Row withPadding><ThemedText.H1>TEST MODE</ThemedText.H1></Row></>)
     if (props.initialized) {
         // Render the routes

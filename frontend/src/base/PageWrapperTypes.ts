@@ -10,6 +10,7 @@ export interface ReponsivePageWrapperProps {
     footerHtml?: string;
     homepage?: string;
     navBarContent?: any;
+    isBridge?: boolean,
     children: any;
     authError?: string;
 }

@@ -17,6 +17,7 @@ import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 import { StakingFarmContractClient } from './StakingFarmContractClient';
 import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
+
 import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
 import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
 import { PairAddressSignatureVerifyre } from './tokenBridge/common/PairAddressSignatureVerifyer';
@@ -129,8 +130,19 @@ export class stakingAppModule implements Module {
             () => new EthereumSmartContractHelper(networkProviders));
         container.registerSingleton(SmartContratClient,
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
-        container.registerSingleton(StakingFarmContractClient,
-            c => new StakingFarmContractClient(c.get(EthereumSmartContractHelper)));
+        container.registerSingleton(SmartContratClient,
+            c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
+        container.registerSingleton(TokenBridgeContractClinet,
+            c => new TokenBridgeContractClinet(
+                c.get(EthereumSmartContractHelper),
+                {'BSC': stakingAppConfig.web3ProviderBsc,},
+            ));
+        container.registerSingleton(
+            StakingFarmContractClient,
+            c=> new StakingFarmContractClient(
+                c.get(EthereumSmartContractHelper) 
+            )
+        )
         container.register('JsonStorage', () => new Object());
         container.registerSingleton(StakingAppService,
                 c => new StakingAppService(
@@ -138,7 +150,17 @@ export class stakingAppModule implements Module {
                     c.get(SmartContratClient),
                     c.get(StakingFarmContractClient),
                     ));
-
+        container.registerSingleton(TokenBridgeService,
+            c => new TokenBridgeService(
+                c.get(EthereumSmartContractHelper),
+                c.get(TokenBridgeContractClinet),
+                c.get(PairAddressSignatureVerifyre)
+                ));
+        container.register(TokenBridgeHttpHandler,
+                c=> new TokenBridgeHttpHandler(
+                    c.get(TokenBridgeService)
+                )
+        );
         container.registerSingleton('LambdaHttpHandler',
                 c => new HttpHandler(
                     c.get(UnifyreBackendProxyService),
@@ -146,7 +168,7 @@ export class stakingAppModule implements Module {
                     stakingAppConfig.adminSecret,
                     stakingAppConfig.authRandomKey,
                     networkProviders,
-                    c.get(TokenBridgeHttpHandler),
+                    c.get(TokenBridgeHttpHandler)
                     ));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
@@ -154,12 +176,18 @@ export class stakingAppModule implements Module {
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
         container.registerSingleton(TokenBridgeHttpHandler,
             c => new TokenBridgeHttpHandler(c.get(TokenBridgeService)))
+        container.registerSingleton(PairAddressSignatureVerifyre, c=>
+            new PairAddressSignatureVerifyre()
+        ),
         container.registerSingleton(TokenBridgeService,
             c => new TokenBridgeService(c.get(EthereumSmartContractHelper),
-                c.get(TokenBridgeContractClinet)));
+                c.get(TokenBridgeContractClinet),
+                c.get(PairAddressSignatureVerifyre)
+            ));
         container.registerSingleton(TokenBridgeContractClinet, c => new TokenBridgeContractClinet(
             c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,
         ));
+        await container.get<TokenBridgeService>(TokenBridgeService).init(stakingAppConfig.database);
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
 
         // Paired address

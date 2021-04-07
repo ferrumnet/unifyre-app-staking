@@ -6,6 +6,8 @@ export class PairAddressSignatureVerifyre {
     constructor() {
     }
 
+    __name__() { return 'PairAddressSignatureVerifyre'; }
+
     verify(pairWithSignature: SignedPairAddress) {
         return  this.verify1(pairWithSignature) && this.verify2(pairWithSignature);
     }

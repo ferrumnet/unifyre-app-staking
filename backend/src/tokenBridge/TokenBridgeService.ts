@@ -101,6 +101,16 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         )
         return !!rv ? rv.toJSON() : rv;
     }
+
+    async unpairUserPairedAddress(pair: SignedPairAddress) {
+        this.verifyInit();
+        ValidationUtils.isTrue(!!pair.pair, 'Invalid pair (empty)');
+        ValidationUtils.isTrue(!!pair.pair.address1, 'address 1 is required');
+        const res = await this.signedPairAddressModel!.remove({'pair.address1': pair.pair.address1});
+        ValidationUtils.isTrue(!!res, 'Could not update the balance item');
+        return res
+
+    }
     
     async updateUserPairedAddress(pair: SignedPairAddress) {
         this.verifyInit();
@@ -116,7 +126,10 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
             //Verify signature
             ValidationUtils.isTrue(!!this.verifyer.verify2(pair), 'Invalid signature 2');
         }
-        await this.signedPairAddressModel!.update(
+        const res = await this.signedPairAddressModel!.update(
             {'pair.address1': pair.pair.address1}, pair, {upsert: true});
+        ValidationUtils.isTrue(!!res, 'Could not update the item');
+        return res
+
     }
 }

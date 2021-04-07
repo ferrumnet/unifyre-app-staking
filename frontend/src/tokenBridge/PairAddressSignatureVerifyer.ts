@@ -6,6 +6,8 @@ export class PairAddressSignatureVerifyre {
     constructor() {
     }
 
+    __name__() { return 'PairAddressSignatureVerifyre'; }
+    
     verify(pairWithSignature: SignedPairAddress) {
         return PairAddressUtils.verifyPairSignatureForNetwork(pairWithSignature.pair.network1 as Network,
                 pairWithSignature.pair, pairWithSignature.signature1) &&

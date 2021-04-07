@@ -15,6 +15,7 @@ import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract
 import { ConnectorContainer } from '../connect/ConnectContainer';
 import { PairAddressService } from '../tokenBridge/PairAddressService';
 import { PairAddressSignatureVerifyre } from '../tokenBridge/PairAddressSignatureVerifyer';
+import { TokenBridgeClient } from '../tokenBridge/TokenBridgeClient';
 
 class DummyStorage {}
 
@@ -69,6 +70,11 @@ export class IocModule {
             await c.registerModule(new Web3RetrofitModule('STAKING', []));
             c.registerSingleton(StakingAppClient, c =>
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
+            c.registerSingleton(TokenBridgeClient, c => new TokenBridgeClient(
+                    c.get(UnifyreExtensionKitClient),
+                    LOCAL_DEV_CONF.poolDropBackend
+                )
+            );
             const client = c.get<StakingAppClient>(StakingAppClient);
             const providers = await client.loadHttpProviders(dispatch);
             c.registerSingleton('Web3ModalProvider', () => new Web3ModalProvider(providers));

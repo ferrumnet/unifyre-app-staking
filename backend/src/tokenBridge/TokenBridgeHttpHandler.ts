@@ -34,6 +34,9 @@ export class TokenBridgeHttpHandler implements Injectable {
             case 'updateUserPairedAddress':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
                 return this.updateUserPairedAddress(req);
+            case 'unpairUserPairedAddress':
+                ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                return this.unpairUserPairedAddress(req);
             default:
                 return;
         }
@@ -50,11 +53,11 @@ export class TokenBridgeHttpHandler implements Injectable {
 
     async getLiquidity(req: JsonRpcRequest) {
         const {
-            currency, address
+            currency, userAddress
         } = req.data;
         ValidationUtils.isTrue(!!currency, "'currency' must be provided");
-        ValidationUtils.isTrue(!!address, "'addres' must be provided");
-        return this.svc.getLiquidity(address, currency);
+        ValidationUtils.isTrue(!!userAddress, "'addres' must be provided");
+        return this.svc.getLiquidity(userAddress, currency);
     }
 
     async getUserWithdrawItems(req: JsonRpcRequest, userId: string) {
@@ -80,6 +83,14 @@ export class TokenBridgeHttpHandler implements Injectable {
         } = req.data;
         ValidationUtils.isTrue(!!pair, "'pair' must be provided");
         return this.svc.updateUserPairedAddress(pair);
+    }
+
+    async unpairUserPairedAddress(req: JsonRpcRequest) {
+        const {
+            pair
+        } = req.data;
+        ValidationUtils.isTrue(!!pair, "'pair' must be provided");
+        return this.svc.unpairUserPairedAddress(pair);
     }
 
     async getUserPairedAddress(req: JsonRpcRequest, userId: string) {

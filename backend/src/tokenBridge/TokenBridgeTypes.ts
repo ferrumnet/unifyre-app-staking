@@ -88,7 +88,7 @@ const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWit
     useTransactionIds: [String],
 });
 
-const signedPairAddressSchema: Schema = new Schema<SignedPairAddress>({
+const SignedPairAddressSchema: Schema = new Schema<SignedPairAddress>({
     pair: new Schema<PairedAddress>({
         network1: String,
         address1: String,
@@ -103,4 +103,4 @@ export const UserBridgeWithdrawableBalanceItemModel = (c: Connection) => c.model
     'userBridgeWithdrawableBalanceItem', userBridgeWithdrawableBalanceItemSchema);
 
 export const SignedPairAddressSchemaModel = (c: Connection) => c.model<SignedPairAddress&Document>(
-    'signedPairAddress', userBridgeWithdrawableBalanceItemSchema);
+    'signedPairAddress', SignedPairAddressSchema);

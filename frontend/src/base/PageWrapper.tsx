@@ -7,7 +7,7 @@ import {
     DesktopPage,
     // @ts-ignore
 } from 'desktop-components-library';
-import {NavBar} from './NavBar';
+import {NavBar,BridgeNavBar} from './NavBar';
 import {Footer} from './Footer';
 import './nav.scss';
 import { PageWrapperUtils, ReponsivePageWrapperDispatch, ReponsivePageWrapperProps } from './PageWrapperTypes';
@@ -17,9 +17,13 @@ function DesktopPageWrapper(props: ReponsivePageWrapperProps&ReponsivePageWrappe
         <>
         <DesktopPage 
             NavBar={
-                <NavBar {...props} error={props.authError} >
-                    {props.navBarContent}
-                </NavBar>
+                !props.isBridge ? 
+                    <NavBar {...props} error={props.authError} >
+                        {props.navBarContent}
+                    </NavBar>
+                :   <BridgeNavBar {...props} error={props.authError} >
+                        {props.navBarContent}
+                    </BridgeNavBar>
             }
             Footer={
                 <Footer
