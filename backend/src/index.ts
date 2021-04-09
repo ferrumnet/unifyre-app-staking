@@ -182,7 +182,7 @@ export class stakingAppModule implements Module {
         container.registerSingleton(TokenBridgeService,
             c => new TokenBridgeService(c.get(EthereumSmartContractHelper),
                 c.get(TokenBridgeContractClinet),
-                c.get(PairAddressSignatureVerifyre)
+                c.get(PairAddressSignatureVerifyre),
             ));
         container.registerSingleton(TokenBridgeContractClinet, c => new TokenBridgeContractClinet(
             c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,

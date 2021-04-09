@@ -4,6 +4,7 @@ import {abi as bridgeAbi} from './resources/BridgePool.json';
 import abiDecoder from 'abi-decoder';
 import { HexString, Injectable, ValidationUtils } from 'ferrum-plumbing';
 import { CustomTransactionCallRequest } from 'unifyre-extension-sdk';
+import { CHAIN_ID_FOR_NETWORK, PayBySignatureData, UserBridgeWithdrawableBalanceItem } from './TokenBridgeTypes';
 const Helper = EthereumSmartContractHelper;
 
 export class TokenBridgeContractClinet implements Injectable {
@@ -27,16 +28,21 @@ export class TokenBridgeContractClinet implements Injectable {
         return new web3.Contract(bridgeAbi, contractAddress);
     }
 
-    async withdrawSigned(
-        currency: string, userAddress: string, amount: string, salt: string, signature: string):
-        Promise<[HexString, number]>{
-        console.log(`About to withdrawSigned`, {currency, amount, salt, signature});
-        const [network, token] = Helper.parseCurrency(currency);
-        const amountRaw = await this.helper.amountToMachine(currency, amount);
-        const p = this.instance(network).methods.withdrawSigned(token, userAddress,
-            amountRaw, salt, signature);
-        const gas = await p.estimateGas({from: userAddress});
-        return [p.encodeABI(), gas];
+    async withdrawSigned(w: UserBridgeWithdrawableBalanceItem,
+            from: string): Promise<CustomTransactionCallRequest>{
+        console.log(`About to withdrawSigned`, w);
+        const address = this.contractAddress[w.sendNetwork];
+        const p = this.instance(w.sendNetwork).methods.withdrawSigned(w.payBySig.token, w.payBySig.payee,
+            w.payBySig.amount, w.payBySig.salt, w.payBySig.signature);
+        const gas = await p.estimateGas({from});
+        const nonce = await this.helper.web3(w.sendNetwork).getTransactionCount(from, 'pending');
+        return Helper.callRequest(address,
+                w.sendCurrency,
+                from,
+                p.encodeABI(),
+                gas.toFixed(),
+                nonce,
+                `Withdraw `);
     }
 
     async approveIfRequired(userAddress: string, currency: string, amount: string):
@@ -85,6 +91,27 @@ export class TokenBridgeContractClinet implements Injectable {
                 gas.toFixed(),
                 nonce,
                 `Remove liquidity `);
+    }
+
+    async swap(userAddress: string, currency: string, amount: string, targetCurrency: string) {
+        const [network, token] = Helper.parseCurrency(currency);
+        const [targetNetwork, targetToken] = Helper.parseCurrency(targetCurrency);
+        const targetNetworkInt = CHAIN_ID_FOR_NETWORK[targetNetwork];
+        ValidationUtils.isTrue(!!targetNetworkInt, "'targetNetwork' must be provided");
+        ValidationUtils.isTrue(!!userAddress, "'userAddress' must be provided");
+        ValidationUtils.isTrue(!!amount, "'amount' must be provided");
+        const amountRaw = await this.helper.amountToMachine(currency, amount);
+        const p = this.instance(network).methods.swap(token, amountRaw, targetNetworkInt, targetToken);
+        const gas = await p.estimateGas({from: userAddress});
+        const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
+        const address = this.contractAddress[network];
+        return Helper.callRequest(address,
+                currency,
+                userAddress,
+                p.encodeABI(),
+                gas.toFixed(),
+                nonce,
+                `Swap `);
     }
 
     async getLiquidity(userAddress: string, currency: string): Promise<string> {

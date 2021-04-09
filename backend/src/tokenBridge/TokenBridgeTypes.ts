@@ -21,19 +21,21 @@ export interface SignedPairAddress {
 
 export const TOKEN_BRIDGE_DOMAIN_SALT = '0xebb7c67ee709a29f4d80f3ac6db9cd0e84fccb20437963314b825afc2463825c';
 
-const CHAIN_ID_FOR_NETWORK = {
+export const CHAIN_ID_FOR_NETWORK = {
     'ETHEREUM': 1,
     'RINKEBY': 4,
     'BSC': 56,
     'BSC_TESTNET': 97,
 } as any
 
-const BRIDGE_CONTRACT = {
-    'ETHEREUM': '0x0000000000000000000000000000000000000000',
-    'RINKEBY': '0x0000000000000000000000000000000000000000',
-    'BSC': '0x0000000000000000000000000000000000000000',
-    'BSC_TESTNET': '0x0000000000000000000000000000000000000000',
-} as any;
+export interface PayBySignatureData {
+    token: string;
+    payee: string;
+    amount: string;
+    salt: string;
+    signature: string;
+    hash: string;
+}
 
 // Every transaction sent by user using a paired address to the bridge contract,
 // will produced a Withdrawable Balance Item
@@ -42,18 +44,16 @@ export interface UserBridgeWithdrawableBalanceItem {
     timestamp: number;
     receiveNetwork: string;
     receiveCurrency: string;
+    receiveTransactionId: string;
     receiveAddress: string;
     receiveAmount: string;
-    salt: string;
-    signedWithdrawHash: string;
-    signedWithdrawSignature: string;
 
     sendNetwork: string;
     sendAddress: string;
     sendTimestamp: number;
-    sendTransactionId: string;
     sendCurrency: string;
     sendAmount: string;
+    payBySig: PayBySignatureData;
 
     used: ''|'pending'|'failed'|'completed';
     useTransactions: { id: string, status: string, timestamp: number }[];

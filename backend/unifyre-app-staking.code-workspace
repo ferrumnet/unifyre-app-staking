@@ -23,6 +23,9 @@
 		},
 		{
 			"path": "../../desktop-components-library"
+		},
+		{
+			"path": "../../ferrum-chain-clients"
 		}
 	],
 	"settings": {}

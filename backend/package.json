@@ -41,6 +41,7 @@
     "cross-fetch": "^3.0.4",
     "dotenv": "^8.2.0",
     "eth-sig-util": "^3.0.1",
+    "ferrum-chain-clients": "git+https://github.com/ferrumnet/ferrum-chain-clients.git",
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
     "got": "^11.3.0",
     "mongoose": "^5.7.7",

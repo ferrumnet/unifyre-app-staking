@@ -9,6 +9,7 @@ import { RequestMayNeedApprove, SignedPairAddress, SignedPairAddressSchemaModel,
 export class TokenBridgeService extends MongooseConnection implements Injectable {
     private signedPairAddressModel?: Model<SignedPairAddress&Document>;
     private balanceItem?: Model<UserBridgeWithdrawableBalanceItem&Document>;
+    private con: Connection|undefined;
     constructor(
         private helper: EthereumSmartContractHelper,
         private contract: TokenBridgeContractClinet,
@@ -20,6 +21,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
     initModels(con: Connection): void {
         this.signedPairAddressModel = SignedPairAddressSchemaModel(con);
         this.balanceItem = UserBridgeWithdrawableBalanceItemModel(con);
+        this.con = con;
     }
 
     __name__() { return 'TokenBridgeService'; }
@@ -28,8 +30,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         const w = await this. getWithdrawItem(id);
         ValidationUtils.isTrue(userAddress === w.receiveAddress,
             "Provided address is not the receiver of withdraw");
-        return this.contract.withdrawSigned(w.receiveCurrency, w.receiveAddress,
-            w.receiveAmount, w.salt, w.signedWithdrawSignature);
+        return this.contract.withdrawSigned(w, userAddress);
     }
 
     async addLiquidityGetTransaction(userAddress: string, currency: string, amount: string):
@@ -46,10 +47,30 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         return await this.contract.removeLiquidityIfPossible(userAddress, currency, amount);
     }
 
+    async swapGetTransaction(userAddress: string, currency: string, amount: string, targetCurrency: string) {
+        const requests = await this.contract.approveIfRequired(userAddress, currency, amount);
+        if (requests.length) {
+            return {isApprove: true, requests};
+        }
+        const req = await this.contract.swap(userAddress, currency, amount,  targetCurrency);
+        return { isApprove: false, requests: [req] };
+    }
+
+    async getWithdrawItemByReceiveTransaction(receiveTransactionId: string): Promise<UserBridgeWithdrawableBalanceItem> {
+        this.verifyInit();
+        const rv = await this.balanceItem!.findOne({receiveTransactionId});
+        return rv ? rv.toJSON(): rv;
+    }
+
     async getWithdrawItem(id: string): Promise<UserBridgeWithdrawableBalanceItem> {
         this.verifyInit();
         const rv = await this.balanceItem!.findOne({id});
         return rv ? rv.toJSON(): rv;
+    }
+
+    async newWithdrawItem(item: UserBridgeWithdrawableBalanceItem): Promise<void> {
+        this.verifyInit();
+        await new this.balanceItem!(item).save();
     }
 
     async getLiquidity(address: string, currency: string) {
@@ -131,5 +152,11 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         ValidationUtils.isTrue(!!res, 'Could not update the item');
         return res
 
+    }
+
+    async close() {
+        if (this.con) {
+            await this.con!.close();
+        }
     }
 }
