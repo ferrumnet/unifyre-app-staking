@@ -8,7 +8,42 @@ import { TokenBridgeService } from "../TokenBridgeService";
 import { BridgeConfigStorage } from "./BridgeConfigStorage";
 import { BridgeProcessor } from "./BridgeProcessor";
 import { BridgeProcessorConfig } from "./BridgeProcessorTypes";
-import { KMS } from "aws-sdk";
+import {
+    LambdaGlobalContext
+} from 'aws-lambda-helper';
+import { KMS } from 'aws-sdk';
+require('dotenv').config();
+const global = { init: false };
+
+async function init() {
+    if (global.init) {
+        return LambdaGlobalContext.container();
+    }
+    const container = await LambdaGlobalContext.container();
+    await container.registerModule(new BridgeProcessorModule());
+    global.init = true;
+    return container;
+}
+
+// Once registered this is the handler code for lambda_template
+export async function handler(event: any, context: any) {
+    try {
+        const container = await init();
+        const lgc = container.get<LambdaGlobalContext>(LambdaGlobalContext);
+        return await lgc.handleAsync(event, context);
+    } catch (e) {
+        console.error(e);
+        return {
+            body: e.message,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Accept-Encoding, Accept-Language, Authorization, Host',
+            },
+            isBase64Encoded: false,
+            statusCode: 500,
+        }
+    }
+}
 
 export class BridgeProcessorModule implements Module {
     async configAsync(container: Container) {
@@ -59,6 +94,7 @@ export class BridgeProcessorModule implements Module {
             c.get(EthereumSmartContractHelper),
             privateKey,
             c.get(LoggerFactory)));
+        container.register('JsonStorage', () => new Object());
         container.registerSingleton(TokenBridgeService, c => new TokenBridgeService(
             c.get(EthereumSmartContractHelper),
             ({}) as any,

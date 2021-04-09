@@ -16,7 +16,7 @@ import { GroupInfo } from "./Types";
 import { ConnectorContainer } from "../connect/ConnectContainer";
 import { Main } from  '../tokenBridge/pages/main/main';
 import { Swap } from '../tokenBridge/pages/swap/swap';
-
+import { Liquidity } from '../tokenBridge/pages/liquidity/liquidity';
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
         case CommonActions.WAITING:
@@ -91,7 +91,8 @@ const ui = combineReducers({
     adminStakings: SaerchStakingGroupInfo.reduce,
     adminDash: AdminDash.reduce,
     bridgeMain: Main.reduce,
-    swapToken: Swap.reduce
+    swap: Swap.reduce,
+    liquidity: Liquidity.reduce
 });
 
 export const rootReducer = combineReducers({ data, ui });

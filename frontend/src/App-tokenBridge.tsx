@@ -13,6 +13,7 @@ import AlertTemplate from 'react-alert-template-basic'
 import { DashboardContainer } from './tokenBridge/pages/Dashboard/DashboardContainer';
 import { WebThemeLoader } from './themeLoader';
 import './tokenBridge/app.scss';
+import { ToastProvider, useToasts } from 'react-toast-notifications';
 
 // optional configuration
 const options = {
@@ -25,11 +26,11 @@ function App() {
     return (
         <Provider store={store}>
           <Dialogue.Component />
-            <AlertProvider template={AlertTemplate} {...options}>
+            <ToastProvider>
               <Router>
                 <DashboardContainer />
               </Router>
-          </AlertProvider>
+            </ToastProvider>
         </Provider>
     );  
 }

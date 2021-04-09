@@ -18,6 +18,8 @@ export const TokenBridgeActions = {
     BRIDGE_ADD_LIQUIDITY_FAILED: 'BRIDGE_ADD_LIQUIDITY_FAILED',
     BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN: 'BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN',
     BRIDGE_LOAD_FAILED: 'BRIDGE_LOAD_FAILED',
+    SOURCE_CURRENCIES_RECEIVED: 'SOURCE_CURRENCIES_RECEIVED',
+    SWAP_SUCCESS: 'SWAP_SUCCESS'
 }
 
 const Actions = TokenBridgeActions;
@@ -35,8 +37,9 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         try {
             const userProfile = await this.client.getUserProfile();
             const userAddress = userProfile.userId;
-            this.network = userProfile.accountGroups[0].addresses[0].network;
-            this.userAddress = userProfile.accountGroups[0].addresses[0].address;
+            console.log(userProfile,'userprofileletre')
+            this.network = userProfile.accountGroups[0].addresses[0]?.network;
+            this.userAddress = userProfile.accountGroups[0].addresses[0]?.address;
             const res = await this.api({
                 command: 'signInUsingAddress', data: {userAddress}, params: [] } as JsonRpcRequest);
             const { unsecureSession } = res;
@@ -69,6 +72,14 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         dispatch(addAction(Actions.BRIDGE_LIQUIDITY_PAIRED_ADDRESS_RECEIVED, {pairedAddress: pairedAddress || {}}))
     }
 
+    //getSourceCurrencies
+
+    async getSourceCurrencies(dispatch: Dispatch<AnyAction>,network: string) {
+        const res = await this.api({
+            command: 'getSourceCurrencies', data: {network}, params: [] } as JsonRpcRequest);
+        return res;
+    }
+
     public async getAvailableLiquidity(dispatch: Dispatch<AnyAction>,
             targetNetwork: Network,
             targetCurrency: string) {
@@ -76,7 +87,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         try {
             // Get the available liquidity for target network
             const res = await this.api({
-                command: 'getAvailableLiquidity', data: {targetNetwork, targetCurrency}, params: [] } as JsonRpcRequest);
+                command: 'getLiquidity', data: {targetNetwork, currency: targetCurrency}, params: [] } as JsonRpcRequest);
             const { liquidity } = res;
             ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
             dispatch(addAction(Actions.BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))

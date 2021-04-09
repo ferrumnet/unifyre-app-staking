@@ -30,6 +30,18 @@
     margin: auto 0px;
 }
 
+.liquidity-tabs{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.vert-divider{
+    border-left-width: 0.5px;
+    border-color: white;
+    border-style: solid;
+}
+
 .body-not-centered{
     padding-top: 1%;
     margin: 0px auto;
@@ -41,10 +53,20 @@
     }
 
     &.swap{
+
+        .header{
+            &.title{
+                justify-content: space-between;
+                display: flex;
+                width: 100%;
+            }
+        }
         .pad-main-body{
             width: 50%;
             padding-left: 0rem;
             padding-top: 1em;
+
+         
             
             .header{
                 font-weight: 500;
@@ -65,9 +87,39 @@
 
             &.second{
                 width: 50%;
-                padding-top: 5em; 
+                padding-top: 1em; 
             }
         }
+
+        .swap-entry{
+            .ms-TextField{
+                width: 100%;
+            }
+            .ms-TextField-fieldGroup{
+                width: 100%;
+                height: 80px;
+                border-right-width: 0px;
+            }
+            .ms-Button{
+                height: 80px;
+                border-color: #ceaa69;
+                background-color: transparent;
+                color: white;
+                border-left-style: dotted; 
+            }
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                /* display: none; <- Crashes Chrome on hover */
+                -webkit-appearance: none;
+                margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+            }
+
+            input[type=number] {
+                -moz-appearance:textfield; /* Firefox */
+            }
+        }
+
+     
 
 
        
@@ -81,7 +133,7 @@
 .verify{
     justify-content: space-around;
     display: flex;
-    width: 100%;
+    width: 60%
 }
 
 .pad-main-body{
@@ -92,10 +144,10 @@
     width: 50%;
     color: white;
 
-    .verify{
+    &.verify{
         justify-content: space-around;
         display: flex;
-        width: 100%;
+        width: 70%;
     }
 
     .successful-cont{
@@ -234,6 +286,6 @@
     text-align: center;
     /* position: absolute; */
     /* bottom: 0px; */
-    margin-top: 10em;
+    margin-top: 2em;
 
 }

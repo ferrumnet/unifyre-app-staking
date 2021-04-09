@@ -23,6 +23,8 @@ export interface ReponsivePageWrapperDispatch {
 
 export interface ResponsiveConnectProps {
     error?: string;
+    notiError?: string;
+    success?: string
 }
 
 export class PageWrapperUtils {

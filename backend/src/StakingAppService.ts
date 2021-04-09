@@ -67,6 +67,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
 
     async updateStakeInfo(data: StakingApp): Promise<StakingApp> {
         ValidationUtils.isTrue(!!data.contractAddress, 'contractAddress is required')
+        //@ts-ignore
         return await this.adminUpdateStakingInfo({...data});
     }
 

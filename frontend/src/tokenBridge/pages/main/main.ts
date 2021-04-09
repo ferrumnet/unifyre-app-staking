@@ -26,6 +26,7 @@ export const MainBridgeActions = {
     PAIR_VERIFIED: 'PAIR_VERIFIED',
     RESET_PAIR: 'RESET_PAIR',
     ONRECONNECT: 'ONRECONNECT',
+    USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
     DISCONNECT: 'DISCONNECT'
 };
 
@@ -47,11 +48,13 @@ export interface MainProps {
     symbol: string,
     currency: string,
     network: string,
+    currentNetwork: string,
     baseNetwork: string,
     isPaired: boolean,
     pairedAddress?: PairedAddress,
     signedPairedAddress?: SignedPairAddress,
-    connected: boolean
+    pairedAddresses?: SignedPairAddress,
+    connected: boolean,
 }
 
 export interface MainState {
@@ -71,9 +74,11 @@ export interface MainState {
     currency: string,
     baseNetwork: string,
     network: string,
+    currentNetwork: string,
     isPaired: boolean,
     pairedAddress?: PairedAddress,
     signedPairedAddress: SignedPairAddress,
+    pairedAddresses?: SignedPairAddress,
     connected: boolean
 }
 
@@ -96,9 +101,11 @@ function mapStateToProps(state:RootState) : MainProps {
     const address = addr[0] || {};
     return {
         ...state.ui.bridgeMain,
+        connected: address.network ? true : false,
         symbol: address.symbol,
         network: address.network,
-        baseAddress: address.address,
+        currentNetwork: address.network,
+        baseAddress: state.ui.bridgeMain.baseAddress,
         currency: address.currency,
         initialised: state.ui.bridgeMain.initialised,
         connectError: state.ui.bridgeMain.connectError,
@@ -121,9 +128,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
             const res = await sc.signInToServer(dispatch);
             if (res) {
-                const currencyList = inject<CurrencyList>(CurrencyList);
-                currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
-
+                //const currencyList = inject<CurrencyList>(CurrencyList);
+                //currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
                 const connect = inject<Connect>(Connect);
                 const network = connect.network() as any;
                 const addr = connect.account()!;
@@ -219,6 +225,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             paired.address1 = addr;
             paired.address2 = address2;
             paired.network1 = network;
+            console.log(paired,'hththththkj===mmmm')
             const vrf = inject<TokenBridgeClient>(TokenBridgeClient);
             const sc = inject<PairAddressService>(PairAddressService);
             const res = await sc.signPairAddress1(paired);
@@ -258,12 +265,15 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             const vrf = inject<PairAddressSignatureVerifyre>(PairAddressSignatureVerifyre)
             const sc = inject<PairAddressService>(PairAddressService);
             const tb = inject<TokenBridgeClient>(TokenBridgeClient);
+            console.log(paired,'retherewwwiii');
             const res = await sc.signPairAddress2(paired);
             let SignedPair = {
                 pair: paired,
                 signature2: res.split('|')[0],
                 signature1: baseSign.split('|')[0],
             } as  SignedPairAddress
+            console.log(SignedPair,';;;;');
+            
             const response = await vrf.verify(SignedPair);
             const rs = await tb.updateUserPairedAddress(dispatch,SignedPair)
             if(!!response && !!rs){
@@ -339,7 +349,7 @@ function reduce(state: any = defaultMainState, action: AnyAction){
         case Actions.ONRECONNECT:
             return {...state,baseNetwork: action.payload.network,connected: true}
         case Actions.PAIR_ADDRESSES:
-            return  {...state, pairedAddress:{...state.pairedAddress,address2: action.payload.address2,network2:action.payload.network2}, isPaired: true}
+            return  {...state, pairedAddress:{...state.pairedAddress,address1: state.baseAddress,network1:state.baseNetwork,address2: action.payload.address2,network2:action.payload.network2}, isPaired: true}
         case Actions.ERROR_OCCURED:
             return {...state, fatalError: action.payload.message};
         case TokenBridgeActions.AUTHENTICATION_FAILED:
@@ -355,8 +365,12 @@ function reduce(state: any = defaultMainState, action: AnyAction){
                 isPaired: action.payload.pairedAddress.pair?.address2 ?  true : false,
                 baseSigned: action.payload.pairedAddress.signature1 ? true: false,
                 network: action.payload.pairedAddress.pair?.network1,
-                destNetwok: action.payload.pairedAddress.pair?.network2
+                destNetwork: action.payload.pairedAddress.pair?.network2 || state.destNetwork,
+                baseNetwork: action.payload.pairedAddress.pair?.network2 ? action.payload.pairedAddress.pair?.network2 : state.baseNetwork,
+                initialised: true
             }
+        case TokenBridgeActions.SWAP_SUCCESS:
+            return {...state,success: action.payload.message,error: action.payload.message}
         case Actions.DEST_NETWORK_CHANGED:
             return {...state, destNetwork: action.payload.value}
         case Actions.DEST_ADDRESS_CHANGED:
@@ -371,6 +385,13 @@ function reduce(state: any = defaultMainState, action: AnyAction){
             return {...state, pairVerified: true}
         case Actions.DISCONNECT:
             return {...state, connected: false}
+        case Actions.USER_DATA_RECEIVED:
+            return {
+                ...state,
+                baseNetwork: action.payload.userProfile?.accountGroups[0]?.addresses[0]?.network,
+                baseAddress: action.payload.userProfile?.accountGroups[0]?.addresses[0]?.address ,
+                connected: true
+            }
         default:
             return state;
     }

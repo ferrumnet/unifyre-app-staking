@@ -4,16 +4,34 @@ import { useHistory } from 'react-router';
 import { Swap,swapDisptach,swapProps } from './swap';
 import { Divider } from '@fluentui/react-northstar'
 import { TextField} from 'office-ui-fabric-react';
+import { PrimaryButton } from 'office-ui-fabric-react';
+import {
+    Gap
+    // @ts-ignore
+} from 'desktop-components-library';
+import { useToasts } from 'react-toast-notifications';
 
 function SwapComponent(props:swapDisptach&swapProps){
-    const histroy = useHistory()
+    const histroy = useHistory();
+    const { addToast } = useToasts();
+
     useEffect( () => {
-        if(!props.network){
+        if(!props.pairedAddress){
             histroy.push('/');
         }else{
             props.onConnect(props.network);
         }
     },[]);
+
+    const onMessage = async (v:string) => {    
+        addToast(v, { appearance: 'error',autoDismiss: true })        
+    };
+
+    const onSuccessMessage = async (v:string) => {    
+        addToast(v, { appearance: 'success',autoDismiss: true })        
+    };
+    
+
     return (
         <div className="centered-body">
             <>
@@ -21,8 +39,14 @@ function SwapComponent(props:swapDisptach&swapProps){
                 <div className="body-not-centered swap">
 
                     <div className="header title">  
-                        Swap Accross Chains
-                        <Divider/>
+                        <div>
+                            Swap Accross Chains
+                            <Divider/>
+                        </div>
+                        <div>
+                            Return
+                            <Divider/>
+                        </div>
                     </div>
 
                     <div className="pad-main-body">
@@ -41,30 +65,47 @@ function SwapComponent(props:swapDisptach&swapProps){
                         <div>
                             <div className="header">Select token you want to swap</div>
                             <>
-                                <select name="cars" id="cars" className="content">
-                                    <option value="volvo">FRM</option>
-                                    <option value="saab">RINKEBY</option>
-                                    <option value="mercedes">BSC</option>
+                                <select name="token" id="token" className="content" disabled={props.addresses.length === 0} onChange={(e)=>props.tokenSelected(e.target.value,props.addresses)}>
+                                    <option value={'select your Token symbol'}>select your Token symbol</option>
+                                    {
+                                        props.addresses.length > 0 ?
+                                            props.addresses.map(e=>
+                                                <option value={e.symbol}>{e.symbol}</option>
+                                            )
+                                        : <option value={'Not Available'}>Not Available</option>
+                                    }
                                 </select>
                             </>
                         </div>
-                        <div className="content">You will recieve your token on network in this smart contract address</div>
+                        <div className="content">You will recieve your token on {props.network} network in this smart contract address</div>
+                        <Gap size={"small"}/>
+                        <div>
+                            <div className="space-out swap-entry">
+                                <TextField
+                                    placeholder={'Amount to Swap'}
+                                    value={props.amount}
+                                    disabled={false}
+                                    onChange={(e,v)=>props.amountChanged(v)}
+                                    type={'Number'}
+                                />
+                                <PrimaryButton 
+                                    ariaDescription="Detailed description used for screen reader."
+                                    onClick={
+                                        () => props.onSwap(props.amount,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage)
+                                    }
+                                >
+                                    SWAP
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                        <div className="content">You currently have {props.balance} amount of {props.symbol}</div>
                     </div>
 
                     <div className="pad-main-body second">
-                        <div>
-                            <div className="header">Send Token to the below</div>
-                            
-                        </div>
+                      
                         <div>
                             <div className="space-out">
-                                <span>Addresss</span>
-                                <span className="bold">0x455</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="space-out">
-                                <span>Available Liquidity</span>
+                                <span>Available Liquidity in {props.network} </span>
                                 <span className="bold">500</span>
                             </div>
                         </div>
@@ -72,16 +113,14 @@ function SwapComponent(props:swapDisptach&swapProps){
                         <div> 
                             <div className="space-out">
                                 <span>Fee</span>
-                                <span className="bold">500</span>
+                                <span className="bold">{props.currenciesDetails.fee || 0}</span>
                             </div>
                         </div> 
                     </div>
                 </div>
                 <div className="bottom-stick">
                     <div>Note:  Liquidity is provided by liquidity provider. Only swap much less than the avaialable liquidity to ensure there is enough tokens to claim.</div>
-                    <div> - Send tokens to the swap addresson ETHEREUM network</div>
-                    <div> - Connect your BSC wallet</div>
-                    <div> - Claim your balance on BSC network</div>
+                    <div> - Claim your balance from your withdrawal items</div>
                 </div>
             </>
         </div>

@@ -21,6 +21,7 @@ export interface BridgeProcessorConfig {
     addressManagerSecret: string;
 }
 
+//@ts-ignore
 const bridgeTokenConfigSchema: Schema = new Schema<BridgeProcessorConfig>({
     sourceNetwork: String,
     targetNetwork: String,

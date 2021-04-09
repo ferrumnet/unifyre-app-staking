@@ -43,7 +43,7 @@ export class BridgeProcessor implements Injectable {
         ValidationUtils.isTrue(!!relevantTokens.length, `No relevent token found in config for ${network}`);
         try {
             const incoming = await client.getRecentTransactionsByAddress(
-                poolAddress, relevantTokens);
+                poolAddress, relevantTokens.map((j:any) => j.sourceCurrency));
             console.log('Got incoming txs:', incoming)
             if (!incoming || !incoming.length) {
                 this.log.info('No recent transaction for address ' + poolAddress);

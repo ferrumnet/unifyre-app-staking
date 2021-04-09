@@ -111,6 +111,7 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         if (res) {
             const userProfile = await dep.client.getUserProfile();
             onUserDataReceived(userProfile);
+            console.log(userProfile,'user--profile')
             dispatch({type: Actions.CONNECTION_SUCCEEDED, payload: {}});
         } else {
             dep.connect.getProvider()?.disconnect();
@@ -143,6 +144,7 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
             if (res) {
                 const userProfile = await dep.client.getUserProfile();
                 onUserDataReceived(userProfile);
+                  console.log('popopret',userProfile)
                 dispatch({type: Actions.CONNECTION_SUCCEEDED, payload: {}});
             } else {
                 const e = new Error('Connection cannot be completed');

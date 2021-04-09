@@ -66,7 +66,8 @@ export interface UserBridgeLiquidityItem {
     liquidity: string;
 }
 
-const payBySignatureDataSchema: Schema = new Schema<PayBySignatureData>({
+//@ts-ignore
+const payBySignatureDataSchema: Schema = new Schema<PayBySignatureData&Document>({
     token: String,
     payee: String,
     amount: String,
@@ -75,7 +76,8 @@ const payBySignatureDataSchema: Schema = new Schema<PayBySignatureData>({
     hash: String,
 })
 
-const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWithdrawableBalanceItem>({
+//@ts-ignore
+const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWithdrawableBalanceItem&Document>({
     id: String, // same as signedWithdrawHash
     timestamp: Number,
     receiveNetwork: String,
@@ -100,8 +102,9 @@ const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWit
     useTransactions: [{id: String, status: String, timestamp: Number}],
 });
 
-const SignedPairAddressSchema: Schema = new Schema<SignedPairAddress>({
-    pair: new Schema<PairedAddress>({
+//@ts-ignore
+const SignedPairAddressSchema: Schema = new Schema<SignedPairAddress&Document>({
+    pair: new Schema<PairedAddress&Document>({
         network1: String,
         address1: String,
         network2: String,

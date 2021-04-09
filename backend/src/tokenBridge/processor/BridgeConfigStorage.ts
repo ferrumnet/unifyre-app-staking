@@ -24,11 +24,12 @@ export class BridgeConfigStorage extends MongooseConnection implements Injectabl
         return !!r ? r.toJSON() : undefined;
     }
 
-    async getSourceCurrencies(sourceNetwork: string): Promise<string[]> {
+    async getSourceCurrencies(sourceNetwork: string): Promise<any[]> {
         this.verifyInit();
+        const rt = await this.model!.find({});
         const r = await this.model!.find({sourceNetwork});
         if (r) {
-            return r.map(j => j.sourceCurrency);
+            return r
         }
         return [];
     }

@@ -292,6 +292,7 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(!!txIds, '"txIds" must be provided');
         const stakeEvent = await this.userSvc.stakeEventProcessTransactions(userId, token, eventType, contractAddress,
             amount, txIds);
+        //@ts-ignore
         return {stakeEvent};
     }
 

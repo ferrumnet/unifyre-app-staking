@@ -17,7 +17,7 @@ import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 import { StakingFarmContractClient } from './StakingFarmContractClient';
 import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
-
+import {BridgeConfigStorage} from './tokenBridge/processor/BridgeConfigStorage';
 import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
 import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
 import { PairAddressSignatureVerifyre } from './tokenBridge/common/PairAddressSignatureVerifyer';
@@ -150,6 +150,7 @@ export class stakingAppModule implements Module {
                     c.get(SmartContratClient),
                     c.get(StakingFarmContractClient),
                     ));
+        container.registerSingleton(BridgeConfigStorage,c=>new BridgeConfigStorage())
         container.registerSingleton(TokenBridgeService,
             c => new TokenBridgeService(
                 c.get(EthereumSmartContractHelper),
@@ -158,7 +159,8 @@ export class stakingAppModule implements Module {
                 ));
         container.register(TokenBridgeHttpHandler,
                 c=> new TokenBridgeHttpHandler(
-                    c.get(TokenBridgeService)
+                    c.get(TokenBridgeService),
+                    c.get(BridgeConfigStorage)
                 )
         );
         container.registerSingleton('LambdaHttpHandler',
@@ -175,7 +177,7 @@ export class stakingAppModule implements Module {
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
         container.registerSingleton(TokenBridgeHttpHandler,
-            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService)))
+            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
         container.registerSingleton(PairAddressSignatureVerifyre, c=>
             new PairAddressSignatureVerifyre()
         ),
@@ -189,6 +191,7 @@ export class stakingAppModule implements Module {
         ));
         await container.get<TokenBridgeService>(TokenBridgeService).init(stakingAppConfig.database);
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
+        await container.get<BridgeConfigStorage>(BridgeConfigStorage).init(stakingAppConfig.database);
 
         // Paired address
         container.register(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());

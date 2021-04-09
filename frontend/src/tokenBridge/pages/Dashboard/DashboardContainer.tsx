@@ -14,9 +14,11 @@ import { BackendMode } from '../../../common/Utils';
 import { WebWaitingContainer } from '../../../components/WebWaiting';
 import { MainContainer } from '../main/mainContainer';
 import { SwapContainer } from '../swap/swapContainer';
+import { LiquidityContainer } from '../liquidity/liquidityContainer';
 import { WebPageWrapper } from '../../../components/WebPageWrapper';
 import './../../app.scss'
 import { DummyBridgeContainer } from '../../../pages/dummy/TempBridge';
+import { useToasts } from 'react-toast-notifications';
 
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onBridgeLoad, fatalError} = props;
@@ -52,6 +54,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                         <Route path='/bridge'>
                           <DummyBridgeContainer onConnected={props.onConnected}/>
                         </Route>
+                        <Route path='/liquidity'>
+                            <LiquidityContainer/>
+                        </Route>
                         <Route path='/swap'>
                             <SwapContainer/>
                         </Route> 
@@ -83,6 +88,8 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       </Row>
     );
 
+    
+    
     return (
       <Page>
           {testAlert}

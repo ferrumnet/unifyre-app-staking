@@ -14,6 +14,7 @@ import { ReponsivePageWrapperDispatch, ReponsivePageWrapperProps, ResponsiveConn
 import { ConnectorContainer } from '../connect/ConnectContainer';
 import { RootState } from '../common/RootState';
 import { Utils } from '../common/Utils';
+import { ToastProvider, useToasts } from 'react-toast-notifications';
 
 function ErrorBar(props: {error: string}) {
     return (
@@ -26,6 +27,22 @@ function ErrorBar(props: {error: string}) {
                 overflowButtonAriaLabel="See more"
             >
                 {props.error}
+            </MessageBar>
+        </Row>
+    );
+}
+
+function SuccessBar(props: {success: string}) {
+    return (
+        <Row withPadding>
+            <MessageBar
+                messageBarType={MessageBarType.success}
+                isMultiline={true}
+                dismissButtonAriaLabel="Close"
+                truncated={true}
+                overflowButtonAriaLabel="See more"
+            >
+                {props.success}
             </MessageBar>
         </Row>
     );
@@ -60,9 +77,18 @@ export function ConButton(props: {connected: boolean, address: string, onClick: 
 export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDispatch&ResponsiveConnectProps&{children: any}){
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
+    const { addToast } = useToasts();
+
     const error = props.error ? (
         <ErrorBar error={props.error} />
-    ) : undefined;
+    ) : props.notiError ?
+         addToast(props.notiError, { appearance: 'error' })
+    : undefined;
+
+    const success = props.success ? 
+        <SuccessBar success={props.success} />
+    : undefined;
+
 
     const ConBot = ConnectorContainer.Connect(props.container, ConButton);
 
@@ -70,7 +96,7 @@ export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapp
         <>
             <div className="nav-bar page-container" style={{...styles.container,backgroundColor: 'transparent'}}>
                 <img src="https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png"/>
-                <div className="nav-children no-display">
+                <div className="nav-children">
                     <ConBot 
                         onConnect={props.onConnected}
                         onConnectionFailed={props.onConnectionFailed}
@@ -81,6 +107,7 @@ export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapp
                 </div>
             </div>
             {error}
+            {success}
         </>
     )
 }

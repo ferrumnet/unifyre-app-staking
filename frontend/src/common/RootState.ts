@@ -5,6 +5,7 @@ import { SaerchStakingGroupInfoState } from '../pages/admin/stakings/stakings';
 import { adminDashState as AdminDashState } from '../pages/admin/dashboard/adminDash';
 import { MainState } from '../tokenBridge/pages/main/main';
 import { swapState } from '../tokenBridge/pages/swap/swap';
+import { liquidityState } from '../tokenBridge/pages/liquidity/liquidity';
 export interface UserPreference {
     lastRedirectLink?: string;
     lastSuccessMessage?: string;
@@ -72,6 +73,7 @@ export interface RootState {
         adminStakings: SaerchStakingGroupInfoState,
         adminDash: AdminDashState,
         bridgeMain: BridgeMainState,
-        swap: swapState
+        swap: swapState,
+        liquidity: liquidityState
     }
 }

@@ -130,4 +130,16 @@ export class TokenBridgeContractClinet implements Injectable {
         const p = await this.instance(network).methods.liquidity(token, userAddress).call();
         return p.toString();
     }
+
+    async getTokenAllowance(userAddress: string, currency: string): Promise<string> {
+        const [network, token] = Helper.parseCurrency(currency);
+        const p = await this.instance(network).methods.getAllowance(userAddress, userAddress).call();
+        return p.toString();
+    }
+
+    async getAvaialableLiquidity(currency: string){
+        const [network, token] = Helper.parseCurrency(currency);
+        const p = await this.instance(network).methods.getBalance(token).call();
+        return p.toString();
+    }
 }

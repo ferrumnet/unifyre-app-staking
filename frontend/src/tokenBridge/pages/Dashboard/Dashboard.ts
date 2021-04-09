@@ -81,7 +81,7 @@ function reduce(state: DashboardState = defaultDashboardState, action: AnyAction
         case Actions.CLEAR_ERROR:
             return {...state, error: undefined};
         case Actions.ERROR_OCCURED:
-            return {...state, fatalError: action.payload.message,error: 'GGGTTT'};
+            return {...state, fatalError: action.payload.message,error: 'hrty'};
         default:
             return state;
     }
