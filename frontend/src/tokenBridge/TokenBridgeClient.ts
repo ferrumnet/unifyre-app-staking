@@ -21,7 +21,7 @@ export const TokenBridgeActions = {
 const Actions = TokenBridgeActions;
 
 export class TokenBridgeClient extends ApiClient implements Injectable {
-    private network?: string;
+    private network?: Network;
     private userAddress?: string;
     private currency?: string;
 
@@ -71,11 +71,11 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
      * Loads withdrawable balances for user. User can withdraw them one by one.
      */
     public async loadUserBridgeLiquidity(dispatch: Dispatch<AnyAction>,
-            userAddress: string, currency: string) {
+            currency: string) {
         try {
             // Get the liquidity from web3...
             const res = await this.api({
-                command: 'getLiquidity', data: {userAddress, currency}, params: [] } as JsonRpcRequest);
+                command: 'getLiquidity', data: {userAddress: this.userAddress!, currency}, params: [] } as JsonRpcRequest);
             const { liquidity } = res;
             ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
             dispatch(addAction(Actions.BRIDGE_LIQUIDITY_FOR_USER_LOADED, {liquidity}))
@@ -90,24 +90,23 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
     /**
      * Loads liquidity added by user
      */
-    private async loadUserBridgeBalance(dispatch: Dispatch<AnyAction>, userAddress: string) {
+    private async loadUserBridgeBalance(dispatch: Dispatch<AnyAction>) {
         const res = await this.api({
-            command: 'loadUserBridgeBalance', data: {userAddress}, params: [] } as JsonRpcRequest);
+            command: 'loadUserBridgeBalance', data: {userAddress: this.userAddress}, params: [] } as JsonRpcRequest);
         const { withdrawableBalanceItems } = res;
         ValidationUtils.isTrue(!withdrawableBalanceItems, 'Invalid balances received');
         dispatch(addAction(Actions.BRIDGE_BALANCE_LOADED, {withdrawableBalanceItems}))
     }
 
-    public async withdrawSignedGetTransaction(
+    public async withdraw(
         dispatch: Dispatch<AnyAction>,
-        network: Network,
         id: string,
         ) {
         try {
             const res = await this.api({
                 command: 'withdrawSignedGetTransaction', data: {id}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!res, 'Error calling withdraw. No requests');
-            const requestId = await this.client.sendTransactionAsync(network, [res],
+            const requestId = await this.client.sendTransactionAsync(this.network!, [res],
                 {});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             const response = await this.client.getSendTransactionResponse(requestId);
@@ -177,7 +176,6 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
 
     public async addLiquidity(
         dispatch: Dispatch<AnyAction>,
-        network: Network,
         currency: string,
         amount: string,
         ) {
@@ -188,7 +186,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 data: {currency, amount}, params: [] } as JsonRpcRequest);
             const { isApprove, requests } = res;
             ValidationUtils.isTrue(!!requests && !!requests.length, 'Error calling add liquidity. No requests');
-            const requestId = await this.client.sendTransactionAsync(network, requests,
+            const requestId = await this.client.sendTransactionAsync(this.network!, requests,
                 {currency, amount, action: isApprove ? 'approve' : 'addLiquidity'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
@@ -203,7 +201,6 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
 
     public async removeLiquidity(
         dispatch: Dispatch<AnyAction>,
-        network: Network,
         currency: string,
         amount: string,
         ) {
@@ -213,7 +210,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 command: 'removeLiquidityIfPossibleGetTransaction',
                 data: {currency, amount}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!res, 'Error calling remove liquidity. No requests');
-            const requestId = await this.client.sendTransactionAsync(network, [res],
+            const requestId = await this.client.sendTransactionAsync(this.network!, [res],
                 {currency, amount, action: 'removeLiquidity'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
@@ -228,7 +225,6 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
 
     public async swap(
         dispatch: Dispatch<AnyAction>,
-        network: Network,
         currency: string,
         amount: string,
         targetCurrency: string,
@@ -240,7 +236,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 data: {currency, amount, targetCurrency}, params: [] } as JsonRpcRequest);
             const { isApprove, requests } = res;
             ValidationUtils.isTrue(!!requests && !!requests.length, 'Error calling swap. No requests');
-            const requestId = await this.client.sendTransactionAsync(network, requests,
+            const requestId = await this.client.sendTransactionAsync(this.network!, requests,
                 {currency, amount, targetCurrency, action: isApprove ? 'approve' : 'swap'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
