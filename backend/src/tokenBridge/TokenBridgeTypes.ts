@@ -66,6 +66,15 @@ export interface UserBridgeLiquidityItem {
     liquidity: string;
 }
 
+const payBySignatureDataSchema: Schema = new Schema<PayBySignatureData>({
+    token: String,
+    payee: String,
+    amount: String,
+    salt: String,
+    signature: String,
+    hash: String,
+})
+
 const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWithdrawableBalanceItem>({
     id: String, // same as signedWithdrawHash
     timestamp: Number,
@@ -73,6 +82,7 @@ const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWit
     receiveCurrency: String,
     receiveAddress: String,
     receiveAmount: String,
+    receiveTransactionId: String,
     salt: String,
     signedWithdrawHash: String,
     signedWithdrawSignature: String,
@@ -84,8 +94,10 @@ const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWit
     sendCurrency: String,
     sendAmount: String,
 
+    payBySig: payBySignatureDataSchema,
+
     used: String,
-    useTransactionIds: [String],
+    useTransactionIds: [{id: String, status: String, timestamp: Number}],
 });
 
 const SignedPairAddressSchema: Schema = new Schema<SignedPairAddress>({

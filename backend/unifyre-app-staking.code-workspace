@@ -26,6 +26,9 @@
 		},
 		{
 			"path": "../../ferrum-chain-clients"
+		},
+		{
+			"path": "../../ferrum-plumbing"
 		}
 	],
 	"settings": {}

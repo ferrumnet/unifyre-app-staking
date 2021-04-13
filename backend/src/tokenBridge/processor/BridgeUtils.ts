@@ -58,5 +58,5 @@ export function produceSignatureWithdrawHash(eth: Eth,
 }
 
 export function randomSalt() {
-    return '0x' + Web3.utils.randomHex(32);
+    return Web3.utils.randomHex(32);
 }

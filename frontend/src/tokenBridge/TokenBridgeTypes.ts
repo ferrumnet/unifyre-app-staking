@@ -24,7 +24,7 @@ export const PairedAddressType: Eip712TypeDefinition =  {
 
 export const TOKEN_BRIDGE_DOMAIN_SALT = '0xebb7c67ee709a29f4d80f3ac6db9cd0e84fccb20437963314b825afc2463825c';
 
-const CHAIN_ID_FOR_NETWORK = {
+export const CHAIN_ID_FOR_NETWORK = {
     'ETHEREUM': 1,
     'RINKEBY': 4,
     'BSC': 56,

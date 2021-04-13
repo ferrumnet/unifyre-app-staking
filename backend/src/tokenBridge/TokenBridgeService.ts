@@ -1,6 +1,7 @@
 import { MongooseConnection } from "aws-lambda-helper";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
-import { Injectable, ValidationUtils } from "ferrum-plumbing";
+import { ChainUtils } from "ferrum-chain-clients";
+import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
 import { Connection, Document, Model } from "mongoose";
 import { PairAddressSignatureVerifyre } from "./common/PairAddressSignatureVerifyer";
 import { TokenBridgeContractClinet } from "./TokenBridgeContractClient";
@@ -22,6 +23,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         this.signedPairAddressModel = SignedPairAddressSchemaModel(con);
         this.balanceItem = UserBridgeWithdrawableBalanceItemModel(con);
         this.con = con;
+        console.log("TBS INITTED")
     }
 
     __name__() { return 'TokenBridgeService'; }
@@ -62,9 +64,9 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         return rv ? rv.toJSON(): rv;
     }
 
-    async getWithdrawItem(id: string): Promise<UserBridgeWithdrawableBalanceItem> {
+    async getWithdrawItem(receiveTransactionId: string): Promise<UserBridgeWithdrawableBalanceItem> {
         this.verifyInit();
-        const rv = await this.balanceItem!.findOne({id});
+        const rv = await this.balanceItem!.findOne({receiveTransactionId});
         return rv ? rv.toJSON(): rv;
     }
 
@@ -108,8 +110,10 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         await this.updateWithdrawItem(item);
     }
 
-    async getUserPairedAddress(network: string, address: string) {
+    async getUserPairedAddress(network: string, address: string): Promise<SignedPairAddress|undefined> {
         this.verifyInit();
+        ValidationUtils.isTrue(!!address, '"address" must be provided');
+        address = ChainUtils.canonicalAddress(network as Network, address.toLocaleLowerCase());
         const rv = await this.signedPairAddressModel!.findOne(
             {'$or': [
                 {
@@ -139,6 +143,8 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         ValidationUtils.isTrue(!!pair.pair.address1 && !!pair.pair.address2, 'Both addresses are required');
         ValidationUtils.isTrue(!!pair.pair.network1 && !!pair.pair.network2, 'Both networks are required');
         ValidationUtils.isTrue(!!pair.signature1 || !!pair.signature2, 'At least one signature is required');
+        pair.pair.address1 = ChainUtils.canonicalAddress(pair.pair.network1 as Network, pair.pair.address1);
+        pair.pair.address2 = ChainUtils.canonicalAddress(pair.pair.network2 as Network, pair.pair.address2);
         if (pair.signature1) {
             //Verify signature
             ValidationUtils.isTrue(!!this.verifyer.verify1(pair), 'Invalid signature 1');

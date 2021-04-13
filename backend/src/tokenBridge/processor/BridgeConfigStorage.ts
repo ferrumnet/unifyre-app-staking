@@ -20,7 +20,7 @@ export class BridgeConfigStorage extends MongooseConnection implements Injectabl
 
     async tokenConfig(sourceNetwork: string, targetNetwork: string): Promise<BridgeTokenConfig|undefined> {
         this.verifyInit();
-        const r = await this.model!.findOne({sourceNetwork, targetNetwork});
+        const r = await this.model!.findOne({'$and': [{sourceNetwork}, {targetNetwork}]}).exec();
         return !!r ? r.toJSON() : undefined;
     }
 

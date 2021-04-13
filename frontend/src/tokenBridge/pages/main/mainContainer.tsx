@@ -14,6 +14,7 @@ import { IocModule } from '../../../common/IocModule';
 import { Divider } from '@fluentui/react-northstar'
 import greenTick from './../../../images/green-tick.png'
 import { useHistory } from 'react-router';
+import { CHAIN_ID_FOR_NETWORK } from '../../TokenBridgeTypes';
 
 function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
         const history = useHistory();
@@ -79,9 +80,9 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                             props.destNetwork
                                             :   <div className="content">
                                                     <select name="networks" id="networks" onChange={(v)=>props.onDestinationNetworkChanged(v.target.value)}  disabled={props.isPaired ? true : false}>
-                                                        <option value="ETHEREUM">ETHEREUM</option>
-                                                        <option value="RINKEBY">RINKEBY</option>
-                                                        <option value="BSC">BSC</option>
+                                                        {Object.keys(CHAIN_ID_FOR_NETWORK).map(n => (
+                                                            <option key={n} value={n}>{n}</option> 
+                                                        ))}
                                                     </select>
                                                 </div>
                                     }

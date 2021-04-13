@@ -1,13 +1,14 @@
-import { AwsEnvs, MongooseConfig, SecretsProvider } from "aws-lambda-helper";
+import { AwsEnvs, KmsCryptor, MongooseConfig, SecretsProvider } from "aws-lambda-helper";
 import { EthereumSmartContractHelper, Web3ProviderConfig } from "aws-lambda-helper/dist/blockchain";
-import { getEnv } from "build/MongoTypes";
+import { getEnv } from '../../MongoTypes';
 import { ChainClientFactory, ChainClientsModule, MultiChainConfig } from "ferrum-chain-clients";
-import { Container, LoggerFactory, Module } from "ferrum-plumbing";
+import { ConsoleLogger, Container, EncryptedData, LoggerFactory, Module, ValidationUtils } from "ferrum-plumbing";
 import { PairAddressSignatureVerifyre } from "../common/PairAddressSignatureVerifyer";
 import { TokenBridgeService } from "../TokenBridgeService";
 import { BridgeConfigStorage } from "./BridgeConfigStorage";
 import { BridgeProcessor } from "./BridgeProcessor";
 import { BridgeProcessorConfig } from "./BridgeProcessorTypes";
+import { KMS } from "aws-sdk";
 
 export class BridgeProcessorModule implements Module {
     async configAsync(container: Container) {
@@ -25,7 +26,7 @@ export class BridgeProcessorModule implements Module {
                 addressManagerSecret: getEnv('ADDRESS_MANAGER_SECRET'),
                 payer: {
                     'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
-                    'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
+                    'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY'),
                     'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC'),
                     'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                 },
@@ -39,7 +40,7 @@ export class BridgeProcessorModule implements Module {
                 web3ProviderRinkeby: getEnv('WEB3_PROVIDER_RINKEBY'),
                 web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC'),
                 web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
-            } as MultiChainConfig);
+            } as any as MultiChainConfig);
         container.register('MultiChainConfig', () => chainConf);
         container.registerModule(new ChainClientsModule());
 
@@ -49,12 +50,16 @@ export class BridgeProcessorModule implements Module {
                     'BSC': chainConf.web3ProviderBsc!,
                     'BSC_TESTNET': chainConf.web3ProviderBscTestnet!,
                 } as Web3ProviderConfig;
+        const privateKey = getEnv('PROCESSOR_PRIVATE_KEY_CLEAN_TEXT') ||
+            await decryptPrivateKey(region, getEnv('KEY_ID'), getEnv('PROCESSOR_PRIVATE_KEY_ENCRYPTED'));
 
-        container.register(BridgeProcessor, c => new BridgeProcessor(
+        container.registerSingleton(BridgeProcessor, c => new BridgeProcessor(
             conf, c.get(ChainClientFactory), c.get(TokenBridgeService),
             c.get(BridgeConfigStorage), c.get(PairAddressSignatureVerifyre),
-            c.get(EthereumSmartContractHelper), c.get(LoggerFactory)));
-        container.register(TokenBridgeService, c => new TokenBridgeService(
+            c.get(EthereumSmartContractHelper),
+            privateKey,
+            c.get(LoggerFactory)));
+        container.registerSingleton(TokenBridgeService, c => new TokenBridgeService(
             c.get(EthereumSmartContractHelper),
             ({}) as any,
             c.get(PairAddressSignatureVerifyre)));
@@ -62,5 +67,17 @@ export class BridgeProcessorModule implements Module {
             networkProviders));
         container.register(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
         container.registerSingleton(BridgeConfigStorage, () => new BridgeConfigStorage());
+
+        container.register(LoggerFactory,
+            () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
+
+        await container.get<TokenBridgeService>(TokenBridgeService).init(conf.database);
+        await container.get<BridgeConfigStorage>(BridgeConfigStorage).init(conf.database);
     }
+}
+
+async function decryptPrivateKey(region: string, keyId: string, keyJson: string): Promise<string> {
+    ValidationUtils.isTrue(!!keyJson, 'Private key must be provided');
+    const key = JSON.parse(keyJson) as EncryptedData;
+    return await new KmsCryptor(new KMS({region}), keyId).decryptToHex(key);
 }
