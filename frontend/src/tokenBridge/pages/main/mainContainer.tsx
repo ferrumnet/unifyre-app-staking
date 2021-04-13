@@ -18,6 +18,7 @@ import { CHAIN_ID_FOR_NETWORK } from '../../TokenBridgeTypes';
 
 function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
         const history = useHistory();
+    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
         return (
             <div>
                 <>
@@ -126,11 +127,22 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                                 )}
                                                                 disbabled={!!props.destAddress}
                                                             /> 
-                                                    :   <WebThemedButton
+                                                    :   (
+                                                        <>
+                                <ConBot 
+                                    onConnect={() => props.onConnected()}
+                                    onConnectionFailed={props.onConnectionFailed}
+                                    onConnected={props.con}
+                                    dataSelector={(state: RootState) => state.data.userData}
+                                    // appInitialized={props.initialized}
+                                    appInitialized={true}
+                                />
+                                                    <WebThemedButton
                                                             text={'Connect to Network'}
                                                             onClick={()=>props.onReconnect()}
                                                             disbabled={!!props.destAddress}
-                                                        /> 
+                                                        />
+                                                        </> )
                                                     
                                                 } 
                                             </>

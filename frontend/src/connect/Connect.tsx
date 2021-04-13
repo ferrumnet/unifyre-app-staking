@@ -92,7 +92,9 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         dep.connect.setProvider(dep.provider);
         await dep.client.signInWithToken('');
         const net = await dep.connect.getProvider()!.netId();
-        if (net && dep.currencyList.get().length == 0) {
+        const network = await dep.connect.network()
+        const newNetworkCurrencies = (dep.currencyList.get() || []).filter(c => c.startsWith(network || 'NA'));
+        if (net && newNetworkCurrencies.length == 0) {
             const defaultCur = (DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any];
             console.log(`Connected to net id ${net} with no defined currency: ${defaultCur}`);
             dep.currencyList.set([defaultCur]);

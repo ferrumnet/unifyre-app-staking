@@ -80,7 +80,7 @@ export class IocModule {
             c.registerSingleton('Web3ModalProvider', () => new Web3ModalProvider(providers));
         }
 
-        c.register(ConnectorContainer, c => new ConnectorContainer(
+        c.registerSingleton(ConnectorContainer, c => new ConnectorContainer(
             c.get(UnifyreExtensionKitClient), c.get(Connect), c.get(CurrencyList), c.get('Web3ModalProvider')));
 
         c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());

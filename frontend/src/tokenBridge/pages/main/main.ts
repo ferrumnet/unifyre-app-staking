@@ -8,7 +8,7 @@ import { ReponsivePageWrapperDispatch } from "../../../base/PageWrapperTypes";
 import { intl } from "unifyre-react-helper";
 import { PairAddressService } from "../../PairAddressService";
 import { PairedAddress } from "../../TokenBridgeTypes";
-import { Connect } from 'unifyre-extension-web3-retrofit';
+import { Connect, CurrencyList } from 'unifyre-extension-web3-retrofit';
 import { SignedPairAddress } from "./../../TokenBridgeTypes";
 import { PairAddressSignatureVerifyre } from "../../PairAddressSignatureVerifyer";
 
@@ -121,6 +121,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
             const res = await sc.signInToServer(dispatch);
             if (res) {
+                const currencyList = inject<CurrencyList>(CurrencyList);
+                currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
+
                 const connect = inject<Connect>(Connect);
                 const network = connect.network() as any;
                 const addr = connect.account()!;
@@ -131,6 +134,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             }
             return !!res;
         } catch(e) {
+            console.error('Error onConnect', e);
             throw e;
         }finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));

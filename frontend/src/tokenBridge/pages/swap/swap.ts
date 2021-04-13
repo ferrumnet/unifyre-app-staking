@@ -5,6 +5,7 @@ import { inject, IocModule } from '../../../common/IocModule';
 import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
 import { PairedAddress } from "../../TokenBridgeTypes";
+import { CurrencyList } from "unifyre-extension-web3-retrofit";
 
 export interface swapDisptach {
     onConnect: (network: string) => void
@@ -41,8 +42,14 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
+            // TODO:
+            // Get list of source currencies for the network, and set them on the currency list object
+            // get an instance of CurrencyList
+            // currencyList.set([defaultCur]);
+            const currencyList = inject<CurrencyList>(CurrencyList);
+            currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
             const res  = await sc.signInToServer(dispatch);
-            
+            return res;
         } catch(e) {
             throw e;
         }finally {
