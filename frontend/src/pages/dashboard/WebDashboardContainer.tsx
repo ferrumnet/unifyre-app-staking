@@ -23,7 +23,6 @@ import { AdminDashContainer } from "../admin/dashboard";
 import { LoginContainer } from "../admin/dashboard/login";
 import { GroupInfoContainer } from "../admin/groupInfo";
 import { StakingInfoContainer } from "../admin/stakings";
-import { BridgeContainer } from '../dummy/TempBridge';
 
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
@@ -101,9 +100,6 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               authError={props.error}
               >
               <Switch>
-                  <Route path='/bridge'>
-                    <BridgeContainer/>
-                  </Route>
                   <Route path='/:gid/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
                   </Route>

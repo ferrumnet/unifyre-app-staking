@@ -80,7 +80,7 @@ export class stakingAppModule implements Module {
                 bridgeConfig: {
                     contractClient: {
                         'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
-                        'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
+                        'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY'),
                         'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC'),
                         'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                     }

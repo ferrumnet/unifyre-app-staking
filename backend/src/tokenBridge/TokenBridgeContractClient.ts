@@ -28,19 +28,28 @@ export class TokenBridgeContractClinet implements Injectable {
         return new web3.Contract(bridgeAbi, contractAddress);
     }
 
+    async estimateGasOrDefault(method: any, from: string, defaultGas: number) {
+        try {
+            return await method.estimateGas({from});
+        } catch(e) {
+            console.info('Error estimating gas. Tx might be reverting');
+            return defaultGas;
+        }
+    }
+
     async withdrawSigned(w: UserBridgeWithdrawableBalanceItem,
             from: string): Promise<CustomTransactionCallRequest>{
         console.log(`About to withdrawSigned`, w);
         const address = this.contractAddress[w.sendNetwork];
         const p = this.instance(w.sendNetwork).methods.withdrawSigned(w.payBySig.token, w.payBySig.payee,
             w.payBySig.amount, w.payBySig.salt, w.payBySig.signature);
-        const gas = await p.estimateGas({from});
+        const gas = await this.estimateGasOrDefault(p, from, undefined as any);
         const nonce = await this.helper.web3(w.sendNetwork).getTransactionCount(from, 'pending');
         return Helper.callRequest(address,
                 w.sendCurrency,
                 from,
                 p.encodeABI(),
-                gas.toFixed(),
+                gas ? gas.toFixed() : undefined,
                 nonce,
                 `Withdraw `);
     }
@@ -50,7 +59,7 @@ export class TokenBridgeContractClinet implements Injectable {
         const [network, __] = Helper.parseCurrency(currency);
         const address = this.contractAddress[network];
         ValidationUtils.isTrue(!!address, `No address for network ${network}`)
-        const [_, requests] = await this.helper.approveRequests(
+        const [_, requests] = await this.helper.approveMaxRequests(
             currency,
             userAddress,
             amount,
@@ -100,9 +109,11 @@ export class TokenBridgeContractClinet implements Injectable {
         ValidationUtils.isTrue(!!targetNetworkInt, "'targetNetwork' must be provided");
         ValidationUtils.isTrue(!!userAddress, "'userAddress' must be provided");
         ValidationUtils.isTrue(!!amount, "'amount' must be provided");
+        console.log('About to call swap', {token,  targetNetworkInt, targetToken});
         const amountRaw = await this.helper.amountToMachine(currency, amount);
+        console.log('About to call swap', {token, amountRaw, targetNetworkInt, targetToken});
         const p = this.instance(network).methods.swap(token, amountRaw, targetNetworkInt, targetToken);
-        const gas = await p.estimateGas({from: userAddress});
+        const gas = await this.estimateGasOrDefault(p, userAddress, 200000);
         const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
         const address = this.contractAddress[network];
         return Helper.callRequest(address,

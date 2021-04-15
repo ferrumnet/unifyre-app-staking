@@ -51,6 +51,14 @@ export function domainSeparator(network: string): DomainSeparator {
 
 
 // Balance related types
+export interface PayBySignatureData {
+    token: string;
+    payee: string;
+    amount: string;
+    salt: string;
+    signature: string;
+    hash: string;
+}
 
 // Every transaction sent by user using a paired address to the bridge contract,
 // will produced a Withdrawable Balance Item
@@ -59,21 +67,19 @@ export interface UserBridgeWithdrawableBalanceItem {
     timestamp: number;
     receiveNetwork: string;
     receiveCurrency: string;
+    receiveTransactionId: string;
     receiveAddress: string;
     receiveAmount: string;
-    salt: string;
-    signedWithdrawHash: string;
-    signedWithdrawSignature: string;
 
     sendNetwork: string;
     sendAddress: string;
     sendTimestamp: number;
-    sendTransactionId: string;
     sendCurrency: string;
     sendAmount: string;
+    payBySig: PayBySignatureData;
 
     used: ''|'pending'|'failed'|'completed';
-    useTransactionIds: string[];
+    useTransactions: { id: string, status: string, timestamp: number }[];
 }
 
 export interface UserBridgeLiquidityItem {

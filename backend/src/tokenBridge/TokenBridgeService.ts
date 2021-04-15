@@ -23,14 +23,15 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         this.signedPairAddressModel = SignedPairAddressSchemaModel(con);
         this.balanceItem = UserBridgeWithdrawableBalanceItemModel(con);
         this.con = con;
-        console.log("TBS INITTED")
     }
 
     __name__() { return 'TokenBridgeService'; }
 
-    async withdrawSignedGetTransaction(id: string, userAddress: string) {
-        const w = await this. getWithdrawItem(id);
-        ValidationUtils.isTrue(userAddress === w.receiveAddress,
+    async withdrawSignedGetTransaction(receiveTransactionId: string, userAddress: string) {
+        const w = await this.getWithdrawItem(receiveTransactionId);
+        ValidationUtils.isTrue(!!w, `Withdraw item with receiveTransactionId ${receiveTransactionId} was not found`)
+        ValidationUtils.isTrue(ChainUtils.addressesAreEqual(
+            w.sendNetwork as Network, userAddress, w.sendAddress),
             "Provided address is not the receiver of withdraw");
         return this.contract.withdrawSigned(w, userAddress);
     }
@@ -82,8 +83,9 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
     async getUserWithdrawItems(network: string, address: string): Promise<UserBridgeWithdrawableBalanceItem[]> {
         this.verifyInit();
         const items = (await this.balanceItem!.find({
-            receiveNetwork: network, receiveAddress: address,
+            sendNetwork: network, sendAddress: ChainUtils.canonicalAddress(network as any, address),
         })) || [];
+        console.log('getUserWithdrawItems', {c: this.balanceItem!.collection.name, network, address});
         return items.map(i => i.toJSON());
     }
 
@@ -102,12 +104,15 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         if (!!txItem) {
             const txStatus = await this.helper.getTransactionStatus(item!.receiveNetwork, tid, txItem.timestamp);
             txItem.status = txStatus;
+            console.log(`Updating status for withdraw item ${id}: ${txStatus}-${tid}`)
         } else {
             const txTime = Date.now();
             const txStatus = await this.helper.getTransactionStatus(item!.receiveNetwork, tid, txTime);
+            item.useTransactions = item.useTransactions || [];
             item.useTransactions.push({id: tid, status: txStatus, timestamp: txTime});
+            console.log(`Setting status for withdraw item ${id}: ${txStatus}-${tid}`)
         }
-        await this.updateWithdrawItem(item);
+        return await this.updateWithdrawItem(item);
     }
 
     async getUserPairedAddress(network: string, address: string): Promise<SignedPairAddress|undefined> {
@@ -153,8 +158,8 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
             //Verify signature
             ValidationUtils.isTrue(!!this.verifyer.verify2(pair), 'Invalid signature 2');
         }
-        const res = await this.signedPairAddressModel!.update(
-            {'pair.address1': pair.pair.address1}, pair, {upsert: true});
+        const res = await this.signedPairAddressModel!.updateOne(
+            {'pair.address1': pair.pair.address1}, {'$set': {...pair}}, {upsert: true});
         ValidationUtils.isTrue(!!res, 'Could not update the item');
         return res
 

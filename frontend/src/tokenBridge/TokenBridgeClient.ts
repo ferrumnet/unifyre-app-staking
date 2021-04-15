@@ -4,7 +4,7 @@ import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserP
 import { addAction, CommonActions } from "../common/Actions";
 import { logError } from "../common/Utils";
 import { ApiClient } from "./ApiClient";
-import { SignedPairAddress } from "./TokenBridgeTypes";
+import { SignedPairAddress, UserBridgeWithdrawableBalanceItem } from "./TokenBridgeTypes";
 
 export const TokenBridgeActions = {
     AUTHENTICATION_FAILED: 'AUTHENTICATION_FAILED',
@@ -25,6 +25,8 @@ const Actions = TokenBridgeActions;
 export class TokenBridgeClient extends ApiClient implements Injectable {
     private network?: Network;
     private userAddress?: string;
+
+    public getUserAddress() {return this. userAddress;} // DO NOT USE
 
     __name__() { return 'TokenBridgeClient'; }
 
@@ -56,8 +58,8 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
 
     protected async loadDataAfterSignIn(dispatch: Dispatch<AnyAction>) {
         await this.loadUserPairedAddress(dispatch,);
-        //not implemented
-        //await this.loadUserBridgeLiquidity(dispatch, this.userAddress!,this.currency!);
+        await this.loadUserBridgeBalance(dispatch);
+        // await this.loadUserBridgeLiquidity(dispatch, this.userAddress!);
     }
 
     private async loadUserPairedAddress(dispatch: Dispatch<AnyAction>) {
@@ -110,22 +112,26 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
     /**
      * Loads liquidity added by user
      */
-    private async loadUserBridgeBalance(dispatch: Dispatch<AnyAction>) {
+    async loadUserBridgeBalance(dispatch: Dispatch<AnyAction>): Promise<UserBridgeWithdrawableBalanceItem[]> {
         const res = await this.api({
-            command: 'loadUserBridgeBalance', data: {userAddress: this.userAddress}, params: [] } as JsonRpcRequest);
+            command: 'getUserWithdrawItems', data: {network: this.network, userAddress: this.userAddress}, params: [] } as JsonRpcRequest);
         const { withdrawableBalanceItems } = res;
-        ValidationUtils.isTrue(!withdrawableBalanceItems, 'Invalid balances received');
+        ValidationUtils.isTrue(!!withdrawableBalanceItems, 'Invalid balances received');
         dispatch(addAction(Actions.BRIDGE_BALANCE_LOADED, {withdrawableBalanceItems}))
+        console.log('GOT ITEMS', {withdrawableBalanceItems})
+        return withdrawableBalanceItems || [];
     }
 
     public async withdraw(
         dispatch: Dispatch<AnyAction>,
-        id: string,
+        w: UserBridgeWithdrawableBalanceItem,
         ) {
         dispatch(addAction(CommonActions.WAITING, { source: 'withdraw' }));
         try {
+            ValidationUtils.isTrue(this.network === w.sendNetwork, 
+                `Connected to ${this.network} but the balance item can be claimed on ${w.sendNetwork}`);
             const res = await this.api({
-                command: 'withdrawSignedGetTransaction', data: {id}, params: [] } as JsonRpcRequest);
+                command: 'withdrawSignedGetTransaction', data: {id: w.receiveTransactionId}, params: [] } as JsonRpcRequest);
             ValidationUtils.isTrue(!!res, 'Error calling withdraw. No requests');
             const requestId = await this.client.sendTransactionAsync(this.network!, [res],
                 {});
@@ -135,7 +141,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
             const txIds = (response.response || []).map(r => r.transactionId);
-            await this.withdrawableBalanceItemUpdateTransaction(dispatch, id, txIds[0]);
+            await this.withdrawableBalanceItemUpdateTransaction(dispatch, w.receiveTransactionId, txIds[0]);
             return 'success';
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
@@ -152,7 +158,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         dispatch(addAction(CommonActions.WAITING, { source: 'withdrawableBalanceItemAddTransaction' }));
         try {
             const res = await this.api({
-                command: 'withdrawableBalanceItemAddTransaction',
+                command: 'updateWithdrawItemAddTransaction',
                 data: {id, transactionId}, params: [] } as JsonRpcRequest);
             const { withdrawableBalanceItem } = res;
             ValidationUtils.isTrue(!withdrawableBalanceItem, 'Error updating balance item');

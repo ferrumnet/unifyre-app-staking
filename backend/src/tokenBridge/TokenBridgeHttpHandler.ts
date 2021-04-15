@@ -37,6 +37,9 @@ export class TokenBridgeHttpHandler implements Injectable {
             case 'unpairUserPairedAddress':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
                 return this.unpairUserPairedAddress(req);
+            case 'swapGetTransaction':
+                ValidationUtils.isTrue(!!userId, 'user must be signed in');
+                return this.swapGetTransaction(req, userId!);
             default:
                 return;
         }
@@ -65,7 +68,7 @@ export class TokenBridgeHttpHandler implements Injectable {
             network,
         } = req.data;
         ValidationUtils.isTrue(!!network, "'network' must be provided");
-        return this.svc.getUserWithdrawItems(network, userId);
+        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId)};
     }
 
     async updateWithdrawItemAddTransaction(req: JsonRpcRequest) {
@@ -115,5 +118,12 @@ export class TokenBridgeHttpHandler implements Injectable {
             id
         } = req.data;
         return this.svc.withdrawSignedGetTransaction(id, userId);
+    }
+
+    async swapGetTransaction(req: JsonRpcRequest, userId: string) {
+        const {
+            currency, amount, targetCurrency
+        } = req.data;
+        return this.svc.swapGetTransaction(userId, currency, amount, targetCurrency);
     }
 }

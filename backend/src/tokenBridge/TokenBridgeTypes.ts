@@ -97,7 +97,7 @@ const userBridgeWithdrawableBalanceItemSchema: Schema = new Schema<UserBridgeWit
     payBySig: payBySignatureDataSchema,
 
     used: String,
-    useTransactionIds: [{id: String, status: String, timestamp: Number}],
+    useTransactions: [{id: String, status: String, timestamp: Number}],
 });
 
 const SignedPairAddressSchema: Schema = new Schema<SignedPairAddress>({

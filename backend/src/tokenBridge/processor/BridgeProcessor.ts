@@ -72,7 +72,7 @@ export class BridgeProcessor implements Injectable {
         const userAddress = tx.fromItems[0].address;
         const unverifiedPair = await this.svc.getUserPairedAddress(network, userAddress);
         console.log('Geting pair for address ', userAddress, unverifiedPair);
-        if (!this.pairVerifyer.verify(unverifiedPair!)) {
+        if (!unverifiedPair || !this.pairVerifyer.verify(unverifiedPair!)) {
             this.log.info(`[${network}] Unverified pair ${unverifiedPair} related to the transaction ${tx.id}. Cannot process`);
             return undefined;
         }
@@ -163,8 +163,9 @@ export class BridgeProcessor implements Injectable {
         // E.g. Have an ecnrypted SK as ENV. Configure KMS to only work with a certain IP
         const sigP = await this.chain.forNetwork(network as any)
             .sign(this.privateKey, payBySig.hash.replace('0x', ''), true);
-        const rpcSig = fixSig(toRpcSig(sigP.v, Buffer.from(sigP.r, 'hex'),
-            Buffer.from(sigP.s, 'hex'), chainId));
+        const baseV = sigP.v - chainId * 2 - 8;
+        const rpcSig = fixSig(toRpcSig(baseV + 2 + 8, Buffer.from(sigP.r, 'hex'),
+            Buffer.from(sigP.s, 'hex'), 1));
         payBySig.signature = rpcSig;
         ValidationUtils.isTrue(!!payBySig.signature, `Error generating signature for ${(
             { network, address, currency, amount })}`);

@@ -1,4 +1,5 @@
 import { processOneWay } from "./BridgeProcessor";
 
 console.log('Starting ');
-processOneWay('RINKEBY').catch(console.error);
+processOneWay('BSC_TESTNET').catch(console.error);
+// processOneWay('RINKEBY').catch(console.error);

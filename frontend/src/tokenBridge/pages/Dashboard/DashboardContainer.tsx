@@ -16,6 +16,7 @@ import { MainContainer } from '../main/mainContainer';
 import { SwapContainer } from '../swap/swapContainer';
 import { WebPageWrapper } from '../../../components/WebPageWrapper';
 import './../../app.scss'
+import { DummyBridgeContainer } from '../../../pages/dummy/TempBridge';
 
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onBridgeLoad, fatalError} = props;
@@ -48,6 +49,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               isBridge
               >
                  <Switch>
+                        <Route path='/bridge'>
+                          <DummyBridgeContainer onConnected={props.onConnected}/>
+                        </Route>
                         <Route path='/swap'>
                             <SwapContainer/>
                         </Route> 

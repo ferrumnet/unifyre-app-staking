@@ -24,9 +24,9 @@ export function domainSeparator(eth: Eth, netId: number, contractAddress: HexStr
 export function fixSig(sig: HexString) {
     const rs = sig.substring(0, sig.length - 2);
     let v = sig.substring(sig.length - 2);
-    if (v == '00') {
+    if (v == '00' || '37') {
         v = '1b'
-        } else if (v == '01') {
+        } else if (v == '01' || '38') {
         v = '1c'
     }
     return rs+v;
