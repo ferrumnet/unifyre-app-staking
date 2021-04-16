@@ -213,6 +213,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 data: {currency, amount}, params: [] } as JsonRpcRequest);
             const { isApprove, requests } = res;
             ValidationUtils.isTrue(!!requests && !!requests.length, 'Error calling add liquidity. No requests');
+            console.log('About to submit request', {requests});
             const requestId = await this.client.sendTransactionAsync(this.network!, requests,
                 {currency, amount, action: isApprove ? 'approve' : 'addLiquidity'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');

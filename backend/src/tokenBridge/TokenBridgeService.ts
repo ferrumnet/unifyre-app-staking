@@ -6,6 +6,7 @@ import { Connection, Document, Model } from "mongoose";
 import { PairAddressSignatureVerifyre } from "./common/PairAddressSignatureVerifyer";
 import { TokenBridgeContractClinet } from "./TokenBridgeContractClient";
 import { RequestMayNeedApprove, SignedPairAddress, SignedPairAddressSchemaModel, UserBridgeWithdrawableBalanceItem, UserBridgeWithdrawableBalanceItemModel } from "./TokenBridgeTypes";
+import { Big } from 'big.js';
 
 export class TokenBridgeService extends MongooseConnection implements Injectable {
     private signedPairAddressModel?: Model<SignedPairAddress&Document>;
@@ -55,6 +56,11 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         if (requests.length) {
             return {isApprove: true, requests};
         }
+        const [network, token] = EthereumSmartContractHelper.parseCurrency(currency);
+        const userBalance = await this.helper.erc20(network, token).methods.balanceOf(userAddress).call();
+        const balance = await this.helper.amountToHuman(currency, userBalance);
+        ValidationUtils.isTrue(new Big(balance).gte(new Big(amount)),
+            `Not enough balance. ${amount} is required but there is only ${balance} available`);
         const req = await this.contract.swap(userAddress, currency, amount,  targetCurrency);
         return { isApprove: false, requests: [req] };
     }

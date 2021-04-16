@@ -10,6 +10,7 @@ export class TokenBridgeHttpHandler implements Injectable {
     __name__(): string { return 'TokenBridgeHttpHandler'; }
 
     async handle(req: JsonRpcRequest, userId?: string): Promise<any> {
+        console.log('Calling command on bridge: ', )
         switch (req.command) {
             case 'withdrawSignedGetTransaction':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');

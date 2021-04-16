@@ -28,7 +28,7 @@ export class TokenBridgeContractClinet implements Injectable {
         return new web3.Contract(bridgeAbi, contractAddress);
     }
 
-    async estimateGasOrDefault(method: any, from: string, defaultGas: number) {
+    async estimateGasOrDefault(method: any, from: string, defaultGas?: number) {
         try {
             return await method.estimateGas({from});
         } catch(e) {
@@ -74,14 +74,14 @@ export class TokenBridgeContractClinet implements Injectable {
         const [network, token] = Helper.parseCurrency(currency);
         const amountRaw = await this.helper.amountToMachine(currency, amount);
         const p = this.instance(network).methods.addLiquidity(token, amountRaw);
-        const gas = await p.estimateGas({from: userAddress});
+        const gas = await this.estimateGasOrDefault(p, userAddress);
         const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
         const address = this.contractAddress[network];
         return Helper.callRequest(address,
                 currency,
                 userAddress,
                 p.encodeABI(),
-                gas.toFixed(),
+                gas ? gas.toFixed() : undefined,
                 nonce,
                 `Add liquidity `);
     }
@@ -90,14 +90,14 @@ export class TokenBridgeContractClinet implements Injectable {
         const [network, token] = Helper.parseCurrency(currency);
         const amountRaw = await this.helper.amountToMachine(currency, amount);
         const p = this.instance(network).methods.removeLiquidityIfPossible(token, amountRaw);
-        const gas = await p.estimateGas({from: userAddress});
+        const gas = await this.estimateGasOrDefault(p, userAddress);
         const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
         const address = this.contractAddress[network];
         return Helper.callRequest(address,
                 currency,
                 userAddress,
                 p.encodeABI(),
-                gas.toFixed(),
+                gas ? gas.toFixed() : undefined,
                 nonce,
                 `Remove liquidity `);
     }
@@ -113,7 +113,7 @@ export class TokenBridgeContractClinet implements Injectable {
         const amountRaw = await this.helper.amountToMachine(currency, amount);
         console.log('About to call swap', {token, amountRaw, targetNetworkInt, targetToken});
         const p = this.instance(network).methods.swap(token, amountRaw, targetNetworkInt, targetToken);
-        const gas = await this.estimateGasOrDefault(p, userAddress, 200000);
+        const gas = await this.estimateGasOrDefault(p, userAddress, undefined);
         const nonce = await this.helper.web3(network).getTransactionCount(userAddress, 'pending');
         const address = this.contractAddress[network];
         return Helper.callRequest(address,
