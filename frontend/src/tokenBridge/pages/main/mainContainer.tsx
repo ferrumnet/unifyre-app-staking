@@ -180,7 +180,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     (props.destSignature && props.baseSignature) &&
                                         <WebThemedButton
                                             text={'Manage Liquidity'}
-                                            onClick={()=>props.startSwap(history)}
+                                            onClick={()=>props.manageLiquidity(history)}
                                         />
                                 }                        
                             </div>

@@ -18,7 +18,9 @@ export interface DashboardState {
     initialized: boolean;
     fatalError?: string;
     connectError?: string;
+    isHome?: boolean;
     error?: string;
+    userWithdrawalItems?: any[]
 }
 
 export interface StakeTokenState {

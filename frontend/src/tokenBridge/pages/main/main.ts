@@ -93,6 +93,7 @@ export interface MainDispatch extends ReponsivePageWrapperDispatch  {
     pairAddresses: (network:string,address: string) => void,
     unPairAddresses: (pair: SignedPairAddress) => void,
     startSwap: (history:any) => void,
+    manageLiquidity: (history:any) => void,
 }
 
 function mapStateToProps(state:RootState) : MainProps {
@@ -128,8 +129,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
             const res = await sc.signInToServer(dispatch);
             if (res) {
-                //const currencyList = inject<CurrencyList>(CurrencyList);
-                //currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
+                const currencyList = inject<CurrencyList>(CurrencyList);
+                currencyList.set(['RINKEBY:0xfe00ee6f00dd7ed533157f6250656b4e007e7179']);
                 const connect = inject<Connect>(Connect);
                 const network = connect.network() as any;
                 const addr = connect.account()!;
@@ -289,6 +290,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
     },
     startSwap: async (history:any) => {
         history.replace('/swap');
+    },
+    manageLiquidity: async (history:any) => {
+        history.replace('/liquidity');
     },
     resetPair: () => {
         dispatch(addAction(Actions.RESET_PAIR,{}));

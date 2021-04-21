@@ -10,6 +10,7 @@ import {
     // @ts-ignore
 } from 'desktop-components-library';
 import { useToasts } from 'react-toast-notifications';
+import { formatter, Utils } from '../../../common/Utils';
 
 function SwapComponent(props:swapDisptach&swapProps){
     const histroy = useHistory();
@@ -19,7 +20,7 @@ function SwapComponent(props:swapDisptach&swapProps){
         if(!props.pairedAddress){
             histroy.push('/');
         }else{
-            props.onConnect(props.network);
+            props.onConnect(props.network,props.network,props.currency);
         }
     },[]);
 
@@ -35,7 +36,7 @@ function SwapComponent(props:swapDisptach&swapProps){
     return (
         <div className="centered-body">
             <>
-                <div className=" centered main-header"> Ferrum Token Bridge </div>
+                <div className="main-header"> Ferrum Token Bridge </div>
                 <div className="body-not-centered swap">
 
                     <div className="header title">  
@@ -43,30 +44,16 @@ function SwapComponent(props:swapDisptach&swapProps){
                             Swap Accross Chains
                             <Divider/>
                         </div>
-                        <div>
-                            Return
-                            <Divider/>
-                        </div>
                     </div>
 
                     <div className="pad-main-body">
-                        <div>
-                            <div className="header">Current Network</div>
-                            <div className="content">
-                                <div>
-                                    <TextField
-                                        placeholder={'Current Network'}
-                                        value={props.network}
-                                        disabled={true}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="header">Select token you want to swap</div>
+                        <Gap/>
+                        <Gap/>
+                        <div className="space-out sel">
+                            <div className="header">{props.network} Network to {props.destNetwork === props.network ? props.baseNetwork : props.destNetwork} </div>
                             <>
-                                <select name="token" id="token" className="content" disabled={props.addresses.length === 0} onChange={(e)=>props.tokenSelected(e.target.value,props.addresses)}>
-                                    <option value={'select your Token symbol'}>select your Token symbol</option>
+                                <select name="token" id="token" className="content token-select" disabled={props.addresses.length === 0} onChange={(e)=>props.tokenSelected(e.target.value,props.addresses)}>
+                                    <option value={'select your Token symbol'}>Select Token</option>
                                     {
                                         props.addresses.length > 0 ?
                                             props.addresses.map(e=>
@@ -77,36 +64,58 @@ function SwapComponent(props:swapDisptach&swapProps){
                                 </select>
                             </>
                         </div>
-                        <div className="content">You will recieve your token on {props.network} network in this smart contract address</div>
-                        <Gap size={"small"}/>
-                        <div>
-                            <div className="space-out swap-entry">
+                        <div className="swap-main">
+                            <div className="swap-from">
+                                   <div className="sub-tit">FROM {props.symbol} {props.network}</div>
+                                   <TextField
+                                        placeholder={'0.0'}
+                                        value={props.amount}
+                                        disabled={false}
+                                        onChange={(e,v)=>props.amountChanged(v)}
+                                        type={'Number'}
+                                    />
+                            </div>
+
+                            <div className="icon">
+                                <div className="arrow"></div>
+                            </div>
+
+                            <div className="swap-from">
+                                <div className="sub-tit">TO {props.symbol} {props.destNetwork === props.network ? props.baseNetwork : props.destNetwork}</div>
                                 <TextField
-                                    placeholder={'Amount to Swap'}
-                                    value={props.amount}
-                                    disabled={false}
+                                    placeholder={'0.0'}
+                                    value={(Number(props.amount) - (Number(props.currenciesDetails.fee)|| 0)).toString()}
+                                    disabled={true}
                                     onChange={(e,v)=>props.amountChanged(v)}
                                     type={'Number'}
                                 />
+                            </div>
+                        </div>
+                        {
+                            !props.selectedToken ? <div className="content notif">Select a Token to swap from the options above</div>
+                            :  <div className="content">You currently have {formatter.format(props.balance,true)} amount of {props.symbol} available for swap.</div>
+
+                        }
+                        <div>
+                            <div className="space-out swap-entry">
                                 <PrimaryButton 
                                     ariaDescription="Detailed description used for screen reader."
                                     onClick={
-                                        () => props.onSwap(props.amount,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage)
+                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage)
                                     }
+                                    disabled={!props.selectedToken}
                                 >
                                     SWAP
                                 </PrimaryButton>
                             </div>
                         </div>
-                        <div className="content">You currently have {props.balance} amount of {props.symbol}</div>
                     </div>
-
+                    <Gap size="small"/>
                     <div className="pad-main-body second">
-                      
                         <div>
                             <div className="space-out">
-                                <span>Available Liquidity in {props.network} </span>
-                                <span className="bold">500</span>
+                                <span>Available {props.selectedToken} Liquidity in {props.network} </span>
+                                <span className="bold">{formatter.format(props.availableLiquidity,true)}</span>
                             </div>
                         </div>
 
@@ -119,8 +128,7 @@ function SwapComponent(props:swapDisptach&swapProps){
                     </div>
                 </div>
                 <div className="bottom-stick">
-                    <div>Note:  Liquidity is provided by liquidity provider. Only swap much less than the avaialable liquidity to ensure there is enough tokens to claim.</div>
-                    <div> - Claim your balance from your withdrawal items</div>
+                    <div>Note:  Claim your balance from your withdrawal items</div>
                 </div>
             </>
         </div>

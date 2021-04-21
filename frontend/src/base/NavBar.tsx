@@ -32,43 +32,34 @@ function ErrorBar(props: {error: string}) {
     );
 }
 
-function SuccessBar(props: {success: string}) {
-    return (
-        <Row withPadding>
-            <MessageBar
-                messageBarType={MessageBarType.success}
-                isMultiline={true}
-                dismissButtonAriaLabel="Close"
-                truncated={true}
-                overflowButtonAriaLabel="See more"
-            >
-                {props.success}
-            </MessageBar>
-        </Row>
-    );
-}
 
-export function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string}) {
+export function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string,isBridge?:boolean}) {
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
     return (
         <>
-            <WebThemedButton
-                text={props.connected ? Utils.shorten(props.address) : 'Connect'} 
-                disabled={props.connected}
-                onClick={props.onClick} 
-                highlight={false}
-                customStyle={styles.btnStyle}
-            />
             {
-                props.connected && 
                     <WebThemedButton
-                        text={'Disconnect'} 
-                        disabled={false}
+                        text={props.connected ? Utils.shorten(props.address) : 'Connect'} 
+                        disabled={props.connected}
                         onClick={props.onClick} 
                         highlight={false}
                         customStyle={styles.btnStyle}
                     />
+            }
+            
+            {
+                (!!props.isBridge)  &&
+                    (
+                        props.connected && 
+                            <WebThemedButton
+                                text={'Disconnect'} 
+                                disabled={false}
+                                onClick={props.onClick} 
+                                highlight={false}
+                                customStyle={styles.btnStyle}
+                            />
+                    )
             }
         </>
     )
@@ -85,29 +76,34 @@ export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapp
          addToast(props.notiError, { appearance: 'error' })
     : undefined;
 
-    const success = props.success ? 
-        <SuccessBar success={props.success} />
-    : undefined;
-
-
     const ConBot = ConnectorContainer.Connect(props.container, ConButton);
 
     return(
         <>
             <div className="nav-bar page-container" style={{...styles.container,backgroundColor: 'transparent'}}>
                 <img src="https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png"/>
-                <div className="nav-children">
-                    <ConBot 
-                        onConnect={props.onConnected}
-                        onConnectionFailed={props.onConnectionFailed}
-                        dataSelector={(state: RootState) => state.data.userData}
-                        // appInitialized={props.initialized}
-                        appInitialized={true}
-                    />
+                <div className="nav-children" style={{...styles.bridgeStyle}}>
+                    <div></div>
+                    {
+                            !props.isBridgeHome && 
+                        <>
+                            {props.children}
+                            <div>
+                            
+                                        <ConBot 
+                                            onConnect={props.onConnected}
+                                            onConnectionFailed={props.onConnectionFailed}
+                                            dataSelector={(state: RootState) => state.data.userData}
+                                            // appInitialized={props.initialized}
+                                            appInitialized={true}
+                                            isBridge={true}
+                                        />
+                            </div>
+                        </>
+                    }
                 </div>
             </div>
             {error}
-            {success}
         </>
     )
 }
@@ -141,6 +137,7 @@ export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDisp
                         dataSelector={(state: RootState) => state.data.userData}
                         // appInitialized={props.initialized}
                         appInitialized={true}
+                        isBridge={false}
                     />
                 </div>
             </div>
@@ -158,10 +155,18 @@ const themedStyles = (theme) => ({
     btnStyle: {
         padding: '1rem'
     },
+    bridgeStyle: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        width: '50%',
+        color: 'white',
+        alignItems: 'center',
+        cursor: 'pointer'
+    },
     navTxt: {
         display: 'flex',
         color: 'white',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     }
 })

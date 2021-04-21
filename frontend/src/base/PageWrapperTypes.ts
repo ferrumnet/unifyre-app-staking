@@ -11,6 +11,7 @@ export interface ReponsivePageWrapperProps {
     homepage?: string;
     navBarContent?: any;
     isBridge?: boolean,
+    isBridgeHome?: boolean,
     children: any;
     authError?: string;
 }

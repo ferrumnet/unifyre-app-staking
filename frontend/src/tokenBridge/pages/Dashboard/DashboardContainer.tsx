@@ -24,6 +24,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onBridgeLoad, fatalError} = props;
     const history = useHistory();
 
+
     useEffect(() => {
       // Prevent infinite loop if onLoad causes error
         onBridgeLoad().catch(console.error);
@@ -37,6 +38,8 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const testAlert = CONFIG.isProd ? undefined : (
       <><Row withPadding><Text size={'largest'} content={'TEST MODE'}/></Row></>)
     if (props.initialized) {
+        console.log(props,'====props');
+      
         // Render the routes
         return (
             <>
@@ -48,6 +51,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               onConnectionFailed={props.onConnectionFailed}
               container={props.initialized ? IocModule.container() : undefined}
               authError={props.error}
+              isBridgeHome={!(props.initialised && (props.connected || props.isPaired))}
               isBridge
               >
                  <Switch>

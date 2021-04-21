@@ -27,6 +27,8 @@ export class TokenBridgeHttpHandler implements Injectable {
             case 'getLiquidity':
                 return this.getLiquidity(req);
             case 'getAvaialableLiquidity':
+                return this.getAvailableLiquidity(req);
+            case 'getTokenAllowance':
                 return this.getLiquidity(req);
             case 'getUserWithdrawItems':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
@@ -68,13 +70,22 @@ export class TokenBridgeHttpHandler implements Injectable {
         return this.svc.getLiquidity(userAddress, currency);
     }
 
+    async getTokenAllowance(req: JsonRpcRequest) {
+        const {
+            currency, userAddress
+        } = req.data;
+        ValidationUtils.isTrue(!!currency, "'currency' must be provided");
+        ValidationUtils.isTrue(!!userAddress, "'addres' must be provided");
+        return this.svc.getTokenAllowance(userAddress, currency);
+    }
+
     async getAvailableLiquidity(req: JsonRpcRequest) {
         const {
             currency, userAddress
         } = req.data;
         ValidationUtils.isTrue(!!currency, "'currency' must be provided");
         ValidationUtils.isTrue(!!userAddress, "'addres' must be provided");
-        return this.svc.getAvailableLiquidity(userAddress);
+        return this.svc.getAvailableLiquidity(currency);
     }
 
 
@@ -83,7 +94,7 @@ export class TokenBridgeHttpHandler implements Injectable {
             network,
         } = req.data;
         ValidationUtils.isTrue(!!network, "'network' must be provided");
-        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId)};
+        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId.toLowerCase())};
     }
 
     async updateWithdrawItemAddTransaction(req: JsonRpcRequest) {

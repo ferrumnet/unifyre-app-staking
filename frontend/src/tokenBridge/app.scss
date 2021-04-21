@@ -8,9 +8,79 @@
     }
 }
 
+.liqu-details{
+    margin: 0px auto !important;
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+    width: 45%;
+    color: #ffffff;
+    margin-top: 0px;
+
+    button{
+        width: 40%;
+        height: 60px;
+        border-color: #ceaa69;
+        background-color: transparent;
+        color: white;
+        border-radius: 10px;
+        border-left-style: dotted; 
+    }
+
+
+    .my-liqu-details{
+        display: block;
+        margin: 0px;
+        max-width: 50%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        
+        .value{
+            background-color: #25282d00;
+            border: none;
+            color: #ffffff;
+            text-align: center;
+            font-size: 50px;
+            font-weight: bold;
+            height: 55px;
+            margin: 0px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            span{
+                margin-left: 0.5rem;
+                font-size: 13px;
+            }
+        }
+
+        p{
+            text-align: center;
+            text-overflow: ellipsis;
+        }
+    }
+    .ms-TextField-fieldGroup{
+        border: none;
+        background: transparent;
+    }
+    
+   
+}
+
 .centered-body{
     padding-top: 2%;
     color: white;
+
+    button{
+        &.is-disabled{
+            border-color: grey;
+        }
+    }
+}
+
+.emphasize{
+    font-weight: bold;
+    color: #ceaa69;
 }
 
 .centered{
@@ -28,19 +98,76 @@
 .title{
     width: fit-content;
     margin: auto 0px;
+    cursor: pointer;
 }
 
 .liquidity-tabs{
     display: flex;
     justify-content: space-around;
     align-items: center;
+    cursor: pointer;
+}
+
+.notif{
+    color: red
 }
 
 .vert-divider{
-    border-left-width: 0.5px;
+    border-left-width: thin;
     border-color: white;
     border-style: solid;
+    padding: 0.8rem 0rem;
 }
+
+
+
+.icon {
+    top: 100%;
+    /* left: 50%; */
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 60px;
+    cursor: pointer;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    align-self: center;
+  }
+  
+
+  .arrow {
+    position: absolute;
+    top: 90%;
+    width: 50%;
+    left: 65%;
+    height: 10px;
+    background-color: #fff;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
+  }
+  
+  .arrow::after, .arrow::before {
+    content: '';
+    position: absolute;
+    width: 60%;
+    height: 10px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
+    right: -8px;
+    background-color: #fff;
+  }
+  
+  .arrow::after {
+    top: 6px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
+    transform: rotate(-45deg);
+  }
+  
+  .arrow::before {
+    top: -5px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
+    transform: rotate(45deg);
+  }
 
 .body-not-centered{
     padding-top: 1%;
@@ -52,26 +179,137 @@
         margin: 3.5rem 10rem;
     }
 
+    
     &.swap{
 
+        .swap-main{
+            display: flex;
+            justify-content: space-between;
+            -webkit-box-shadow: 1px 1px 1px 1px #ccc;
+            -moz-box-shadow: 3px 3px 5px 6px #ccc;
+            box-shadow: -1px 2px 6px 2px #cccccc47;
+            border-radius: 15px;
+            padding: 20px 10px;
+
+            .swap-from,.swap-to{
+
+                .sub-tit{
+                    font-size: 0.75rem;
+                }
+                border-radius: 16px;
+                background-color: #eeeaf4;
+                box-shadow: 0px 2px 2px -1px inset;
+                width: 40%;
+                padding: 0.7rem 1.2rem;
+                /* text-align: center; */
+                color: black;
+                height: 5rem;
+                font-weight: 600;
+
+
+                .ms-TextField-fieldGroup{
+                    margin-top: 0.1rem;
+                    width: 50%;
+                    border-width: 0px;
+                    padding: 0px;
+
+                    &.fieldGroup-69{
+                        border: 0.5px white;
+                        border-width: 0px;
+
+                        &::after{
+                            border: none;
+                            outline: none !important;
+                            border-width: 0px;
+                        }
+                    }
+
+
+                    input{
+                        padding: 0px;
+                        color: black;
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                        &::-webkit-outer-spin-button,
+                        &::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+                    }
+
+                    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+                        color: rgb(136, 136, 136);
+                        font-size: 2rem;
+                        font-weight: bold;
+                    }
+
+                    ::-moz-placeholder { /* Firefox 19+ */
+                        color: rgb(136, 136, 136);
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                    }
+
+                    :-ms-input-placeholder { /* IE 10+ */
+                        color: rgb(136, 136, 136);
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                    }
+
+                    :-moz-placeholder { /* Firefox 18- */
+                        color: rgb(136, 136, 136);
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            .swap-to{
+                border-radius: 16px;
+                background-color: rgb(238, 234, 244);
+                box-shadow: 0px 2px 2px -1px inset;
+                width: 40%;
+                padding: 1rem;
+                color: black
+            }
+        }
+
         .header{
+            justify-content: center;
             &.title{
                 justify-content: space-between;
                 display: flex;
                 width: 100%;
             }
+
+            select{
+                width: 100%;
+                border-radius: 5px;
+                font-weight: 600;
+                background-color: white;
+                padding: 0.5rem;
+                border-color: #ceaa69;
+                background-color: transparent;
+                color: white;
+            }
         }
         .pad-main-body{
-            width: 50%;
+            width: 80%;
             padding-left: 0rem;
             padding-top: 1em;
 
-         
+            .sel{
+                .header{
+                    margin-bottom: 0px;
+                }
+            }
             
             .header{
                 font-weight: 500;
                 margin-bottom: 0.9em;
                 margin-top: 0.1em;
+                display: flex;
+                justify-content: end;
+                align-items: flex-end;
             }
 
             .content{
@@ -83,6 +321,10 @@
             .space-out{
                 display: flex;
                 justify-content: space-between;
+
+                &.swap-entry{
+                    justify-content: center;
+                }
             }
 
             &.second{
@@ -92,19 +334,25 @@
         }
 
         .swap-entry{
+            border-radius: 10px;
+            margin: 0px auto;
+            justify-content: center;
+
             .ms-TextField{
                 width: 100%;
             }
             .ms-TextField-fieldGroup{
                 width: 100%;
-                height: 80px;
+                height: 40px;
                 border-right-width: 0px;
             }
             .ms-Button{
-                height: 80px;
+                width: 20%;
+                height: 60px;
                 border-color: #ceaa69;
                 background-color: transparent;
                 color: white;
+                border-radius: 10px;
                 border-left-style: dotted; 
             }
             input::-webkit-outer-spin-button,
@@ -144,6 +392,8 @@
     width: 50%;
     color: white;
 
+  
+
     &.verify{
         justify-content: space-around;
         display: flex;
@@ -178,6 +428,14 @@
             border-color: #ceaa69;
             color: white;
             width: 100%;
+        }
+    }
+
+    .token-select{
+        width: auto;
+
+        select{
+            width: 10%;
         }
     }
 
