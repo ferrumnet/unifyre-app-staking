@@ -1,17 +1,8 @@
 import React, { Component } from "react";
 
-export default class ButtonLoader extends Component<{onPress: ()=> void}> {
+export default class ButtonLoader extends Component<{onPress: ()=> void,disabled:boolean}> {
   state = {
     loading: false
-  };
-
-  fetchData = () => {
-    this.setState({ loading: true });
-
-    //Faking API call here
-    setTimeout(() => {
-      this.setState({ loading: false });
-    }, 2000);
   };
 
   render() {
@@ -19,7 +10,7 @@ export default class ButtonLoader extends Component<{onPress: ()=> void}> {
 
     return (
       <div style={{ marginTop: "10px",textAlign:'start',paddingLeft: '7%' }}>
-        <button className="buttonwithloader" onClick={()=>this.props.onPress()} disabled={loading}>
+        <button className="buttonwithloader" onClick={()=>this.props.onPress()} disabled={loading||this.props.disabled}>
           {loading && (
             <i
               className="fa fa-refresh fa-spin"
@@ -27,7 +18,7 @@ export default class ButtonLoader extends Component<{onPress: ()=> void}> {
             />
           )}
           {loading && <span>Withdrawing Item</span>}
-          {!loading && <span>Withdraw Item</span>}
+          {!loading && this.props.disabled ? <span>Withdrawal processing</span> : <span>Withdraw Item</span>}
         </button>
       </div>
     );

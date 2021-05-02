@@ -4,19 +4,24 @@ import { TokenBridgeActions } from "../../TokenBridgeClient";
 import { inject, IocModule } from '../../../common/IocModule';
 import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
-import { SignedPairAddress,UserBridgeWithdrawableBalanceItem } from "../../TokenBridgeTypes";
+import { PairedAddress, SignedPairAddress,UserBridgeWithdrawableBalanceItem } from "../../TokenBridgeTypes";
 import { CurrencyList } from "unifyre-extension-web3-retrofit";
 import { Network, ValidationUtils } from "ferrum-plumbing";
 import { AddressDetails } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { MainBridgeActions } from './../main/main';
 import { Connect } from 'unifyre-extension-web3-retrofit';
+import { ConnectActions } from "../../../connect/Connect";
 
 export const LiquidityActions = {
     AMOUNT_CHANGED: 'AMOUNT_CHANGED',
     TOKEN_SELECTED: 'TOKEN_SELECTED',
     SWAP_DETAILS: 'SWAP_DETAILS',
     SWAP_SUCCESS: 'SWAP_SUCCESS',
-    WITHDRAWAL_ITEMS_FETCHED: 'WITHDRAWAL_ITEMS_FETCHED'
+    WITHDRAWAL_ITEMS_FETCHED: 'WITHDRAWAL_ITEMS_FETCHED',
+    DISCONNECT: 'DISCONNECT',
+    CHECK_ALLOWANCE:'CHECK_ALLOWANCE',
+    USER_DATA_RECEIVED:'USER_DATA_RECEIVED',
+    APPROVAL_SUCCESS: 'APPROVAL_SUCCESS'
 };
 
 const Actions = LiquidityActions;
@@ -25,8 +30,8 @@ export interface swapDisptach {
     onConnect: (network: string,currency: string, address: string) => void,
     amountChanged: (v?:string) => void,
     executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem) => void,
-    tokenSelected: (v?:string,add?: AddressDetails[]) => void,
-    onSwap: (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void) => Promise<void>
+    tokenSelected: (targetNet: string,v?:string,add?: AddressDetails[],pair?: PairedAddress,history?: any) => void,
+    onSwap: (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void,allowanceRequired: boolean) => Promise<void>
 }
 
 export interface swapProps{
@@ -38,7 +43,7 @@ export interface swapProps{
     destNetwork: string,
     baseNetwork: string,
     destSignature: string,
-    pairedAddress?: SignedPairAddress,
+    pairedAddress: SignedPairAddress,
     amount: string,
     balance: string,
     selectedToken: string,
@@ -49,6 +54,8 @@ export interface swapProps{
     availableLiquidity: string,
     messageType: 'error' | 'success',
     currenciesDetails: any,
+    signedPairedAddress?: SignedPairAddress,
+    allowanceRequired: boolean,
     userWithdrawalItems: any[]
 }
 
@@ -59,7 +66,7 @@ export interface swapState{
     baseSignature: string,
     destAddress: string,
     destSignature: string,
-    pairedAddress?: SignedPairAddress,
+    pairedAddress: SignedPairAddress,
     amount: string,
     balance: string,
     selectedToken: string,
@@ -70,6 +77,8 @@ export interface swapState{
     message: string,
     error:string,
     currency: string,
+    signedPairedAddress?: SignedPairAddress,
+    allowanceRequired: boolean,
     messageType: 'error' | 'success',
     currenciesDetails: any,
     availableLiquidity: string,
@@ -100,12 +109,13 @@ export function mapStateToProps(state:RootState):swapProps  {
         message: state.ui.swap.message,
         messageType: state.ui.swap.messageType,
         availableLiquidity: state.ui.swap.availableLiquidity,
-        userWithdrawalItems: state.ui.swap.userWithdrawalItems
+        userWithdrawalItems: state.ui.swap.userWithdrawalItems,
+        allowanceRequired: state.ui.swap.allowanceRequired
     }
 }
 
 export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onConnect: async () => {
+    onConnect: async (network,network1,currency) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
@@ -116,14 +126,17 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             if(currenciesList.length > 0){
                 dispatch(addAction(Actions.SWAP_DETAILS,{value: currenciesList}))                
                 const currencyList = inject<CurrencyList>(CurrencyList);
-                console.log(currencyList,'currencieslist')
+                const allowance = await sc.checkAllowance(dispatch,currency,'5', network1);
+                dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: allowance}))
                 currencyList.set(currenciesList.map((j:any) => j.sourceCurrency));
             }
+           
             const res  = await sc.signInToServer(dispatch);
             const items = await sc.getUserWithdrawItems(dispatch,network);
             if(items.withdrawableBalanceItems.length > 0){
                 dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
             }
+
             return res;
         } catch(e) {
             throw e;
@@ -152,18 +165,28 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         dispatch(addAction(Actions.AMOUNT_CHANGED,{value: v}));
         dispatch(addAction(MainBridgeActions.CLEAR_ERROR,{}));
     },
-    tokenSelected: async (v?: any,addr?: AddressDetails[]) => {
+    tokenSelected: async (targetNet: string,v?: any,addr?: AddressDetails[],pair?: PairedAddress,history?: any) => {
         try{
             let details = addr?.find(e=>e.symbol === v);
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            console.log(addr,'addressedt',details,v)
-
+            const connect = inject<Connect>(Connect);
+            const network = connect.network() as any;
+            const currenciesList = await sc.getSourceCurrencies(dispatch,network);
+            if(!pair){
+                history.push(0);
+            }
+            if(currenciesList.length > 0){
+                dispatch(addAction(Actions.SWAP_DETAILS,{value: currenciesList}))                
+                const currencyList = inject<CurrencyList>(CurrencyList);
+                currencyList.set(currenciesList.map((j:any) => j.sourceCurrency));
+            }
             if(details){
-                console.log(details,'detssss');
                 dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
                 //get vailable liquidity
                 await sc.getAvailableLiquidity(dispatch,details?.address, details?.currency)
+                const allowance = await sc.checkAllowance(dispatch,details.currency,'5', targetNet);
+                dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: allowance}))
             }
             dispatch(addAction(Actions.TOKEN_SELECTED,{value: v || {},details}))
         }catch(e) {
@@ -175,15 +198,26 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }      
     },
-    onSwap: async (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void) => {
+    onSwap: async (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void,allowanceRequired) => {
         try {
             const client = inject<TokenBridgeClient>(TokenBridgeClient);        
-            ValidationUtils.isTrue(!(Number(balance) < Number(amount) ),'Not anough balance for this transaction');
+            //ValidationUtils.isTrue(!(Number(balance) < Number(amount) ),'Not anough balance for this transaction');
             const res = await client.swap(dispatch,currency, amount, targetNet);
+           
             if( res === 'success' ){
-                y('Swap Successful, Kindly View Withdrawal Items for item checkout.');
-                dispatch(addAction(Actions.SWAP_SUCCESS, {message: res }));
-                return
+                if(allowanceRequired){
+                    dispatch(addAction(Actions.APPROVAL_SUCCESS, { }));
+                    const allowance = await client.checkAllowance(dispatch,currency,'5', targetNet);
+                    if(allowance){
+                        y('Approval Successful, You can now go on to swap your transaction.');
+                        dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: false}))
+                    }
+                    
+                }else{
+                    y('Swap Successful, Kindly View Withdrawal Items for item checkout.');
+                    dispatch(addAction(Actions.SWAP_SUCCESS, {message: res }));
+                    return
+                }
             }
             v('error occured')
         }catch(e) {
@@ -228,6 +262,7 @@ const defaultState = {
     addresses: [],
     selectedToken: '',
     message: '',
+    allowanceRequired: false,
     availableLiquidity: '0',
     currenciesDetails: {}
 }
@@ -261,16 +296,22 @@ export function reduce(state: any = defaultState, action: AnyAction){
             }
         case Actions.SWAP_DETAILS:
             return {
-                ...state,currenciesDetails: action.payload.value[0]
+                ...state,currenciesDetails: action.payload.value[0],selectedToken: ''
             }
         case Actions.SWAP_SUCCESS:
             return {...state,message: action.payload.message,messageType: 'success', amount: ''}
+        case Actions.APPROVAL_SUCCESS:
+            return {...state,message: action.payload.message,messageType: 'success'}
         case TokenBridgeActions.AUTHENTICATION_FAILED:
             return {
                 ...state,message: action.payload.message,messageType: 'error', amount: ''
             }
         case Actions.WITHDRAWAL_ITEMS_FETCHED:
             return {...state, userWithdrawalItems: action.payload.items}
+        case Actions.DISCONNECT:
+            return {...state, amount: '0',selectedToken: ''}
+        case Actions.CHECK_ALLOWANCE:
+            return {...state, allowanceRequired: action.payload.value}
         default:
             return state;
     }

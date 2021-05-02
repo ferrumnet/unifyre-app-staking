@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useContext} from 'react';
 import { connect } from 'react-redux';
 import { liquidityProps,liquidityDisptach,Liquidity } from './liquidity';
 import { Divider } from '@fluentui/react-northstar'
@@ -11,8 +11,12 @@ import { PrimaryButton } from 'office-ui-fabric-react';
 import { useHistory } from 'react-router';
 import { useToasts } from 'react-toast-notifications';
 import { formatter, Utils } from '../../../common/Utils';
+import {ThemeContext, Theme} from 'unifyre-react-helper';
+
 function LiquidityComponent(props: liquidityProps&liquidityDisptach) {
     const [action,setAction] = useState(true)
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);    
     const histroy = useHistory();
     const { addToast } = useToasts();
 
@@ -20,7 +24,7 @@ function LiquidityComponent(props: liquidityProps&liquidityDisptach) {
         if(!props.pairedAddress){
             histroy.push('/');
         }else{
-            props.onConnect(props.network);
+            props.onConnect(props.pairedAddress.pair.network1,props.currency);
         }
     },[]);
 
@@ -32,11 +36,11 @@ function LiquidityComponent(props: liquidityProps&liquidityDisptach) {
         addToast(v, { appearance: 'success',autoDismiss: true })        
     };
     
+    
     return (
-        <div className="centered-body">
+        <div className="centered-body liquidity1">
             <>
-                <div className="main-header"> Ferrum Token Bridge </div>
-                    <div className="body-not-centered swap">
+                    <div className="body-not-centered swap liquidity">
                         <div className="header title">  
                             <div>
                                 Manage Liquidity
@@ -144,24 +148,39 @@ function LiquidityComponent(props: liquidityProps&liquidityDisptach) {
                             <p>
                                 Your Liquidity Balance
                             </p>
-                        </div>
-                        
-
+                        </div>                        
                         <PrimaryButton 
+                            styles={styles.btnStyle}
                             ariaDescription="Detailed description used for screen reader."
                             onClick={
-                                () => action ? props.addLiquidity(props.amount,props.currency,onSuccessMessage)
+                                () => action ? 
+                                props.addLiquidity(props.amount,props.currency,onSuccessMessage,props.allowanceRequired)
                                 : props.removeLiquidity(props.amount,props.currency,onSuccessMessage)
                             }
                             disabled={Number(props.amount) <= 0 || !props.currency || !props.network  ||  !props.selectedToken}
                         >
-                            {action ? 'Add Liquidity' : 'Remove Liquidity'}
+                            {action ? (props.allowanceRequired ? 'Approve' : 'Add Liquidity') : 'Remove Liquidity'}
                         </PrimaryButton>
                     </div>   
             </>
         </div>
     )
 }
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+    btnStyle:  {
+        root: [
+          {
+            padding: "1.3rem 2.5rem",
+            backgroundColor: theme.Button.btnPrimary,
+            borderColor: theme.Button.borderColor,
+            color: theme.btn.color,
+            height: '40px',
+          }
+        ]
+    }
+});
 
 export const LiquidityContainer = connect(
     Liquidity.mapStateToProps,

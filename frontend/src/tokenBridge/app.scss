@@ -8,6 +8,195 @@
     }
 }
 
+option{
+    background-color: black;
+}
+
+.nav-bar{
+    .mobile-nav-logo{
+        display: none;
+    }
+}
+
+@media (max-width: 1100px){
+
+    .swap{
+        .title{
+            justify-content: center;
+        }
+
+        &.swap-page{
+
+            .pad-main-body{
+                padding-right: 0px;
+
+                &.second{
+                    width: 80%;
+                }
+            }
+            
+            .notif{
+                width: auto;
+                text-align: center;
+            }
+        }
+    }
+
+    
+
+    .notif{
+        width: 100%;
+        color: red;
+        margin: 0px 5px !important;
+    }
+
+    .nav-bar{
+        .nav-logo{
+            display: none;
+            
+        }
+        .mobile-nav-logo{
+            display: block;
+
+            img{
+                width: 35px;
+                margin-left: 40%;
+            }
+        }
+    }
+    .nav-children{
+        display: flex;
+        justify-content: space-between;
+        width: 90% !important;
+        color: white;
+        align-items: center;
+        cursor: pointer;
+
+  
+
+        .ms-Button{
+            padding: 0rem 1.2rem;
+            width: fit-content;
+            overflow: hidden;
+            font-size: 0.6rem;
+            text-align: center;
+            /* border-width: 0px; */
+            padding-right: 0rem;
+            padding-left: 0.2rem;
+        }
+    }
+
+    .body-not-centered{
+       
+
+        &.swap{
+
+            &.swap-page{
+
+                .swap-main{
+                    display: block;
+
+                    .swap-from{
+                        width: 100%;
+                    }
+
+                    .icon{
+                        margin: 0px auto;
+
+                        .arrow{
+                            transform: rotate(90deg);
+                        }
+                    }
+
+                    
+                }
+                .swap-entry{
+                    width: auto;
+
+                    .ms-Button{
+                        width: 80%;
+                    }
+
+                    &.swap-buttons{
+                        width: 70%;
+                    }
+                }
+
+                
+                .pad-main-body{
+
+                        &.second{
+                            width: 80%;
+                        }
+                   
+                        .sel{
+                            display: block;
+                        }
+                }
+            }
+
+            &.liquidity{
+                .header{
+                    &.title{
+                        display: block;
+                        width: fit-content;
+                    }
+                }
+
+                select{
+                    margin-top: 1rem;
+                }
+            }
+        }    
+    }
+
+
+    .centered-body{
+        &.liquidity1{
+            .pad-main-body{
+                padding-top: 1rem;
+
+                .liqu-details{
+                    .value{
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+
+        .bottom-stick{
+            margin-bottom: 1.5rem;
+        }
+
+        .liqu-details{
+            width: 70%;
+            display: block;
+            justify-content: center;
+            text-align: center;
+
+            p{
+                margin-bottom: 0px;
+            }
+
+            .my-liqu-details{
+                max-width: inherit;
+
+                .value{
+                    font-size: 1.7rem;
+                    height: 35px;
+                }
+            }
+
+
+            .ms-Button{
+                width: 80%;
+                margin-top: 1rem;
+            }
+        }
+    }
+    
+}
+
 .liqu-details{
     margin: 0px auto !important;
     display: flex;
@@ -68,7 +257,7 @@
 }
 
 .centered-body{
-    padding-top: 2%;
+    padding-top: 0%;
     color: white;
 
     button{
@@ -323,7 +512,11 @@
                 justify-content: space-between;
 
                 &.swap-entry{
-                    justify-content: center;
+                    justify-content: space-between;
+
+                    &.swap-buttons{
+                        width: 50%;
+                    }
                 }
             }
 
@@ -347,13 +540,17 @@
                 border-right-width: 0px;
             }
             .ms-Button{
-                width: 20%;
+                width: 40%;
                 height: 60px;
                 border-color: #ceaa69;
                 background-color: transparent;
                 color: white;
                 border-radius: 10px;
                 border-left-style: dotted; 
+
+                &:disabled{
+                    border-color: grey;
+                }
             }
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
@@ -476,6 +673,49 @@
     margin: 1.2rem auto;
 }
 
+.main-header{
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
+    color: white
+}
+
+@media (max-width: 1100px) {
+    .main-header{
+        text-align: center;
+    }
+
+    .header{
+        &.title{
+            text-align: center;
+            margin: 0px auto;
+            justify-content: center !important;
+        }
+    }
+
+    .full-screen-page{
+        .contents-container {
+            padding-left: 0%;
+        }
+
+        .pad-main-body {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+            padding-top: 2rem;
+            margin: 0px auto;
+            width: 95%;
+            color: white;
+
+            &.verify{
+                display: block;
+                margin: 0px auto;
+                text-align: center;
+                padding-top: 0.5rem;
+            }
+        }
+    } 
+}
 
 .contents-container {
     padding-left: 10%;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect,useContext } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Swap,swapDisptach,swapProps } from './swap';
@@ -11,16 +11,19 @@ import {
 } from 'desktop-components-library';
 import { useToasts } from 'react-toast-notifications';
 import { formatter, Utils } from '../../../common/Utils';
+import {ThemeContext, Theme} from 'unifyre-react-helper';
 
 function SwapComponent(props:swapDisptach&swapProps){
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);   
     const histroy = useHistory();
     const { addToast } = useToasts();
 
     useEffect( () => {
-        if(!props.pairedAddress){
+        if(!props.pairedAddress?.pair){
             histroy.push('/');
         }else{
-            props.onConnect(props.network,props.network,props.currency);
+            props.onConnect(props.network,props.pairedAddress.pair.network1,props.currency);
         }
     },[]);
 
@@ -31,14 +34,12 @@ function SwapComponent(props:swapDisptach&swapProps){
     const onSuccessMessage = async (v:string) => {    
         addToast(v, { appearance: 'success',autoDismiss: true })        
     };
-    
+    console.log(props,'props3455');
 
     return (
         <div className="centered-body">
             <>
-                <div className="main-header"> Ferrum Token Bridge </div>
-                <div className="body-not-centered swap">
-
+                <div className="body-not-centered swap swap-page">
                     <div className="header title">  
                         <div>
                             Swap Accross Chains
@@ -52,8 +53,12 @@ function SwapComponent(props:swapDisptach&swapProps){
                         <div className="space-out sel">
                             <div className="header">{props.network} Network to {props.destNetwork === props.network ? props.baseNetwork : props.destNetwork} </div>
                             <>
-                                <select name="token" id="token" className="content token-select" disabled={props.addresses.length === 0} onChange={(e)=>props.tokenSelected(e.target.value,props.addresses)}>
-                                    <option value={'select your Token symbol'}>Select Token</option>
+                                <select name="token" id="token" 
+                                    className="content token-select" disabled={props.addresses.length === 0} 
+                                    onChange={(e)=>props.tokenSelected(props.currenciesDetails.targetCurrency,e.target.value,props.addresses,props.pairedAddress.pair,histroy)}
+                                    value={props.selectedToken}
+                                >
+                                    <option value={''}>Select Token</option>
                                     {
                                         props.addresses.length > 0 ?
                                             props.addresses.map(e=>
@@ -97,20 +102,31 @@ function SwapComponent(props:swapDisptach&swapProps){
 
                         }
                         <div>
-                            <div className="space-out swap-entry">
+                            <div className="space-out swap-entry swap-buttons">
                                 <PrimaryButton 
+                                    styles={styles.btnStyle}
                                     ariaDescription="Detailed description used for screen reader."
                                     onClick={
-                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage)
+                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
                                     }
-                                    disabled={!props.selectedToken}
+                                    disabled={!props.selectedToken || (Number(props.amount) <= 0) || props.allowanceRequired}
                                 >
                                     SWAP
                                 </PrimaryButton>
+                                <PrimaryButton 
+                                    styles={styles.btnStyle}
+                                    ariaDescription="Detailed description used for screen reader."
+                                    onClick={
+                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
+                                    }
+                                    disabled={!props.selectedToken || (Number(props.amount) <= 0) || !props.allowanceRequired}
+                                >
+                                    APPROVE
+                                </PrimaryButton>
                             </div>
                         </div>
+                        <Gap size="small"/>
                     </div>
-                    <Gap size="small"/>
                     <div className="pad-main-body second">
                         <div>
                             <div className="space-out">
@@ -134,6 +150,21 @@ function SwapComponent(props:swapDisptach&swapProps){
         </div>
     )
 }
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+    btnStyle:  {
+        root: [
+          {
+            padding: "1.3rem 2.5rem",
+            backgroundColor: theme.Button.btnPrimary,
+            borderColor: theme.Button.borderColor,
+            color: theme.btn.color,
+            height: '40px',
+          }
+        ]
+    }
+});
 
 export const SwapContainer =  connect(
     Swap.mapStateToProps,Swap.mapDispatchToProps

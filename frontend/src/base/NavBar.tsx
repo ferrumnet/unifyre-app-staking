@@ -81,7 +81,25 @@ export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapp
     return(
         <>
             <div className="nav-bar page-container" style={{...styles.container,backgroundColor: 'transparent'}}>
-                <img src="https://secureservercdn.net/104.238.71.140/z9z.56c.myftpupload.com/wp-content/uploads/2020/09/ferrum-logo.png"/>
+                <div className="nav-logo">
+                    <a href={props.homepage}>
+                    <img
+                        className="logo_img"
+                        src={theme.get(Theme.Logo.logo)  as any}
+                        style={{height: theme.get(Theme.Logo.logoHeight) > 0 ? theme.get(Theme.Logo.logoHeight) : undefined}}
+                        alt="Logo"
+                    /> 
+                    </a>
+                </div>
+                <div className="mobile-nav-logo">'<a href={props.homepage}>
+                    <img
+                        className="logo_img"
+                        src={"https://s2.coinmarketcap.com/static/img/coins/64x64/4228.png" }
+                        style={{height: theme.get(Theme.Logo.logoHeight) > 0 ? theme.get(Theme.Logo.logoHeight) : undefined}}
+                        alt="Logo"
+                    /> 
+                    </a>
+                </div>
                 <div className="nav-children" style={{...styles.bridgeStyle}}>
                     <div></div>
                     {

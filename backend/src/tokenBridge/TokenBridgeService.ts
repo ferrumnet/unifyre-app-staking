@@ -125,6 +125,9 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
             item.useTransactions.push({id: tid, status: txStatus, timestamp: txTime});
             console.log(`Setting status for withdraw item ${id}: ${txStatus}-${tid}`)
         }
+        if(item.useTransactions.length > 0){
+            item.used = 'pending';
+        }
         return await this.updateWithdrawItem(item);
     }
 

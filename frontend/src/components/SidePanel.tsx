@@ -135,7 +135,11 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge
                                             <p style={{...styles.accInfo}}>
                                                Token Address : {e.payBySig.token}
                                             </p>
-                                            <ButtonLoader onPress={()=>props.executeWithrawItem(e,props.dismissPanel)}/>
+                                            {
+                                                !e.used ? <ButtonLoader onPress={()=>props.executeWithrawItem(e,props.dismissPanel)} disabled={false}/>
+                                                : <ButtonLoader onPress={()=>{}} disabled={true}/>
+                                                
+                                            }
                                         </AccordionItemPanel>
                                     </AccordionItem>
                                     <Gap size={"small"}/>

@@ -1,6 +1,6 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext} from 'react';
 import {
-    WebThemedButton,Gap,Row
+    WebThemedButton,Gap
     // @ts-ignore
 } from 'desktop-components-library';
 import { TextField} from 'office-ui-fabric-react';
@@ -14,14 +14,16 @@ import { CHAIN_ID_FOR_NETWORK } from '../../TokenBridgeTypes';
 import { ConButton } from '../../../base/NavBar';
 import {MainProps,MainDispatch,Main} from './main';
 import { connect } from 'react-redux';
+import {ThemeContext, Theme} from 'unifyre-react-helper';
 
 function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
-        const history = useHistory();
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);    
+    const history = useHistory();
         const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
         return (
             <div>
                 <>
-                    <div className=" centered main-header"> Ferrum Token Bridge </div>
                     <div className="body-not-centered">
                         <div className="header title">  
                             Your Paired Addresses
@@ -49,12 +51,18 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     <TextField
                                         placeholder={'Enter Address'}
                                         value={
-                                           props.baseAddress
+                                           props.isPaired ?
+                                           //@ts-ignore
+                                           props.pairedAddress?.pair?.address1 || props.pairedAddress?.address1
+                                            :   props.baseAddress
                                         }
                                         disabled={true}
                                     />
                                 </div>
                             </div>
+                            { //@ts-ignore
+                              (!props.pairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered">Kindly refresh this page to reset the pair connection.</div>
+                            }
                             {
                                 (props.isPaired && !props.baseSignature) &&
                                 <div>
@@ -134,7 +142,11 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                             text={'Sign to Prove OwnerShip'}
                                                             onClick={()=>props.signSecondPairAddress(
                                                                 //@ts-ignore
-                                                                (props.pairedAddress?.pair?.network1 || props.pairedAddress.network1) , props.destNetwork, props.destAddress, props.baseSignature
+                                                                (props.pairedAddress?.pair?.network1 || props.pairedAddress.network1) , 
+                                                                //@ts-ignore
+                                                                props.destNetwork, (props.pairedAddress?.pair?.address1 || props.pairedAddress?.address1 ),
+                                                                props.destAddress, 
+                                                                props.baseSignature
                                                             )}
                                                             disbabled={!!props.destAddress}
                                                         /> :  <div className="header centered">Connect your MetaMask to {props.destNetwork} in order to Sign this Address.</div>
@@ -160,6 +172,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                             }
                         </div>      
                         {
+                            props.network ?
                             <div className="pad-main-body verify">
                                 {
                                     (props.isPaired) &&
@@ -184,6 +197,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         />
                                 }                        
                             </div>
+                            : <div className="content notif centered"> Kindly Reconnect to network</div>
                         }                  
                     </div>
                 </>
@@ -193,15 +207,12 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
 
 function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
     
-    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
-    console.log(props,'propses');
-    
+    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);    
     return (
         <div className="centered-body">
             {
                 (!props.initialised || !props.network && !props.isPaired) &&
                 <>
-                    <div className="main-header"> Ferrum Token Bridge </div>
                     <div className="body-content">
                         <div>
                             <div> Connect Your Wallet To See Your Paired Addresses. </div>
@@ -213,7 +224,7 @@ function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:stri
                                     onConnected={props.con}
                                     dataSelector={(state: RootState) => state.data.userData}
                                     // appInitialized={props.initialized}
-                                    appInitialized={true}
+                                    appInitialized={props.initialised}
                                 />
                             </div>
                         </div>
@@ -233,3 +244,8 @@ export const MainContainer = connect(
     Main.mapStateToProps,
     Main.mapDispatchToProps
 )(MainComponent);
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+
+});

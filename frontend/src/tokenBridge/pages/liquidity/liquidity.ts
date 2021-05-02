@@ -19,15 +19,18 @@ export const LiquidityActions = {
     ADD_LIQUIDITY_FAILED: 'ADD_LIQUIDITY_FAILED',
     REMOVE_LIQUIDITY_SUCCESS: 'REMOVE_LIQUIDITY_SUCCESS',
     REMOVE_LIQUIDITY_FAILED: 'REMOVE_LIQUIDITY_FAILED',
+    CHECK_ALLOWANCE:'CHECK_ALLOWANCE',
+    APPROVAL_SUCCESS:'APPROVAL_SUCCESS',
+    DISCONNECT: 'DISCONNECT'
 };
 
 const Actions = LiquidityActions;
 
 export interface liquidityDisptach {
-    onConnect: (network: string) => void,
+    onConnect: (network: string,targetCur: string) => void,
     amountChanged: (v?:string) => void,
     tokenSelected: (v?:string,add?: AddressDetails[]) => void,
-    addLiquidity: (amount: string,targetCurrency: string,success: (v:string)=>void) => void,
+    addLiquidity: (amount: string,targetCurrency: string,success: (v:string)=>void,allowanceRequired:boolean) => void,
     removeLiquidity: (amount: string,targetCurrency: string,success: (v:string)=>void) => void
 }
 
@@ -47,6 +50,7 @@ export interface liquidityProps{
     selectedToken: string,
     addresses: AddressDetails[],
     availableLiquidity: string,
+    allowanceRequired: boolean,
 }
 
 export interface liquidityState{
@@ -65,6 +69,7 @@ export interface liquidityState{
     selectedToken: string,
     addresses: AddressDetails[],
     availableLiquidity: string,
+    allowanceRequired: boolean,
 }
 
 export function mapStateToProps(state:RootState):liquidityProps  {
@@ -83,12 +88,13 @@ export function mapStateToProps(state:RootState):liquidityProps  {
         destNetwork: state.ui.liquidity.destNetwork,
         baseNetwork: state.ui.liquidity.baseNetwork,
         availableLiquidity: state.ui.liquidity.availableLiquidity,
+        allowanceRequired: state.ui.liquidity.allowanceRequired,
         addresses: addr
     }
 }
 
 export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onConnect: async (network: string) => {
+    onConnect: async (network: string,targetCur: string) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
@@ -100,6 +106,8 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 const ls = currenciesList.map((j:any) => j.sourceCurrency)
                 console.log(currencyList,'currencieslist',ls)
                 currencyList.set(currenciesList.map((j:any) => j.sourceCurrency));
+                const allowance = await sc.checkAllowance(dispatch,targetCur,'5', targetCur);
+                dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: allowance}))
             }
             const res  = await sc.signInToServer(dispatch);
             return res;
@@ -111,15 +119,25 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    addLiquidity: async (amount: string,targetCurrency: string,success: (v:string)=>void) => {
+    addLiquidity: async (amount: string,targetCurrency: string,success: (v:string)=>void,allowanceRequired) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             const client = inject<TokenBridgeClient>(TokenBridgeClient);
             ValidationUtils.isTrue(!!targetCurrency,'targetCurrency is required')
             const res = await client.addLiquidity(dispatch, targetCurrency, amount);
             if(res){
-                success('Liquidity Added Successfully and processing')
-
+                if(allowanceRequired){
+                    dispatch(addAction(Actions.APPROVAL_SUCCESS, { }));
+                    const allowance = await client.checkAllowance(dispatch,targetCurrency,'5', targetCurrency);
+                    if(allowance){
+                        success('Approval Successful, You can now go on to add you liquidity.');
+                        dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: false}))
+                    }
+                    
+                }else{
+                    success('Liquidity Added Successfully and processing')
+                    return
+                }
             }
         } catch(e) {
             if(!!e.message){
@@ -156,7 +174,7 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             if(details){
                 dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
                 //get vailable liquidity
-                await sc.getUserLiquidity(dispatch,details?.address, details?.currency)
+                await sc.getUserLiquidity(dispatch,details?.address, details?.currency);
             }
             dispatch(addAction(Actions.TOKEN_SELECTED,{value: v || {},details}))
         }catch(e) {
@@ -186,7 +204,8 @@ const defaultState = {
     currency: '',
     amount: '',
     destNetwork: '',
-    baseNetwork: ''
+    baseNetwork: '',
+    allowanceRequired: false
 }
 
 export function reduce(state: liquidityState = defaultState, action: AnyAction){
@@ -216,6 +235,12 @@ export function reduce(state: liquidityState = defaultState, action: AnyAction){
             return {
                 ...state,selectedToken: action.payload.value,swapDetails: action.payload.details
             }
+        case Actions.CHECK_ALLOWANCE:
+            return {...state, allowanceRequired: action.payload.value}
+        case Actions.APPROVAL_SUCCESS:
+            return {...state,allowanceRequired:false}
+        case Actions.DISCONNECT:
+            return {...state, availableLiquidity: '0'}
         default:
             return state;
     }

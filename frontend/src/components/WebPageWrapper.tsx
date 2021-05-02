@@ -29,6 +29,9 @@ export function WebPageWrapper(props: {
             <div onClick={openPanel}>
                 My Withdrawals
             </div>
+            <div onClick={()=>history.push('./')}>
+                My Pair
+            </div>
         </>
     ) : undefined;
     return (

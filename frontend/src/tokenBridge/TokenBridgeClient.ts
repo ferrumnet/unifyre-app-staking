@@ -318,6 +318,27 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         }
     }
 
+    public async checkAllowance(
+        dispatch: Dispatch<AnyAction>,
+        currency: string,
+        amount: string,
+        targetCurrency: string,
+        ) {
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'swapGetTransaction',
+                data: {currency, amount, targetCurrency}, params: [] } as JsonRpcRequest);
+            const { isApprove, requests } = res;
+            return isApprove;
+        } catch(e) {
+            dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
+                message: e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'withdrawableBalanceItemAddTransaction' }));
+        }
+    }
+
     async processRequest(dispatch: Dispatch<AnyAction>, 
         requestId: string) {
         try {

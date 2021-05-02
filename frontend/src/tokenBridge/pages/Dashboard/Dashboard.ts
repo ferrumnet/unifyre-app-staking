@@ -4,7 +4,7 @@ import { inject, IocModule } from '../../../common/IocModule';
 import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
 import { ReponsivePageWrapperDispatch } from "../../../base/PageWrapperTypes";
-import { logError, Utils } from "../../../common/Utils";
+import { logError } from "../../../common/Utils";
 import { LiquidityActions } from './../swap/swap';
 
 export const DashboardActions = {
@@ -28,6 +28,7 @@ export interface DashboardProps extends DashboardState {
     isPaired: boolean,
     initialised:boolean,
     connected: boolean,
+    customTheme?: any;
     userWithdrawalItems: any[]
 }
 
