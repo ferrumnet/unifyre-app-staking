@@ -2,6 +2,7 @@ import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
 import { GroupInfo, StakeEvent, StakingApp, } from "./Types";
 
+//@ts-ignoreSchema
 const StakingAppSchema: Schema = new Schema<StakingApp>({
     contractType: String,
     network: String,
@@ -42,6 +43,7 @@ const StakingAppSchema: Schema = new Schema<StakingApp>({
     _v: Number
 });
 
+//@ts-ignore
 const StakeEventSchema: Schema = new Schema<StakeEvent>({
   contractType: String,
   type: String,
@@ -65,6 +67,7 @@ const StakeEventSchema: Schema = new Schema<StakeEvent>({
   transactionStatus: String,
 });
 
+//@ts-ignore
 const groupInfoSchema: Schema = new Schema<GroupInfo>({
   groupId: String,
   themeVariables: Object,

@@ -6,6 +6,7 @@
     "@fluentui/react": "^7.144.3",
     "@fluentui/react-northstar": "^0.51.2",
     "@fluentui/react-theme-provider": "^0.14.4",
+    "@popperjs/core": "^2.9.2",
     "@ramonak/react-progress-bar": "^1.0.3",
     "@sentry/browser": "^5.24.2",
     "@sentry/tracing": "^5.24.2",
@@ -20,6 +21,7 @@
     "moment": "^2.27.0",
     "rc-progress": "^3.0.0",
     "react": "^16.13.1",
+    "react-accessible-accordion": "^3.3.4",
     "react-alert": "^7.0.1",
     "react-alert-template-basic": "^1.0.0",
     "react-alert-template-oldschool-dark": "^1.0.1",
@@ -36,9 +38,11 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "react-spinners-css": "^1.1.8",
+    "react-toast-notifications": "^2.4.3",
     "react-transition-group": "^4.4.1",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
+    "simple-react-accordion": "^1.0.14",
     "swarm-js": "^0.1.40",
     "unifyre-extension-sdk": "git+https://github.com/ferrumnet/unifyre-extension-sdk.git",
     "unifyre-extension-web3-retrofit": "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git",
@@ -84,10 +88,10 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/react-transition-group": "^4.4.0",
     "@types/redux-logger": "^3.0.8",
-    "babel-loader": "^8.1.0",
+    "babel-loader": "8.1.0",
     "fluent-typescript": "^0.0.4",
     "jest": "^24.9.0",
     "node-sass": "^4.14.1",
-    "typescript": "~3.7.2"
+    "typescript": "^4.2.4"
   }
 }

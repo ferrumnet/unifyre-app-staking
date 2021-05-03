@@ -18,6 +18,9 @@ export const TokenBridgeActions = {
     BRIDGE_ADD_LIQUIDITY_FAILED: 'BRIDGE_ADD_LIQUIDITY_FAILED',
     BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN: 'BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN',
     BRIDGE_LOAD_FAILED: 'BRIDGE_LOAD_FAILED',
+    SOURCE_CURRENCIES_RECEIVED: 'SOURCE_CURRENCIES_RECEIVED',
+    USER_AVAILABLE_LIQUIDITY_FOR_TOKEN: "USER_AVAILABLE_LIQUIDITY_FOR_TOKEN",
+    SWAP_SUCCESS: 'SWAP_SUCCESS'
 }
 
 const Actions = TokenBridgeActions;
@@ -35,8 +38,9 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         try {
             const userProfile = await this.client.getUserProfile();
             const userAddress = userProfile.userId;
-            this.network = userProfile.accountGroups[0].addresses[0].network;
-            this.userAddress = userProfile.accountGroups[0].addresses[0].address;
+            console.log(userProfile,'userprofileletre')
+            this.network = userProfile.accountGroups[0].addresses[0]?.network;
+            this.userAddress = userProfile.accountGroups[0].addresses[0]?.address;
             const res = await this.api({
                 command: 'signInUsingAddress', data: {userAddress}, params: [] } as JsonRpcRequest);
             const { unsecureSession } = res;
@@ -69,19 +73,55 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         dispatch(addAction(Actions.BRIDGE_LIQUIDITY_PAIRED_ADDRESS_RECEIVED, {pairedAddress: pairedAddress || {}}))
     }
 
+    //getSourceCurrencies
+
+    async getSourceCurrencies(dispatch: Dispatch<AnyAction>,network: string) {
+        const res = await this.api({
+            command: 'getSourceCurrencies', data: {network}, params: [] } as JsonRpcRequest);
+        return res;
+    }
+
     public async getAvailableLiquidity(dispatch: Dispatch<AnyAction>,
-            targetNetwork: Network,
+            targetNetwork: string,
             targetCurrency: string) {
         dispatch(addAction(CommonActions.WAITING, { source: 'getAvailableLiquidity' }));
         try {
             // Get the available liquidity for target network
             const res = await this.api({
-                command: 'getAvailableLiquidity', data: {targetNetwork, targetCurrency}, params: [] } as JsonRpcRequest);
-            const { liquidity } = res;
-            ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
-            dispatch(addAction(Actions.BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))
+                command: 'getAvaialableLiquidity', data: {userAddress: targetNetwork, currency: targetCurrency}, params: [] } as JsonRpcRequest);
+            if(res){
+                const { liquidity } = res;
+                dispatch(addAction(Actions.BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))
+            }
+
+            //ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
+            //dispatch(addAction(Actions.BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_LOAD_FAILED, {
+                message: e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'getAvailableLiquidity' }));
+        }
+    }
+
+    
+    public async getUserLiquidity(dispatch: Dispatch<AnyAction>,
+        userAddr: string,
+        targetCurrency: string) {
+        dispatch(addAction(CommonActions.WAITING, { source: 'getAvailableLiquidity' }));
+        try {
+            // Get the available liquidity for target network
+            const res = await this.api({
+                command: 'getLiquidity', data: {userAddress: userAddr, currency: targetCurrency || ''}, params: [] } as JsonRpcRequest);
+            if(res){
+                const { liquidity } = res;
+                dispatch(addAction(Actions.USER_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))
+            }
+
+            //ValidationUtils.isTrue(!liquidity, 'Invalid liquidity received');
+            //dispatch(addAction(Actions.BRIDGE_AVAILABLE_LIQUIDITY_FOR_TOKEN, {liquidity}))
+        } catch(e) {
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, {
                 message: e.message || '' }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'getAvailableLiquidity' }));
@@ -144,6 +184,8 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             await this.withdrawableBalanceItemUpdateTransaction(dispatch, w.receiveTransactionId, txIds[0]);
             return 'success';
         } catch(e) {
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, {
+                message: e.message || '' }));
             dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
                 message: e.message || '' }));
         } finally {
@@ -269,6 +311,27 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
             return 'success';
+        } catch(e) {
+            dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
+                message: e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'withdrawableBalanceItemAddTransaction' }));
+        }
+    }
+
+    public async checkAllowance(
+        dispatch: Dispatch<AnyAction>,
+        currency: string,
+        amount: string,
+        targetCurrency: string,
+        ) {
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'swapGetTransaction',
+                data: {currency, amount, targetCurrency}, params: [] } as JsonRpcRequest);
+            const { isApprove, requests } = res;
+            return isApprove;
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
                 message: e.message || '' }));

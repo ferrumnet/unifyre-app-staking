@@ -11,6 +11,7 @@ export interface ReponsivePageWrapperProps {
     homepage?: string;
     navBarContent?: any;
     isBridge?: boolean,
+    isBridgeHome?: boolean,
     children: any;
     authError?: string;
 }
@@ -23,6 +24,8 @@ export interface ReponsivePageWrapperDispatch {
 
 export interface ResponsiveConnectProps {
     error?: string;
+    notiError?: string;
+    success?: string
 }
 
 export class PageWrapperUtils {

@@ -12,7 +12,7 @@ export function WebPageWrapper(props: {
     const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
     const history = useHistory();
     const groupId = Utils.getGroupIdFromHref();
-    const dektopItems = PageWrapperUtils.platform() === 'desktop' ? (
+    const dektopItems = (PageWrapperUtils.platform() === 'desktop' && !props.isBridge) ? (
         <>
             <ActionButton
                 allowDisabledFocus
@@ -22,6 +22,18 @@ export function WebPageWrapper(props: {
             </ActionButton>
         </>
     ) : undefined;
+    
+    const bridgeItems = props.isBridge ? (
+        (window.location.href.split('/')[3]) &&
+        <>
+            <div onClick={openPanel}>
+                My Withdrawals
+            </div>
+            <div onClick={()=>history.push('./')}>
+                My Pair
+            </div>
+        </>
+    ) : undefined;
     return (
         <>
         <ResponsivePageWrapper 
@@ -29,25 +41,32 @@ export function WebPageWrapper(props: {
             navBarContent={
                 <>
                 {dektopItems}
-                <ActionButton
-                    onClick={() => {
-                        if (props.noMainPage) {
-                            window.location.href = props.homepage!;
-                        } else {
-                            return history.push('/' + groupId);
-                        }
-                    }}
-                    allowDisabledFocus>
-                    Staking Options
-                </ActionButton>
+                {bridgeItems}
+                {
+                    !props.isBridge &&
+                        <ActionButton
+                            onClick={() => {
+                                if (props.noMainPage) {
+                                    window.location.href = props.homepage!;
+                                } else {
+                                    return history.push('/' + groupId);
+                                }
+                            }}
+                            allowDisabledFocus>
+                            Staking Options
+                        </ActionButton>
+                }
+                
                 </>
             }
         >
             <SidePaneContainer
+                isBridge={props.isBridge || false}
                 isOpen={isOpen}
                 dismissPanel={dismissPanel}
             />
-            {props.children}</ResponsivePageWrapper>
+                {props.children}
+            </ResponsivePageWrapper>
         </>
     );
 }

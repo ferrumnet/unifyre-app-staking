@@ -5,12 +5,13 @@ import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
 import { ReponsivePageWrapperDispatch } from "../../../base/PageWrapperTypes";
 import { logError } from "../../../common/Utils";
+import { LiquidityActions } from './../swap/swap';
 
 export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
     INIT_SUCCEED: 'INIT_SUCCEED',
     CLEAR_ERROR: 'CLEAR_ERROR',
-    ERROR_OCCURED: 'ERROR_OCCURED'
+    ERROR_OCCURED: 'ERROR_OCCURED',
 };
 
 const Actions = DashboardActions;
@@ -22,7 +23,13 @@ export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
 }
 
 export interface DashboardProps extends DashboardState {
-    initialized: boolean
+    initialized: boolean,
+    isHome: boolean,
+    isPaired: boolean,
+    initialised:boolean,
+    connected: boolean,
+    customTheme?: any;
+    userWithdrawalItems: any[]
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
@@ -31,6 +38,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             dispatch(addAction(Actions.INIT_SUCCEED, {}));
+            const routes = window.location.href.split('/')[1]
+            console.log(routes,'routes2345')
         } catch (error) {
             logError('Dashboard.mapDispatchToProps', error);
             dispatch(addAction(Actions.INIT_FAILED, { message: error.toString() }));
@@ -60,16 +69,25 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
 });
 
 function mapStateToProps (state: RootState):DashboardProps {
+    const userProfile = state.data.userData?.profile;
+    const addr = userProfile?.accountGroups[0]?.addresses || {};
+    const address = addr[0] || {};
     return {
         ...state.ui.dashboard,
         initialized: state.ui.dashboard.initialized,
         fatalError: state.ui.dashboard.fatalError,
-        error: state.ui.dashboard.error
+        error: state.ui.dashboard.error,
+        isHome: state.ui.dashboard.isHome || false,
+        initialised: state.ui.bridgeMain.initialised,
+        isPaired: state.ui.bridgeMain.isPaired,
+        connected: address.network ? true : false,
+        userWithdrawalItems: state.ui.swap.userWithdrawalItems || []
     }
 }
 
 const defaultDashboardState = {
     initialized: false,
+    userWithdrawalItems: []
 }
 
 function reduce(state: DashboardState = defaultDashboardState, action: AnyAction){
@@ -81,7 +99,9 @@ function reduce(state: DashboardState = defaultDashboardState, action: AnyAction
         case Actions.CLEAR_ERROR:
             return {...state, error: undefined};
         case Actions.ERROR_OCCURED:
-            return {...state, fatalError: action.payload.message,error: 'GGGTTT'};
+            return {...state, fatalError: action.payload.message,error: 'hrty'};
+        case LiquidityActions.WITHDRAWAL_ITEMS_FETCHED:
+            return {...state, userWithdrawalItems: action.payload.items}
         default:
             return state;
     }

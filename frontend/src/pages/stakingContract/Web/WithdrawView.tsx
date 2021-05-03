@@ -65,7 +65,7 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
     const maturityTracker = ((props.contract.withdrawEnds || 0) * 1000 <= Date.now()) ? undefined : (
         <>
             {
-                Number(tillHour) > 0 ?
+                (Number(tillMon) || Number(tillDay) || Number(tillHour)) > 0 ?
                     <Row centered>
                          <span className="staking-maturity-counter" style={styles.text}>
                             {tillMon || '0'} months {tillDay || '0'} days {tillHour || '0'} hours to maturity

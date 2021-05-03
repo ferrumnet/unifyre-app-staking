@@ -42,18 +42,25 @@ export class BridgeProcessor implements Injectable {
         const relevantTokens = await this.tokenConfig.getSourceCurrencies(network);
         ValidationUtils.isTrue(!!relevantTokens.length, `No relevent token found in config for ${network}`);
         try {
+            console.log(relevantTokens.map((j:any) => j.sourceCurrency),'soucreee')
             const incoming = await client.getRecentTransactionsByAddress(
-                poolAddress, relevantTokens);
-            console.log('Got incoming txs:', incoming)
+                poolAddress, relevantTokens.map((j:any) => j.sourceCurrency));
+                //@ts-ignore
+            console.log('Got incoming txs:', {...incoming},{...incoming})
             if (!incoming || !incoming.length) {
                 this.log.info('No recent transaction for address ' + poolAddress);
                 return;
             }
-            for (const tx of incoming) {
-                this.log.info(`Processing transaction ${tx.id}`);
-                const [existed, _] = await this.processSingleTransaction(tx);
+            const reverse = Object.keys(incoming).reverse();
+            
+            for (const tx of reverse) {
+                //@ts-ignore
+                this.log.info(`Processing transaction ${incoming[tx].id}`);
+                //@ts-ignore
+                const [existed, _] = await this.processSingleTransaction(incoming[tx]);
                 if (existed) {
-                    this.log.info(`Reached a transaction that was already processed: ${tx.id}`);
+                    //@ts-ignore
+                    this.log.info(`Reached a transaction that was already processed: ${incoming[tx].id}`);
                     return;
                 }
             }

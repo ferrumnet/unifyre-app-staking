@@ -45,6 +45,7 @@
     "ferrum-plumbing": "git+https://github.com/ferrumnet/ferrum-plumbing.git",
     "got": "^11.3.0",
     "mongoose": "^5.7.7",
+    "node-hid": "^2.1.1",
     "swarm-js": "^0.1.40",
     "unifyre-extension-sdk": "git+https://github.com/ferrumnet/unifyre-extension-sdk.git",
     "unifyre-extension-web3-retrofit": "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git",

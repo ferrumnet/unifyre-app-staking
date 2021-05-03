@@ -8,8 +8,12 @@ import { TokenBridgeService } from "../TokenBridgeService";
 import { BridgeConfigStorage } from "./BridgeConfigStorage";
 import { BridgeProcessor } from "./BridgeProcessor";
 import { BridgeProcessorConfig } from "./BridgeProcessorTypes";
-import { KMS } from "aws-sdk";
-
+import {
+    LambdaGlobalContext
+} from 'aws-lambda-helper';
+import { KMS } from 'aws-sdk';
+require('dotenv').config();
+const global = { init: false };
 export class BridgeProcessorModule implements Module {
     async configAsync(container: Container) {
         const region = process.env.AWS_REGION || process.env[AwsEnvs.AWS_DEFAULT_REGION] || 'us-east-2';
@@ -59,6 +63,7 @@ export class BridgeProcessorModule implements Module {
             c.get(EthereumSmartContractHelper),
             privateKey,
             c.get(LoggerFactory)));
+        container.register('JsonStorage', () => new Object());
         container.registerSingleton(TokenBridgeService, c => new TokenBridgeService(
             c.get(EthereumSmartContractHelper),
             ({}) as any,

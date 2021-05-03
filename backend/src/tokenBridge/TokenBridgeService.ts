@@ -68,12 +68,14 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
     async getWithdrawItemByReceiveTransaction(receiveTransactionId: string): Promise<UserBridgeWithdrawableBalanceItem> {
         this.verifyInit();
         const rv = await this.balanceItem!.findOne({receiveTransactionId});
+        //@ts-ignore
         return rv ? rv.toJSON(): rv;
     }
 
     async getWithdrawItem(receiveTransactionId: string): Promise<UserBridgeWithdrawableBalanceItem> {
         this.verifyInit();
         const rv = await this.balanceItem!.findOne({receiveTransactionId});
+        //@ts-ignore
         return rv ? rv.toJSON(): rv;
     }
 
@@ -86,12 +88,23 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         return { liquidity: await this.contract.getLiquidity(address, currency) };
     }
 
+    async getTokenAllowance(address: string, currency: string) {
+        return { liquidity: await this.contract.getTokenAllowance(address, currency) };
+    }
+
+    async getAvailableLiquidity(address: string) {
+        return { liquidity: await this.contract.getAvaialableLiquidity(address) };
+    }
+
     async getUserWithdrawItems(network: string, address: string): Promise<UserBridgeWithdrawableBalanceItem[]> {
         this.verifyInit();
+        const all = await this.balanceItem?.find({})
         const items = (await this.balanceItem!.find({
             sendNetwork: network, sendAddress: ChainUtils.canonicalAddress(network as any, address),
         })) || [];
-        console.log('getUserWithdrawItems', {c: this.balanceItem!.collection.name, network, address});
+        console.log('getUserWithdrawItems', all,{network,address});
+        console.log({sendNetwork: network, address: ChainUtils.canonicalAddress(network as any, address)})
+
         return items.map(i => i.toJSON());
     }
 
@@ -118,6 +131,9 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
             item.useTransactions.push({id: tid, status: txStatus, timestamp: txTime});
             console.log(`Setting status for withdraw item ${id}: ${txStatus}-${tid}`)
         }
+        if(item.useTransactions.length > 0){
+            item.used = 'pending';
+        }
         return await this.updateWithdrawItem(item);
     }
 
@@ -135,6 +151,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
                 },
             ]}
         )
+        //@ts-ignore
         return !!rv ? rv.toJSON() : rv;
     }
 

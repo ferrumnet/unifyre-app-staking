@@ -1,13 +1,9 @@
-import React, {useEffect} from 'react';
-import { connect } from 'react-redux';
-import { Main,MainDispatch, MainProps } from './main';
-import { ConnectButton } from './../../../base/ConnectButton';
+import React, {useContext} from 'react';
 import {
-    WebThemedButton,Gap,Row
+    WebThemedButton,Gap
     // @ts-ignore
 } from 'desktop-components-library';
 import { TextField} from 'office-ui-fabric-react';
-import { ConButton } from '../../../base/NavBar';
 import { ConnectorContainer } from '../../../connect/ConnectContainer';
 import { RootState } from '../../../common/RootState';
 import { IocModule } from '../../../common/IocModule';
@@ -15,14 +11,19 @@ import { Divider } from '@fluentui/react-northstar'
 import greenTick from './../../../images/green-tick.png'
 import { useHistory } from 'react-router';
 import { CHAIN_ID_FOR_NETWORK } from '../../TokenBridgeTypes';
+import { ConButton } from '../../../base/NavBar';
+import {MainProps,MainDispatch,Main} from './main';
+import { connect } from 'react-redux';
+import {ThemeContext, Theme} from 'unifyre-react-helper';
 
 function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
-        const history = useHistory();
-    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);    
+    const history = useHistory();
+        const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
         return (
             <div>
                 <>
-                    <div className=" centered main-header"> Ferrum Token Bridge </div>
                     <div className="body-not-centered">
                         <div className="header title">  
                             Your Paired Addresses
@@ -34,7 +35,11 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                 <div>
                                     <TextField
                                         placeholder={'Enter Network'}
-                                        value={props.pairedAddress?.network1}
+                                        value={
+                                            props.isPaired ?
+                                                props.signedPairedAddress?.pair?.network1 || props.pairedAddress?.network1
+                                            :   props.baseNetwork
+                                        }
                                         disabled={true}
                                     />
                                 </div>
@@ -44,11 +49,18 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                 <div>
                                     <TextField
                                         placeholder={'Enter Address'}
-                                        value={props.pairedAddress?.address1}
+                                        value={
+                                           props.isPaired ?
+                                           props.signedPairedAddress?.pair?.address1 || props.pairedAddress?.address1
+                                            :   props.baseAddress
+                                        }
                                         disabled={true}
                                     />
                                 </div>
                             </div>
+                            { 
+                              (!props.signedPairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered">Kindly refresh this page to reset the pair connection.</div>
+                            }
                             {
                                 (props.isPaired && !props.baseSignature) &&
                                 <div>
@@ -81,9 +93,14 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                             props.destNetwork
                                             :   <div className="content">
                                                     <select name="networks" id="networks" onChange={(v)=>props.onDestinationNetworkChanged(v.target.value)}  disabled={props.isPaired ? true : false}>
-                                                        {Object.keys(CHAIN_ID_FOR_NETWORK).map(n => (
-                                                            <option key={n} value={n}>{n}</option> 
-                                                        ))}
+                                                        {
+                                                            props.isPaired ? 
+                                                                <option key={props.destNetwork} value={props.destNetwork}>{props.destNetwork}</option>
+                                                            :
+                                                            Object.keys(CHAIN_ID_FOR_NETWORK).map(n => (
+                                                                <option key={n} value={n}>{n}</option> 
+                                                            ))
+                                                        }
                                                     </select>
                                                 </div>
                                     }
@@ -118,31 +135,26 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                             <>
                                                 {
                                                     (props.connected) ? 
-                                                        (props.destNetwork != props.baseNetwork) ?
-                                                            <div className="header centered">Connect your MetaMask to {props.destNetwork} in order to Sign this Address.</div>
-                                                        :   <WebThemedButton
-                                                                text={'Sign to Prove OwnerShip'}
-                                                                onClick={()=>props.signSecondPairAddress(
-                                                                    props.pairedAddress?.network1||'' , props.destNetwork,props.destAddress, props.baseSignature
-                                                                )}
-                                                                disbabled={!!props.destAddress}
-                                                            /> 
-                                                    :   (
-                                                        <>
-                                <ConBot 
-                                    onConnect={() => props.onConnected()}
-                                    onConnectionFailed={props.onConnectionFailed}
-                                    onConnected={props.con}
-                                    dataSelector={(state: RootState) => state.data.userData}
-                                    // appInitialized={props.initialized}
-                                    appInitialized={true}
-                                />
-                                                    <WebThemedButton
-                                                            text={'Connect to Network'}
-                                                            onClick={()=>props.onReconnect()}
+                                                        (props.network === props.destNetwork) ?
+                                                        <WebThemedButton
+                                                            text={'Sign to Prove OwnerShip'}
+                                                            onClick={()=>props.signSecondPairAddress(
+                                                                (props.signedPairedAddress?.pair?.network1 || props.pairedAddress?.network1 || '') , 
+                                                                props.destNetwork, 
+                                                                (props.signedPairedAddress?.pair?.address1 || props.pairedAddress?.address1 || ''),
+                                                                props.destAddress, 
+                                                                props.baseSignature
+                                                            )}
                                                             disbabled={!!props.destAddress}
+                                                        /> :  <div className="header centered">Connect your MetaMask to {props.destNetwork} in order to Sign this Address.</div>
+                                                    :   <ConBot 
+                                                            onConnect={props.onConnected}
+                                                            onConnectionFailed={props.onConnectionFailed}
+                                                            onConnected={props.con}
+                                                            dataSelector={(state: RootState) => state.data.userData}
+                                                            // appInitialized={props.initialized}
+                                                            appInitialized={true}
                                                         />
-                                                        </> )
                                                     
                                                 } 
                                             </>
@@ -153,28 +165,36 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                 </div>
                                             </div>
                                     }
-                                    {
-                                        <div className="pad-main-body verify">
-                                            {
-                                                (props.isPaired) &&
-                                                    <WebThemedButton
-                                                        text={'UnPair and Reset'}
-                                                        //@ts-ignore
-                                                        onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress) : ()=>props.resetPair()}
-                                                    />
-                                            }
-                                            {
-                                                (props.destSignature && props.baseSignature) &&
-                                                    <WebThemedButton
-                                                        text={'Swap Token'}
-                                                        onClick={()=>props.startSwap(history)}
-                                                    />
-                                            }                        
-                                        </div>
-                                    }
                                 </>
                             }
-                        </div>                        
+                        </div>      
+                        {
+                            props.network ?
+                            <div className="pad-main-body verify">
+                                {
+                                    (props.isPaired) &&
+                                        <WebThemedButton
+                                            text={'UnPair and Reset'}
+                                            onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress) : ()=>props.resetPair()}
+                                        />
+                                }
+                                {
+                                    (props.destSignature && props.baseSignature) &&
+                                        <WebThemedButton
+                                            text={'Swap Token'}
+                                            onClick={()=>props.startSwap(history)}
+                                        />
+                                }
+                                {
+                                    (props.destSignature && props.baseSignature) &&
+                                        <WebThemedButton
+                                            text={'Manage Liquidity'}
+                                            onClick={()=>props.manageLiquidity(history)}
+                                        />
+                                }                        
+                            </div>
+                            : <div className="content notif centered"> Kindly Reconnect to network</div>
+                        }                  
                     </div>
                 </>
             </div>
@@ -183,14 +203,12 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
 
 function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
     
-    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);
-  
+    const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);    
     return (
         <div className="centered-body">
             {
-                (!props.initialised) &&
+                (!props.initialised || !props.network && !props.isPaired) &&
                 <>
-                    <div className="main-header"> Ferrum Token Bridge </div>
                     <div className="body-content">
                         <div>
                             <div> Connect Your Wallet To See Your Paired Addresses. </div>
@@ -202,7 +220,7 @@ function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:stri
                                     onConnected={props.con}
                                     dataSelector={(state: RootState) => state.data.userData}
                                     // appInitialized={props.initialized}
-                                    appInitialized={true}
+                                    appInitialized={props.initialised}
                                 />
                             </div>
                         </div>
@@ -211,7 +229,7 @@ function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:stri
 
             }
             {
-                (props.initialised) && <ConnectedWallet {...props} />
+                (props.initialised && (props.connected || props.isPaired)) && <ConnectedWallet {...props} />
             }
           
         </div>
@@ -222,3 +240,8 @@ export const MainContainer = connect(
     Main.mapStateToProps,
     Main.mapDispatchToProps
 )(MainComponent);
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+
+});

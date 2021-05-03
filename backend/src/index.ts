@@ -17,7 +17,7 @@ import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 import { StakingFarmContractClient } from './StakingFarmContractClient';
 import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
-
+import {BridgeConfigStorage} from './tokenBridge/processor/BridgeConfigStorage';
 import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
 import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
 import { PairAddressSignatureVerifyre } from './tokenBridge/common/PairAddressSignatureVerifyer';
@@ -71,8 +71,8 @@ export class stakingAppModule implements Module {
                 signingKeyHex: getEnv('REQUEST_SIGNING_KEY'),
                 web3ProviderEthereum: getEnv('WEB3_PROVIDER_ETHEREUM'),
                 web3ProviderRinkeby: getEnv('WEB3_PROVIDER_RINKEBY'),
-                web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC'),
-                web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
+                web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
+                web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC'),
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
@@ -81,12 +81,14 @@ export class stakingAppModule implements Module {
                     contractClient: {
                         'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
                         'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY'),
-                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC'),
+                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                         'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                     }
                 }
             } as StakingAppConfig;
         }
+
+        console.log(stakingAppConfig,'appconfig');
         // makeInjectable('CloudWatch', CloudWatch);
         // container.register('MetricsUploader', c =>
         //     new CloudWatchClient(c.get('CloudWatch'), 'WalletAddressManager', [
@@ -150,6 +152,7 @@ export class stakingAppModule implements Module {
                     c.get(SmartContratClient),
                     c.get(StakingFarmContractClient),
                     ));
+        container.registerSingleton(BridgeConfigStorage,c=>new BridgeConfigStorage())
         container.registerSingleton(TokenBridgeService,
             c => new TokenBridgeService(
                 c.get(EthereumSmartContractHelper),
@@ -158,7 +161,8 @@ export class stakingAppModule implements Module {
                 ));
         container.register(TokenBridgeHttpHandler,
                 c=> new TokenBridgeHttpHandler(
-                    c.get(TokenBridgeService)
+                    c.get(TokenBridgeService),
+                    c.get(BridgeConfigStorage)
                 )
         );
         container.registerSingleton('LambdaHttpHandler',
@@ -175,7 +179,7 @@ export class stakingAppModule implements Module {
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
         container.registerSingleton(TokenBridgeHttpHandler,
-            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService)))
+            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
         container.registerSingleton(PairAddressSignatureVerifyre, c=>
             new PairAddressSignatureVerifyre()
         ),
@@ -189,6 +193,7 @@ export class stakingAppModule implements Module {
         ));
         await container.get<TokenBridgeService>(TokenBridgeService).init(stakingAppConfig.database);
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
+        await container.get<BridgeConfigStorage>(BridgeConfigStorage).init(stakingAppConfig.database);
 
         // Paired address
         container.register(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());

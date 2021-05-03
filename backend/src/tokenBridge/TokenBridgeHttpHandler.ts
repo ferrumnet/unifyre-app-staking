@@ -1,10 +1,11 @@
 import { LambdaHttpRequest, LambdaHttpResponse } from "aws-lambda-helper";
 import { Injectable, JsonRpcRequest, ValidationUtils } from "ferrum-plumbing";
 import { TokenBridgeService } from "./TokenBridgeService";
-
+import { BridgeConfigStorage } from './processor/BridgeConfigStorage';
 export class TokenBridgeHttpHandler implements Injectable {
     constructor(
         private svc: TokenBridgeService,
+        private bgs: BridgeConfigStorage
     ) {
     }
     __name__(): string { return 'TokenBridgeHttpHandler'; }
@@ -26,6 +27,10 @@ export class TokenBridgeHttpHandler implements Injectable {
                 return this.getUserPairedAddress(req, userId!);
             case 'getLiquidity':
                 return this.getLiquidity(req);
+            case 'getAvaialableLiquidity':
+                return this.getAvailableLiquidity(req);
+            case 'getTokenAllowance':
+                return this.getLiquidity(req);
             case 'getUserWithdrawItems':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
                 return this.getUserWithdrawItems(req, userId!);
@@ -41,6 +46,8 @@ export class TokenBridgeHttpHandler implements Injectable {
             case 'swapGetTransaction':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
                 return this.swapGetTransaction(req, userId!);
+            case 'getSourceCurrencies':
+                return this.bgs.getSourceCurrencies(req.data.network)
             default:
                 return;
         }
@@ -64,12 +71,31 @@ export class TokenBridgeHttpHandler implements Injectable {
         return this.svc.getLiquidity(userAddress, currency);
     }
 
+    async getTokenAllowance(req: JsonRpcRequest) {
+        const {
+            currency, userAddress
+        } = req.data;
+        ValidationUtils.isTrue(!!currency, "'currency' must be provided");
+        ValidationUtils.isTrue(!!userAddress, "'addres' must be provided");
+        return this.svc.getTokenAllowance(userAddress, currency);
+    }
+
+    async getAvailableLiquidity(req: JsonRpcRequest) {
+        const {
+            currency, userAddress
+        } = req.data;
+        ValidationUtils.isTrue(!!currency, "'currency' must be provided");
+        ValidationUtils.isTrue(!!userAddress, "'addres' must be provided");
+        return this.svc.getAvailableLiquidity(currency);
+    }
+
+
     async getUserWithdrawItems(req: JsonRpcRequest, userId: string) {
         const {
             network,
         } = req.data;
         ValidationUtils.isTrue(!!network, "'network' must be provided");
-        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId)};
+        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId.toLowerCase())};
     }
 
     async updateWithdrawItemAddTransaction(req: JsonRpcRequest) {
