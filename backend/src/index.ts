@@ -71,8 +71,8 @@ export class stakingAppModule implements Module {
                 signingKeyHex: getEnv('REQUEST_SIGNING_KEY'),
                 web3ProviderEthereum: getEnv('WEB3_PROVIDER_ETHEREUM'),
                 web3ProviderRinkeby: getEnv('WEB3_PROVIDER_RINKEBY'),
-                web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC'),
-                web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
+                web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
+                web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC'),
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
@@ -81,12 +81,14 @@ export class stakingAppModule implements Module {
                     contractClient: {
                         'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
                         'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY'),
-                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC'),
+                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                         'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
                     }
                 }
             } as StakingAppConfig;
         }
+
+        console.log(stakingAppConfig,'appconfig');
         // makeInjectable('CloudWatch', CloudWatch);
         // container.register('MetricsUploader', c =>
         //     new CloudWatchClient(c.get('CloudWatch'), 'WalletAddressManager', [

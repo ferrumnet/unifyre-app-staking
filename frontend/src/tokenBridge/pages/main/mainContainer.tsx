@@ -37,8 +37,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         placeholder={'Enter Network'}
                                         value={
                                             props.isPaired ?
-                                                //@ts-ignore
-                                                props.pairedAddress?.pair?.network1 || props.pairedAddress?.network1
+                                                props.signedPairedAddress?.pair?.network1 || props.pairedAddress?.network1
                                             :   props.baseNetwork
                                         }
                                         disabled={true}
@@ -52,16 +51,15 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         placeholder={'Enter Address'}
                                         value={
                                            props.isPaired ?
-                                           //@ts-ignore
-                                           props.pairedAddress?.pair?.address1 || props.pairedAddress?.address1
+                                           props.signedPairedAddress?.pair?.address1 || props.pairedAddress?.address1
                                             :   props.baseAddress
                                         }
                                         disabled={true}
                                     />
                                 </div>
                             </div>
-                            { //@ts-ignore
-                              (!props.pairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered">Kindly refresh this page to reset the pair connection.</div>
+                            { 
+                              (!props.signedPairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered">Kindly refresh this page to reset the pair connection.</div>
                             }
                             {
                                 (props.isPaired && !props.baseSignature) &&
@@ -141,10 +139,9 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                         <WebThemedButton
                                                             text={'Sign to Prove OwnerShip'}
                                                             onClick={()=>props.signSecondPairAddress(
-                                                                //@ts-ignore
-                                                                (props.pairedAddress?.pair?.network1 || props.pairedAddress.network1) , 
-                                                                //@ts-ignore
-                                                                props.destNetwork, (props.pairedAddress?.pair?.address1 || props.pairedAddress?.address1 ),
+                                                                (props.signedPairedAddress?.pair?.network1 || props.pairedAddress?.network1 || '') , 
+                                                                props.destNetwork, 
+                                                                (props.signedPairedAddress?.pair?.address1 || props.pairedAddress?.address1 || ''),
                                                                 props.destAddress, 
                                                                 props.baseSignature
                                                             )}
@@ -178,7 +175,6 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     (props.isPaired) &&
                                         <WebThemedButton
                                             text={'UnPair and Reset'}
-                                            //@ts-ignore
                                             onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress) : ()=>props.resetPair()}
                                         />
                                 }

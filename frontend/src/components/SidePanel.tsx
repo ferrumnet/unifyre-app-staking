@@ -29,7 +29,7 @@ import { UserBridgeWithdrawableBalanceItem } from "../tokenBridge/TokenBridgeTyp
 
 export interface SidePanelProps {
     stakeEvents: StakeEvent[];
-    userWithdrawalItems: any[]
+    userWithdrawalItems: UserBridgeWithdrawableBalanceItem[]
 }
 
 export function mapStateToProps(state: RootState): SidePanelProps {

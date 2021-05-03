@@ -2,7 +2,7 @@ import {ValidationUtils} from "ferrum-plumbing";
 import { Schema, Connection, Document } from "mongoose";
 import { GroupInfo, StakeEvent, StakingApp, } from "./Types";
 
-//@ts-ignore
+//@ts-ignoreSchema
 const StakingAppSchema: Schema = new Schema<StakingApp>({
     contractType: String,
     network: String,
