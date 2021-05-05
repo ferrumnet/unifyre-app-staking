@@ -4,9 +4,9 @@ import { inject, IocModule } from '../../../common/IocModule';
 import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
 import { ReponsivePageWrapperDispatch } from "../../../base/PageWrapperTypes";
-import { logError } from "../../../common/Utils";
+import { logError, Utils } from "../../../common/Utils";
 import { LiquidityActions } from './../swap/swap';
-
+import {loadThemeForGroup} from './../../../themeLoader';
 export const DashboardActions = {
     INIT_FAILED: 'INIT_FAILED',
     INIT_SUCCEED: 'INIT_SUCCEED',
@@ -37,9 +37,21 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
-            dispatch(addAction(Actions.INIT_SUCCEED, {}));
-            const routes = window.location.href.split('/')[1]
-            console.log(routes,'routes2345')
+            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
+            const groupId = Utils.getGroupIdFromHref();
+            if (!groupId) {
+                setTimeout(() => dispatch(addAction(Actions.INIT_FAILED, {message: 'No group ID'})));
+                return;
+            }
+            const groupInfo = await sc.loadGroupInfo(dispatch, groupId!);
+            if (!groupInfo) {
+                dispatch(addAction(Actions.INIT_FAILED, {message: 'No group info'}));
+                return;
+            }else{
+                loadThemeForGroup(groupInfo.themeVariables);
+                dispatch(addAction(Actions.INIT_SUCCEED, {}));
+                return;
+            }
         } catch (error) {
             logError('Dashboard.mapDispatchToProps', error);
             dispatch(addAction(Actions.INIT_FAILED, { message: error.toString() }));

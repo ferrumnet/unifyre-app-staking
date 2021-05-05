@@ -96,9 +96,7 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         const items = (await this.balanceItem!.find({
             sendNetwork: network, sendAddress: ChainUtils.canonicalAddress(network as any, address),
         })) || [];
-        console.log('getUserWithdrawItems', all,{network,address});
         console.log({sendNetwork: network, address: ChainUtils.canonicalAddress(network as any, address)})
-
         return items.map(i => i.toJSON());
     }
 
@@ -115,18 +113,21 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         ValidationUtils.isTrue(!!item, "Withdraw item with the provided id not found.");
         const txItem = (item.useTransactions || []).find(t => t.id === tid);
         if (!!txItem) {
-            const txStatus = await this.helper.getTransactionStatus(item!.receiveNetwork, tid, txItem.timestamp);
+            const txStatus = await this.helper.getTransactionStatus(item!.sendNetwork, tid, txItem.timestamp);
             txItem.status = txStatus;
             console.log(`Updating status for withdraw item ${id}: ${txStatus}-${tid}`)
         } else {
             const txTime = Date.now();
-            const txStatus = await this.helper.getTransactionStatus(item!.receiveNetwork, tid, txTime);
+            const txStatus = await this.helper.getTransactionStatus(item!.sendNetwork, tid, txTime);
             item.useTransactions = item.useTransactions || [];
             item.useTransactions.push({id: tid, status: txStatus, timestamp: txTime});
-            console.log(`Setting status for withdraw item ${id}: ${txStatus}-${tid}`)
-        }
-        if(item.useTransactions.length > 0){
-            item.used = 'pending';
+            if(txStatus === ('timedout' || 'failed')){
+                item.used = 'failed';
+            }else if(txStatus === 'successful'){
+                item.used = 'completed'
+            }else{
+                item.used = 'pending'
+            }
         }
         return await this.updateWithdrawItem(item);
     }

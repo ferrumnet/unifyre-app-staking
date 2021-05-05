@@ -6,7 +6,7 @@ import { Divider } from '@fluentui/react-northstar'
 import { TextField} from 'office-ui-fabric-react';
 import { PrimaryButton } from 'office-ui-fabric-react';
 import {
-    Gap
+    Gap,WebThemedButton
     // @ts-ignore
 } from 'desktop-components-library';
 import { useToasts } from 'react-toast-notifications';
@@ -27,6 +27,14 @@ function SwapComponent(props:swapDisptach&swapProps){
         }
     },[]);
 
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            await props.updatePendingWithrawItems();
+        }, 
+        30000 );
+        return () => clearInterval(interval);
+    }, [])
+
     const onMessage = async (v:string) => {    
         addToast(v, { appearance: 'error',autoDismiss: true })        
     };
@@ -34,27 +42,30 @@ function SwapComponent(props:swapDisptach&swapProps){
     const onSuccessMessage = async (v:string) => {    
         addToast(v, { appearance: 'success',autoDismiss: true })        
     };
-    console.log(props,'props3455');
-
+    let pendingItems = props.userWithdrawalItems.filter(e=>e.used === 'pending').length;
     return (
         <div className="centered-body">
             <>
                 <div className="body-not-centered swap swap-page">
-                    <div className="header title">  
-                        <div>
+                    <div className="header title ">  
+                        <div style={styles.headerStyles}>
                             Swap Accross Chains
                             <Divider/>
                         </div>
                     </div>
-
+                    {
+                        pendingItems > 0 ? <div className="content notif centered itemlist">You have {pendingItems} Item(s) ready for withdrawal</div>
+                        : <>
+                            <Gap/>
+                        </>
+                    }
                     <div className="pad-main-body">
-                        <Gap/>
-                        <Gap/>
-                        <div className="space-out sel">
-                            <div className="header">{props.network} Network to {props.destNetwork === props.network ? props.baseNetwork : props.destNetwork} </div>
+                        <div className="space-out sel" >
+                            <div className="header" style={styles.headerStyles}>{props.network} Network to {props.destNetwork === props.network ? props.baseNetwork : props.destNetwork} </div>
                             <>
                                 <select name="token" id="token" 
                                     className="content token-select" disabled={props.addresses.length === 0} 
+                                    style={styles.headerStyles}
                                     onChange={(e)=>props.tokenSelected(props.currenciesDetails.targetCurrency,e.target.value,props.addresses,props.pairedAddress.pair,histroy)}
                                     value={props.selectedToken}
                                 >
@@ -98,45 +109,39 @@ function SwapComponent(props:swapDisptach&swapProps){
                         </div>
                         {
                             !props.selectedToken ? <div className="content notif">Select a Token to swap from the options above</div>
-                            :  <div className="content">You currently have {formatter.format(props.balance,true)} amount of {props.symbol} available for swap.</div>
+                            :  <div className="content" style={styles.headerStyles}>You currently have {formatter.format(props.balance,true)} amount of {props.symbol} available for swap.</div>
 
                         }
                         <div>
                             <div className="space-out swap-entry swap-buttons">
-                                <PrimaryButton 
-                                    styles={styles.btnStyle}
-                                    ariaDescription="Detailed description used for screen reader."
+                                <WebThemedButton
+                                    text={'SWAP'}
                                     onClick={
                                         () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
                                     }
                                     disabled={!props.selectedToken || (Number(props.amount) <= 0) || props.allowanceRequired}
-                                >
-                                    SWAP
-                                </PrimaryButton>
-                                <PrimaryButton 
-                                    styles={styles.btnStyle}
-                                    ariaDescription="Detailed description used for screen reader."
+                                />
+                                <WebThemedButton
+                                    text={'APPROVE'}
                                     onClick={
                                         () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
                                     }
                                     disabled={!props.selectedToken || (Number(props.amount) <= 0) || !props.allowanceRequired}
-                                >
-                                    APPROVE
-                                </PrimaryButton>
+                                />
                             </div>
                         </div>
                         <Gap size="small"/>
                     </div>
                     <div className="pad-main-body second">
                         <div>
-                            <div className="space-out">
+                            <div className="space-out" style={styles.headerStyles}>
                                 <span>Available {props.selectedToken} Liquidity in {props.network} </span>
                                 <span className="bold">{formatter.format(props.availableLiquidity,true)}</span>
                             </div>
                         </div>
 
                         <div> 
-                            <div className="space-out">
+                            <div className="space-out" style={styles.headerStyles}>
                                 <span>Fee</span>
                                 <span className="bold">{props.currenciesDetails.fee || 0}</span>
                             </div>
@@ -157,12 +162,15 @@ const themedStyles = (theme) => ({
         root: [
           {
             padding: "1.3rem 2.5rem",
-            backgroundColor: theme.Button.btnPrimary,
-            borderColor: theme.Button.borderColor,
-            color: theme.btn.color,
+            backgroundColor: theme.get(Theme.Button.btnPrimary),
+            borderColor: theme.get(Theme.Button.btnPrimary) || '#ceaa69',
+            color: theme.get(Theme.Button.btnPrimaryTextColor),
             height: '40px',
           }
         ]
+    },
+    headerStyles: {
+        color: theme.get(Theme.Colors.textColor),
     }
 });
 

@@ -11,6 +11,7 @@ import { PairedAddress } from "../../TokenBridgeTypes";
 import { Connect, CurrencyList } from 'unifyre-extension-web3-retrofit';
 import { SignedPairAddress } from "./../../TokenBridgeTypes";
 import { PairAddressSignatureVerifyre } from "../../PairAddressSignatureVerifyer";
+import { Utils } from "../../../common/Utils";
 
 export const MainBridgeActions = {
     BRIDGE_INIT_FAILED: 'BRIDGE_INIT_FAILED',
@@ -289,11 +290,13 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    startSwap: async (history:any) => {
-        history.replace('/swap');
+    startSwap: async (history:any) => {  
+        const groupId = Utils.getGroupIdFromHref();
+        history.replace(`${groupId}/swap`);
     },
     manageLiquidity: async (history:any) => {
-        history.replace('/liquidity');
+        const groupId = Utils.getGroupIdFromHref();
+        history.replace(`${groupId}/liquidity`);
     },
     resetPair: async () => {
         dispatch(addAction(Actions.RESET_PAIR,{}));
