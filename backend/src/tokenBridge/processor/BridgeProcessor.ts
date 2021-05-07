@@ -42,25 +42,21 @@ export class BridgeProcessor implements Injectable {
         const relevantTokens = await this.tokenConfig.getSourceCurrencies(network);
         ValidationUtils.isTrue(!!relevantTokens.length, `No relevent token found in config for ${network}`);
         try {
-            console.log(relevantTokens.map((j:any) => j.sourceCurrency),'soucreee')
+            console.log(relevantTokens.map((j:any) => j.sourceCurrency),'soucre currencies')
             const incoming = await client.getRecentTransactionsByAddress(
                 poolAddress, relevantTokens.map((j:any) => j.sourceCurrency));
                 //@ts-ignore
-            console.log('Got incoming txs:', {...incoming},{...incoming})
+            // console.log('Got icoming txs:', {...incoming},{...incoming})
             if (!incoming || !incoming.length) {
                 this.log.info('No recent transaction for address ' + poolAddress);
                 return;
             }
-            const reverse = Object.keys(incoming).reverse();
             
-            for (const tx of reverse) {
-                //@ts-ignore
-                this.log.info(`Processing transaction ${incoming[tx].id}`);
-                //@ts-ignore
-                const [existed, _] = await this.processSingleTransaction(incoming[tx]);
+            for (const tx of incoming.reverse()) {
+                this.log.info(`Processing transaction ${tx.id}`);
+                const [existed, _] = await this.processSingleTransaction(tx);
                 if (existed) {
-                    //@ts-ignore
-                    this.log.info(`Reached a transaction that was already processed: ${incoming[tx].id}`);
+                    this.log.info(`Reached a transaction that was already processed: ${tx.id}`);
                     return;
                 }
             }
@@ -89,15 +85,16 @@ export class BridgeProcessor implements Injectable {
     private async processSingleTransaction(tx: SimpleTransferTransaction):
         Promise<[Boolean, UserBridgeWithdrawableBalanceItem?]> {
         try {
-            const pair = await this.getAndValidatePairForTransaction(tx);
-            if (!pair) {
-                this.log.info(`No pair for the transactino: ${tx.id}`);
-                return [false, undefined];
-            }
             let processed = await this.svc.getWithdrawItem(tx.id);
             if (!!processed) {
                 return [true, processed];
             } else {
+            }
+
+            const pair = await this.getAndValidatePairForTransaction(tx);
+            if (!pair) {
+                this.log.info(`No pair for the transactino: ${tx.id}`);
+                return [false, undefined];
             }
 
             // Creating a new process option.
