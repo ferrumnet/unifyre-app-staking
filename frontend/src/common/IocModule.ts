@@ -72,7 +72,7 @@ export class IocModule {
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
             c.registerSingleton(TokenBridgeClient, c => new TokenBridgeClient(
                     c.get(UnifyreExtensionKitClient),
-                    LOCAL_DEV_CONF.poolDropBackend
+                    CONFIG.poolDropBackend
                 )
             );
             const client = c.get<StakingAppClient>(StakingAppClient);

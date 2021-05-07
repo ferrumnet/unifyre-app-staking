@@ -92,6 +92,6 @@
     "fluent-typescript": "^0.0.4",
     "jest": "^24.9.0",
     "node-sass": "^4.14.1",
-    "typescript": "^4.2.4"
+    "typescript": "^3.7.2"
   }
 }

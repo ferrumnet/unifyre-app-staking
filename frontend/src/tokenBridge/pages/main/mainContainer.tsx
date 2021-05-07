@@ -178,8 +178,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     (props.isPaired) &&
                                         <WebThemedButton
                                             text={'UnPair and Reset'}
-                                            //@ts-ignore
-                                            onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress) : ()=>props.resetPair()}
+                                            onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress!) : ()=>props.resetPair()}
                                         />
                                 }
                                 {
