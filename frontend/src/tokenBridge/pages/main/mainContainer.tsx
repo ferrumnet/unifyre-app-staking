@@ -30,7 +30,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                             <Divider/>
                         </div>
                         <div className="pad-main-body">
-                            <div className="header">First Network</div>
+                            <div className="header" style={styles.headerStyles}>First Network</div>
                             <div className="content">
                                 <div>
                                     <TextField
@@ -41,6 +41,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                             :   props.baseNetwork
                                         }
                                         disabled={true}
+                                        styles={styles.inputStyle}
                                     />
                                 </div>
                             </div>
@@ -55,6 +56,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                             :   props.baseAddress
                                         }
                                         disabled={true}
+                                        styles={styles.inputStyle}
                                     />
                                 </div>
                             </div>
@@ -114,6 +116,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                     onChange={(e,v)=>props.onAddressChanged(v||'')}
                                                     defaultValue={props.destAddress}
                                                     disabled={props.isPaired ? true : false}
+                                                    styles={styles.inputStyle}
                                                 />
                                             </div>
                                     }
@@ -175,6 +178,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     (props.isPaired) &&
                                         <WebThemedButton
                                             text={'UnPair and Reset'}
+                                            //@ts-ignore
                                             onClick={props.signedPairedAddress?.signature1 ? () => props.unPairAddresses(props.signedPairedAddress) : ()=>props.resetPair()}
                                         />
                                 }
@@ -243,5 +247,15 @@ export const MainContainer = connect(
 
 //@ts-ignore
 const themedStyles = (theme) => ({
-
+    inputStyle:  {
+        root: [
+          {
+            color: theme.get(Theme.Button.btnPrimaryTextColor),
+            height: '40px',
+          }
+        ]
+    },
+    headerStyles: {
+        color: theme.get(Theme.Colors.textColor),
+    }
 });

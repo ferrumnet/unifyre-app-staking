@@ -18,7 +18,7 @@ export default class ButtonLoader extends Component<{onPress: ()=> void,disabled
             />
           )}
           {loading && <span>Withdrawing Item</span>}
-          {!loading && this.props.disabled ? <span>Withdrawal processing</span> : <span>Withdraw Item</span>}
+          {!loading && this.props.disabled ? <span>Withdrawal processed</span> : <span>Withdraw Item</span>}
         </button>
       </div>
     );

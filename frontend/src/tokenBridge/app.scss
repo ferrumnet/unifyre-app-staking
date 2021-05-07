@@ -4,7 +4,6 @@
         padding: 1.3rem 2.5rem;
         background-color: transparent;
         border-color: #ceaa69;
-        color: white
     }
 }
 
@@ -68,7 +67,6 @@ option{
         display: flex;
         justify-content: space-between;
         width: 90% !important;
-        color: white;
         align-items: center;
         cursor: pointer;
 
@@ -212,7 +210,6 @@ option{
         height: 60px;
         border-color: #ceaa69;
         background-color: transparent;
-        color: white;
         border-radius: 10px;
         border-left-style: dotted; 
     }
@@ -258,7 +255,6 @@ option{
 
 .centered-body{
     padding-top: 0%;
-    color: white;
 
     button{
         &.is-disabled{
@@ -317,7 +313,6 @@ option{
     width: 80px;
     height: 60px;
     cursor: pointer;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -362,7 +357,6 @@ option{
     padding-top: 1%;
     margin: 0px auto;
     width: auto;
-    color: white;
 
     &>*{
         margin: 3.5rem 10rem;
@@ -478,7 +472,6 @@ option{
                 padding: 0.5rem;
                 border-color: #ceaa69;
                 background-color: transparent;
-                color: white;
             }
         }
         .pad-main-body{
@@ -544,7 +537,6 @@ option{
                 height: 60px;
                 border-color: #ceaa69;
                 background-color: transparent;
-                color: white;
                 border-radius: 10px;
                 border-left-style: dotted; 
 
@@ -580,14 +572,17 @@ option{
     display: flex;
     width: 60%
 }
-
+.content{
+    &.itemlist{
+        margin-bottom: 0px;
+    }
+}
 .pad-main-body{
     padding-left: 3rem;
     padding-right: 1.5rem;
     padding-top: 2rem;
     margin: 0px auto;
     width: 50%;
-    color: white;
 
   
 
@@ -623,7 +618,6 @@ option{
             padding: 1.3rem 2.5rem;
             background-color: transparent;
             border-color: #ceaa69;
-            color: white;
             width: 100%;
         }
     }
@@ -644,20 +638,17 @@ option{
         padding: 0.5rem;
         border-color: #ceaa69;
         background-color: transparent;
-        color: white;
     }
 
     .ms-TextField-fieldGroup{
         border-color: #ceaa69;
         background-color: transparent;
-        color: white;
         border-radius: 5px;
         padding: 10px;
         height: 40px;
         font-weight: bold;
 
         input{
-            color: white;
             background-color: transparent;
         }
     }
@@ -678,7 +669,6 @@ option{
     font-weight: 600;
     letter-spacing: 0.02em;
     text-transform: capitalize;
-    color: white
 }
 
 @media (max-width: 1100px) {
@@ -705,7 +695,6 @@ option{
             padding-top: 2rem;
             margin: 0px auto;
             width: 95%;
-            color: white;
 
             &.verify{
                 display: block;
@@ -739,7 +728,6 @@ option{
                 padding: 1.3rem 2.5rem;
                 background-color: transparent;
                 border-color: #ceaa69;
-                color: white;
             }
         }
     }

@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import {useHistory} from 'react-router';
 import { Dashboard, DashboardDispatch, DashboardProps } from './Dashboard';
 import { Switch, Route } from 'react-router-dom';
 import {
@@ -67,7 +66,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
 
     const themeVariables = useTheme();
     const theme = _loadTheme(themeVariables, props.customTheme);
-
+    const styles = themedStyles(theme);
     const testAlert = CONFIG.isProd ? undefined : (
       <><Row withPadding><Text size={'largest'} content={'TEST MODE'}/></Row></>)
     if (props.initialized) {
@@ -86,15 +85,15 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                 isBridge
                 >
                 <Gap/>
-                  <div className="main-header"> Ferrum Token Bridge </div>
+                  <div className="main-header" style={styles.headerStyles}> Ferrum Token Bridge </div>
                 <Switch>
-                    <Route path='/bridge'>
+                    <Route path='/:gid/bridge'>
                       <DummyBridgeContainer onConnected={props.onConnected}/>
                     </Route>
-                    <Route path='/liquidity'>
+                    <Route path='/:gid/liquidity'>
                         <LiquidityContainer/>
                     </Route>
-                    <Route path='/swap'>
+                    <Route path='/:gid/swap'>
                         <SwapContainer/>
                     </Route>
                     <Route path='/'>
@@ -139,6 +138,21 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
      
     );
 }
+
+//@ts-ignore
+const themedStyles = (theme) => ({
+  inputStyle:  {
+      root: [
+        {
+          color: theme.get(Theme.Button.btnPrimaryTextColor),
+          height: '40px',
+        }
+      ]
+  },
+  headerStyles: {
+      color: theme.get(Theme.Colors.textColor),
+  }
+});
 
 export const DashboardContainer = connect(
   Dashboard.mapStateToProps, Dashboard.mapDispatchToProps)(DashboardComponent);

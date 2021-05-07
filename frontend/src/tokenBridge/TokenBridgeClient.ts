@@ -2,6 +2,7 @@ import { Injectable, JsonRpcRequest, Network, ValidationUtils } from "ferrum-plu
 import { AnyAction, Dispatch } from "redux";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { addAction, CommonActions } from "../common/Actions";
+import { GroupInfo } from "../common/Types";
 import { logError } from "../common/Utils";
 import { ApiClient } from "./ApiClient";
 import { SignedPairAddress, UserBridgeWithdrawableBalanceItem } from "./TokenBridgeTypes";
@@ -73,7 +74,25 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         dispatch(addAction(Actions.BRIDGE_LIQUIDITY_PAIRED_ADDRESS_RECEIVED, {pairedAddress: pairedAddress || {}}))
     }
 
-    //getSourceCurrencies
+
+    async loadGroupInfo(dispatch: Dispatch<AnyAction>, groupId: string): Promise<GroupInfo|undefined> {
+        try {
+            ValidationUtils.isTrue(!!groupId, '"groupId" must be provided');
+            dispatch(addAction(CommonActions.WAITING, { source: 'loadGroupInfo' }));
+            let groupInfo = (await this.api({
+                command: 'getGroupInfo', data: {groupId},
+                params: []}as JsonRpcRequest)) as GroupInfo;
+            if (!groupInfo) {
+                return undefined;
+            }
+            return groupInfo;
+        } catch (e) {
+            logError('Error loading group info', e);
+            return;
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'loadGroupInfo' }));
+        }
+    }
 
     async getSourceCurrencies(dispatch: Dispatch<AnyAction>,network: string) {
         const res = await this.api({
@@ -181,6 +200,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
             const txIds = (response.response || []).map(r => r.transactionId);
+            dispatch(addAction(CommonActions.WAITING, { source: 'withdrawableBalanceItemAddTransaction' }));
             await this.withdrawableBalanceItemUpdateTransaction(dispatch, w.receiveTransactionId, txIds[0]);
             return 'success';
         } catch(e) {
@@ -197,7 +217,6 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
     public async withdrawableBalanceItemUpdateTransaction(dispatch: Dispatch<AnyAction>,
         id: string,
         transactionId: string) {
-        dispatch(addAction(CommonActions.WAITING, { source: 'withdrawableBalanceItemAddTransaction' }));
         try {
             const res = await this.api({
                 command: 'updateWithdrawItemAddTransaction',

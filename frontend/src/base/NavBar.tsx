@@ -177,9 +177,9 @@ const themedStyles = (theme) => ({
         display: 'flex',
         justifyContent: 'space-between',
         width: '50%',
-        color: 'white',
         alignItems: 'center',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        color: theme.get(Theme.Colors.textColor),
     },
     navTxt: {
         display: 'flex',

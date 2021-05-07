@@ -173,9 +173,9 @@ const themedStyles = (theme) => ({
         root: [
           {
             padding: "1.3rem 2.5rem",
-            backgroundColor: theme.Button.btnPrimary,
-            borderColor: theme.Button.borderColor,
-            color: theme.btn.color,
+            backgroundColor: theme.get(Theme.Button.btnPrimary),
+            borderColor: theme.get(Theme.Button.btnPrimary) || '#ceaa69',
+            color: theme.get(Theme.Button.btnPrimary),
             height: '40px',
           }
         ]

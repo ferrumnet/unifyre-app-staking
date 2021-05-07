@@ -30,6 +30,7 @@ export interface swapDisptach {
     onConnect: (network: string,currency: string, address: string) => void,
     amountChanged: (v?:string) => void,
     executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem) => void,
+    updatePendingWithrawItems: () => void,
     tokenSelected: (targetNet: string,v?:string,add?: AddressDetails[],pair?: PairedAddress,history?: any) => void,
     onSwap: (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void,allowanceRequired: boolean) => Promise<void>
 }
@@ -109,7 +110,7 @@ export function mapStateToProps(state:RootState):swapProps  {
         message: state.ui.swap.message,
         messageType: state.ui.swap.messageType,
         availableLiquidity: state.ui.swap.availableLiquidity,
-        userWithdrawalItems: state.ui.swap.userWithdrawalItems,
+        userWithdrawalItems: state.ui.swap.userWithdrawalItems || [],
         allowanceRequired: state.ui.swap.allowanceRequired
     }
 }
@@ -239,6 +240,42 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
             await sc.withdraw(dispatch,item)
+        }catch(e) {
+            if(!!e.message){
+                dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
+            }
+        }finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
+        }
+    },
+    updatePendingWithrawItems: async () => {
+        try {
+            await IocModule.init(dispatch);
+            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
+            const connect = inject<Connect>(Connect);
+            const network = connect.network() as any;
+            const items = await sc.getUserWithdrawItems(dispatch,network);
+            console.log(items,'itemsitems');
+            if(items.withdrawableBalanceItems.length > 0){
+                const pendingItems = items.withdrawableBalanceItems.filter((e:any) => e.used === 'pending');
+                if(pendingItems.length > 0){
+                    console.log(pendingItems,'pendingitems'); 
+                    pendingItems.forEach(
+                        async (item:UserBridgeWithdrawableBalanceItem) => {
+                            if(item.used === 'pending'){
+                                await sc.withdrawableBalanceItemUpdateTransaction(dispatch,item.receiveTransactionId,item.useTransactions[0].id)
+                            }
+                        }
+                    );
+                    const items = await sc.getUserWithdrawItems(dispatch,network);
+                    if(items.withdrawableBalanceItems.length > 0){
+                        dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
+                    }
+    
+                }
+
+            }
+         
         }catch(e) {
             if(!!e.message){
                 dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
