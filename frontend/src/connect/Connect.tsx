@@ -167,6 +167,7 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
             onDisconnected,
             connector, onError, isCached) =>{
         if (!dep || !dep.client) { return; }
+        console.log('ABOUT TO CALL DO CONNECT')
         await doConnect(dispatch, dep, onDisconnected, onError, connector, onUserDataReceived,
             isCached);
     },
@@ -198,7 +199,6 @@ function connectButtonReduce(state: ConnectState, action: any) {
 const AUTO_CON = { tried: false };
 
 export function ConnectButtonWapper(props: IConnectProps&IConnectDispatch&IConnectOwnProps) {
-    const [isModalOpen, { setTrue: showModal, setFalse: hideModal }] = useBoolean(false);
     const [state, dispatch] = useReducer(connectButtonReduce, { connected: false });
     const {appInitialized, } = props;
     const connector = () => {

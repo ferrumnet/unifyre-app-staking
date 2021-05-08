@@ -7,14 +7,14 @@ import { StakingAppClient, StakingAppServiceActions } from "./StakingAppClient";
 import { Big } from 'big.js';
 import { logError } from "../common/Utils";
 import { GroupInfo } from "../common/Types";
+import { IocModule } from "../common/IocModule";
+import { Connect } from "unifyre-extension-web3-retrofit";
 const Actions = StakingAppServiceActions;
 
 export class StakingAppClientForWeb3 extends StakingAppClient {
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
-            // await this.client.signInWithToken('');
-            console.log('GETTING USER PROF')
             const userProfile = await this.client.getUserProfile();
             console.log('GOT USER PROF', {userProfile})
             const userAddress = userProfile.userId;

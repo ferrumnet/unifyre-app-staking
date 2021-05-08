@@ -15582,7 +15582,7 @@ unicode-property-aliases-ecmascript@^1.0.4:
 
 "unifyre-extension-web3-retrofit@git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git":
   version "1.0.0"
-  resolved "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git#7397d5ba7096b9e8d90c01595f036fbc2582c9df"
+  resolved "git+https://github.com/ferrumnet/unifyre-extension-web3-retrofit.git#657fd013cb23f1b68c0c0d90980d7fc5dd365d7f"
   dependencies:
     "@walletconnect/client" "^1.3.1"
     "@walletconnect/qrcode-modal" "^1.3.1"

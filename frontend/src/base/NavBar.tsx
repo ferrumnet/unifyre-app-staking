@@ -49,8 +49,6 @@ export function ConButton(props: {connected: boolean, address: string, onClick: 
             }
             
             {
-                (!!props.isBridge)  &&
-                    (
                         props.connected && 
                             <WebThemedButton
                                 text={'Disconnect'} 
@@ -59,7 +57,6 @@ export function ConButton(props: {connected: boolean, address: string, onClick: 
                                 highlight={false}
                                 customStyle={styles.btnStyle}
                             />
-                    )
             }
         </>
     )

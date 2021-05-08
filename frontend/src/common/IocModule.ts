@@ -49,7 +49,7 @@ const DEV_USES_LOCAL: boolean = true;
 const NODE_ENV = process.env.NODE_ENV;
 
 export const CONFIG = NODE_ENV === 'production' ? PROD_CONF :
-    (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
+    // (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
 
 export class IocModule {
     private static _container: Container;
