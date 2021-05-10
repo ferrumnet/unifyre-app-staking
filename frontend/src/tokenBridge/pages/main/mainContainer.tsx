@@ -25,7 +25,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
             <div>
                 <>
                     <div className="body-not-centered">
-                        <div className="header title">  
+                        <div className="header title" style={styles.headerStyles}>  
                             Your Paired Addresses
                             <Divider/>
                         </div>
@@ -53,7 +53,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         value={
                                            props.isPaired ?
                                            props.signedPairedAddress?.pair?.address1 || props.pairedAddress?.address1
-                                            :   props.baseAddress
+                                            :   props.baseAddress || props.pairedAddress?.address1
                                         }
                                         disabled={true}
                                         styles={styles.inputStyle}
@@ -61,7 +61,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                 </div>
                             </div>
                             { 
-                              (!props.signedPairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered">Kindly refresh this page to reset the pair connection.</div>
+                              (!props.signedPairedAddress?.pair?.address1 && !props.pairedAddress?.address1 && !props.baseAddress) && <div className="header centered" style={styles.textStyles}>Kindly refresh this page to reset the pair connection.</div>
                             }
                             {
                                 (props.isPaired && !props.baseSignature) &&
@@ -77,7 +77,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     <div>
                                         <div className="successful-cont">
                                             <img style={{"width":'30px'}} src={greenTick}/>
-                                            <div className="header"> Signed Successfully</div>
+                                            <div className="header" style={styles.textStyles}> Signed Successfully</div>
                                         </div>
                                     </div>
                             }
@@ -94,13 +94,13 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         props.destConnected ?
                                             props.destNetwork
                                             :   <div className="content">
-                                                    <select name="networks" id="networks" onChange={(v)=>props.onDestinationNetworkChanged(v.target.value)}  disabled={props.isPaired ? true : false}>
+                                                    <select name="networks" id="networks" onChange={(v)=>props.onDestinationNetworkChanged(v.target.value)}  disabled={props.isPaired ? true : false} style={styles.textStyles}>
                                                         {
                                                             props.isPaired ? 
-                                                                <option key={props.destNetwork} value={props.destNetwork}>{props.destNetwork}</option>
+                                                                <option key={props.destNetwork} value={props.destNetwork} style={{...styles.textStyles,...styles.optionColor}} >{props.destNetwork}</option>
                                                             :
                                                             Object.keys(CHAIN_ID_FOR_NETWORK).map(n => (
-                                                                <option key={n} value={n}>{n}</option> 
+                                                                <option style={{...styles.textStyles,...styles.optionColor}} key={n} value={n}>{n}</option> 
                                                             ))
                                                         }
                                                     </select>
@@ -149,7 +149,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                                                 props.baseSignature
                                                             )}
                                                             disbabled={!!props.destAddress}
-                                                        /> :  <div className="header centered">Connect your MetaMask to {props.destNetwork} in order to Sign this Address.</div>
+                                                        /> :  <div className="header centered" style={styles.textStyles}>Connect your MetaMask to {props.destNetwork} in order to Sign this Address.</div>
                                                     :   <ConBot 
                                                             onConnect={props.onConnected}
                                                             onConnectionFailed={props.onConnectionFailed}
@@ -164,7 +164,7 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                         :   <div>
                                                 <div className="successful-cont">
                                                     <img style={{"width":'30px'}} src={greenTick}/>
-                                                    <div className="header"> Signed Successfully</div>
+                                                    <div className="header" style={styles.textStyles}> Signed Successfully</div>
                                                 </div>
                                             </div>
                                     }
@@ -185,14 +185,14 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
                                     (props.destSignature && props.baseSignature) &&
                                         <WebThemedButton
                                             text={'Swap Token'}
-                                            onClick={()=>props.startSwap(history)}
+                                            onClick={()=>props.startSwap(history,props.groupId)}
                                         />
                                 }
                                 {
                                     (props.destSignature && props.baseSignature) &&
                                         <WebThemedButton
                                             text={'Manage Liquidity'}
-                                            onClick={()=>props.manageLiquidity(history)}
+                                            onClick={()=>props.manageLiquidity(history,props.groupId)}
                                         />
                                 }                        
                             </div>
@@ -256,5 +256,11 @@ const themedStyles = (theme) => ({
     },
     headerStyles: {
         color: theme.get(Theme.Colors.textColor),
+    },
+    textStyles: {
+        color: theme.get(Theme.Colors.textColor),
+    },
+    optionColor: {
+        backgroundColor: theme.get(Theme.Colors.bkgShade0)
     }
 });

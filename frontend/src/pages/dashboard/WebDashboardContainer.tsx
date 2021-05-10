@@ -89,15 +89,16 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
         return (
             <>
             <WebPageWrapper
-              footerHtml={props.footerHtml} homepage={props.homepage}
-              noMainPage={props.noMainPage}
-              mode={BackendMode.mode}
-              theme={theme}
-              onConnected={props.onConnected}
-              onDisconnected={props.onDisconnected}
-              onConnectionFailed={props.onConnectionFailed}
-              container={props.initialized ? IocModule.container() : undefined}
-              authError={props.error}
+                footerHtml={props.footerHtml} homepage={props.homepage}
+                noMainPage={props.noMainPage}
+                mode={BackendMode.mode}
+                theme={theme}
+                onConnected={props.onConnected}
+                onDisconnected={props.onDisconnected}
+                onConnectionFailed={props.onConnectionFailed}
+                container={props.initialized ? IocModule.container() : undefined}
+                authError={props.error}
+                panelOpen={false}
               >
               <Switch>
                   <Route path='/:gid/confirm/:transactionId'>

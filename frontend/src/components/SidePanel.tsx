@@ -5,6 +5,7 @@ import {Transactions} from './transactions';
 import { Utils } from '../common/Utils';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
+import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { RootState } from '../common/RootState';
 import {
     Accordion,
@@ -26,32 +27,48 @@ import { inject, IocModule } from '../common/IocModule';
 import { addAction, CommonActions } from "../common/Actions";
 import { TokenBridgeClient } from "../tokenBridge/TokenBridgeClient";
 import { UserBridgeWithdrawableBalanceItem } from "../tokenBridge/TokenBridgeTypes";
+import { useToasts } from 'react-toast-notifications';
 
 export interface SidePanelProps {
     stakeEvents: StakeEvent[];
-    userWithdrawalItems: UserBridgeWithdrawableBalanceItem[]
+    userWithdrawalItems: UserBridgeWithdrawableBalanceItem[],
+    Network: string
 }
 
 export function mapStateToProps(state: RootState): SidePanelProps {
+    const userProfile = state.data.userData?.profile;
+    const addr = userProfile?.accountGroups[0]?.addresses || {};
+    const address = addr[0] || {};
     return {
         stakeEvents: state.data.stakingData.stakeEvents,
-        userWithdrawalItems: state.ui.swap.userWithdrawalItems || []
+        userWithdrawalItems: state.ui.swap.userWithdrawalItems || [],
+        Network: address.network
     };
 }
 
 export interface swapDisptach {
-    executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem,dis: ()=>void) => void,
+    executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem,dis:()=>void,success:(v:string)=>void,error:(v:string)=>void) => void,
 }
 
 
 export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    executeWithrawItem: async (item:UserBridgeWithdrawableBalanceItem,dis:()=>void) => {
+    executeWithrawItem: async (
+            item:UserBridgeWithdrawableBalanceItem,
+            dis:()=>void,
+            success:(v:string)=>void,
+            error:(v:string)=>void
+        ) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             dis();
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            await sc.withdraw(dispatch,item)
+            const res = await sc.withdraw(dispatch,item)
+            if(!!res){
+                success('Withdrawal was Successful and is processing...')        
+                return;
+            }
+            error('Withdrawal failed');
         }catch(e) {
             if(!!e.message){
                 dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
@@ -65,6 +82,16 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
 function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge: boolean}&SidePanelProps&swapDisptach){
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
+    const { addToast } = useToasts();
+
+    const onMessage = async (v:string) => {    
+        addToast(v, { appearance: 'error',autoDismiss: true })        
+    };
+
+    const onSuccessMessage = async (v:string) => {    
+        addToast(v, { appearance: 'success',autoDismiss: true })        
+    };
+
     return (
         <Panel
             isOpen={props.isOpen}
@@ -110,8 +137,8 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge
                                                         alt="token"
                                                         />
                                                     </div>
-                                                    <div>
-                                                        Swap {e.payBySig.amount} to {Utils.shorten(e.receiveCurrency)}
+                                                    <div style={styles.textStyles}>
+                                                        Swap {e.receiveAmount} to {Utils.shorten(e.receiveCurrency)}
                                                     </div>
                                                 </div> 
                                             </AccordionItemButton>
@@ -136,11 +163,20 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge
                                                Token Address : {e.payBySig.token}
                                             </p>
                                             {
-                                                (!e.used  || e.used === 'failed') && <ButtonLoader onPress={()=>props.executeWithrawItem(e,props.dismissPanel)} disabled={false}/>
+                                                e.sendNetwork === props.Network &&
+                                                <>
+                                                    {
+                                                        (!e.used  || e.used === 'failed') && <ButtonLoader completed={false} onPress={()=>{props.executeWithrawItem(e,props.dismissPanel,onSuccessMessage,onMessage);props.dismissPanel()}} disabled={false}/>
+                                                    }
+                                                    {
+                                                        (e.used === 'pending') && <ButtonLoader onPress={()=>{}} disabled={true} completed={false}/>
+                                                    }
+                                                    {
+                                                        (e.used === 'completed') && <ButtonLoader onPress={()=>{}} disabled={true} completed={true}/>
+                                                    }
+                                                </>      
                                             }
-                                            {
-                                                  (e.used === 'pending') && <ButtonLoader onPress={()=>{}} disabled={true}/>
-                                            }
+                                           
                                         </AccordionItemPanel>
                                     </AccordionItem>
                                     <Gap size={"small"}/>
@@ -339,6 +375,15 @@ const themedStyles = (theme) => ({
         width: '80%',
         lineHeight: 0.9,
         marginLeft: '15pt'
+    },
+    headerStyles: {
+        color: theme.get(Theme.Colors.textColor),
+    },
+    textStyles: {
+        color: theme.get(Theme.Colors.textColor),
+    },
+    optionColor: {
+        backgroundColor: theme.get(Theme.Colors.bkgShade0)
     }
 });
 

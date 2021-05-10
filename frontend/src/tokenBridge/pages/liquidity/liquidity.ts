@@ -30,8 +30,8 @@ export interface liquidityDisptach {
     onConnect: (network: string,targetCur: string) => void,
     amountChanged: (v?:string) => void,
     tokenSelected: (v?:string,add?: AddressDetails[]) => void,
-    addLiquidity: (amount: string,targetCurrency: string,success: (v:string)=>void,allowanceRequired:boolean) => void,
-    removeLiquidity: (amount: string,targetCurrency: string,success: (v:string)=>void) => void
+    addLiquidity: (amount: string,targetCurrency: string,success: (v:string,tx:string)=>void,allowanceRequired:boolean) => void,
+    removeLiquidity: (amount: string,targetCurrency: string,success: (v:string,tx:string)=>void) => void
 }
 
 export interface liquidityProps{
@@ -104,7 +104,6 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 dispatch(addAction(Actions.SWAP_DETAILS,{value: currenciesList}))                
                 const currencyList = inject<CurrencyList>(CurrencyList);
                 const ls = currenciesList.map((j:any) => j.sourceCurrency)
-                console.log(currencyList,'currencieslist',ls)
                 currencyList.set(currenciesList.map((j:any) => j.sourceCurrency));
                 const allowance = await sc.checkAllowance(dispatch,targetCur,'5', targetCur);
                 dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: allowance}))
@@ -119,7 +118,7 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    addLiquidity: async (amount: string,targetCurrency: string,success: (v:string)=>void,allowanceRequired) => {
+    addLiquidity: async (amount: string,targetCurrency: string,success: (v:string,tx:string)=>void,allowanceRequired) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             const client = inject<TokenBridgeClient>(TokenBridgeClient);
@@ -130,12 +129,13 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                     dispatch(addAction(Actions.APPROVAL_SUCCESS, { }));
                     const allowance = await client.checkAllowance(dispatch,targetCurrency,'5', targetCurrency);
                     if(allowance){
-                        success('Approval Successful, You can now go on to add you liquidity.');
+                        success('Approval Successful, You can now go on to add you liquidity.','');
                         dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: false}))
                     }
                     
                 }else{
-                    success('Liquidity Added Successfully and processing')
+                    success('Liquidity Added Successfully and processing',res.txId);
+                    dispatch(addAction(Actions.ADD_LIQUIDITY_SUCCESS,{}))
                     return
                 }
             }
@@ -147,14 +147,15 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    removeLiquidity: async (amount: string,targetCurrency: string,success: (v:string)=>void) => {
+    removeLiquidity: async (amount: string,targetCurrency: string,success: (v:string,tx:string)=>void) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             const client = inject<TokenBridgeClient>(TokenBridgeClient);
             ValidationUtils.isTrue(!!targetCurrency,'targetCurrency is required')
             const res = await client.removeLiquidity(dispatch, targetCurrency, amount);
-            if(res){
-                success('Liquidity Removal Successfully processing')
+            if(res?.status){
+                dispatch(addAction(Actions.REMOVE_LIQUIDITY_SUCCESS,{}))
+                success('Liquidity Removal Successfully processing',res?.txId)
             }
         } catch(e) {
             if(!!e.message){
@@ -241,6 +242,10 @@ export function reduce(state: liquidityState = defaultState, action: AnyAction){
             return {...state,allowanceRequired:false}
         case Actions.DISCONNECT:
             return {...state, availableLiquidity: '0'}
+        case Actions.ADD_LIQUIDITY_SUCCESS:
+            return {...state, amount: ''}
+        case Actions.REMOVE_LIQUIDITY_SUCCESS:
+            return {...state,amount: ''}
         default:
             return state;
     }

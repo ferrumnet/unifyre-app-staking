@@ -10,7 +10,6 @@ import { Network, ValidationUtils } from "ferrum-plumbing";
 import { AddressDetails } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { MainBridgeActions } from './../main/main';
 import { Connect } from 'unifyre-extension-web3-retrofit';
-import { ConnectActions } from "../../../connect/Connect";
 
 export const LiquidityActions = {
     AMOUNT_CHANGED: 'AMOUNT_CHANGED',
@@ -21,7 +20,8 @@ export const LiquidityActions = {
     DISCONNECT: 'DISCONNECT',
     CHECK_ALLOWANCE:'CHECK_ALLOWANCE',
     USER_DATA_RECEIVED:'USER_DATA_RECEIVED',
-    APPROVAL_SUCCESS: 'APPROVAL_SUCCESS'
+    APPROVAL_SUCCESS: 'APPROVAL_SUCCESS',
+    TRIGGER_PANEL: 'TRIGGER_PANEL'
 };
 
 const Actions = LiquidityActions;
@@ -29,10 +29,16 @@ const Actions = LiquidityActions;
 export interface swapDisptach {
     onConnect: (network: string,currency: string, address: string) => void,
     amountChanged: (v?:string) => void,
-    executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem) => void,
+    executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem,success:(v:string)=>void,error:(v:string)=>void) => void,
     updatePendingWithrawItems: () => void,
     tokenSelected: (targetNet: string,v?:string,add?: AddressDetails[],pair?: PairedAddress,history?: any) => void,
-    onSwap: (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void,allowanceRequired: boolean) => Promise<void>
+    onSwap: (
+        amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,
+        y: (v:string)=>void,allowanceRequired: boolean,showModal: () => void
+    ) => Promise<void>,
+    openPanelHandler: () => void,
+    checkTxStatus: (txId:string,sendNetwork:string,timestamp:number) => Promise<string>
+    checkifItemIsCreated: (itemId: string) => Promise<string>
 }
 
 export interface swapProps{
@@ -57,7 +63,10 @@ export interface swapProps{
     currenciesDetails: any,
     signedPairedAddress?: SignedPairAddress,
     allowanceRequired: boolean,
-    userWithdrawalItems: any[]
+    userWithdrawalItems: any[],
+    groupId: string,
+    swapId: string,
+    itemId: string,
 }
 
 export interface swapState{
@@ -83,7 +92,10 @@ export interface swapState{
     messageType: 'error' | 'success',
     currenciesDetails: any,
     availableLiquidity: string,
-    userWithdrawalItems: any[]
+    userWithdrawalItems: any[],
+    groupId: string,
+    swapId: string,
+    itemId: string,
 }
 
 export function mapStateToProps(state:RootState):swapProps  {
@@ -111,7 +123,10 @@ export function mapStateToProps(state:RootState):swapProps  {
         messageType: state.ui.swap.messageType,
         availableLiquidity: state.ui.swap.availableLiquidity,
         userWithdrawalItems: state.ui.swap.userWithdrawalItems || [],
-        allowanceRequired: state.ui.swap.allowanceRequired
+        allowanceRequired: state.ui.swap.allowanceRequired,
+        groupId: state.data.groupData.info.groupId,
+        swapId: state.ui.swap.swapId,
+        itemId: state.ui.swap.itemId
     }
 }
 
@@ -133,7 +148,7 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
            
             const res  = await sc.signInToServer(dispatch);
-            const items = await sc.getUserWithdrawItems(dispatch,network);
+            const items = await sc.getUserWithdrawItems(dispatch,network1);
             if(items.withdrawableBalanceItems.length > 0){
                 dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
             }
@@ -151,14 +166,10 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            const res  = await sc.getAvailableLiquidity(dispatch, network,currency);
-            
+            await sc.getAvailableLiquidity(dispatch, network,currency);
         } catch(e) {
             throw e;
         }finally {
-            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            const res = await sc.getUserWithdrawItems(dispatch,network);
-            if(res.length > 0)
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
@@ -199,13 +210,16 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }      
     },
-    onSwap: async (amount:string,balance:string,currency:string,targetNet: string,v: (v:string)=>void,y: (v:string)=>void,allowanceRequired) => {
+    onSwap: async (
+        amount:string,balance:string,currency:string,targetNet: string,
+        v: (v:string)=>void,y: (v:string)=>void,allowanceRequired,showModal: () => void
+        ) => {
         try {
             const client = inject<TokenBridgeClient>(TokenBridgeClient);        
-            //ValidationUtils.isTrue(!(Number(balance) < Number(amount) ),'Not anough balance for this transaction');
+            ValidationUtils.isTrue(!(Number(balance) < Number(amount) ),'Not anough balance for this transaction');
             const res = await client.swap(dispatch,currency, amount, targetNet);
            
-            if( res === 'success' ){
+            if( res?.status === 'success' ){
                 if(allowanceRequired){
                     dispatch(addAction(Actions.APPROVAL_SUCCESS, { }));
                     const allowance = await client.checkAllowance(dispatch,currency,'5', targetNet);
@@ -213,10 +227,13 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                         y('Approval Successful, You can now go on to swap your transaction.');
                         dispatch(addAction(Actions.CHECK_ALLOWANCE,{value: false}))
                     }
-                    
                 }else{
                     y('Swap Successful, Kindly View Withdrawal Items for item checkout.');
-                    dispatch(addAction(Actions.SWAP_SUCCESS, {message: res }));
+                    dispatch(addAction(Actions.SWAP_SUCCESS, {message: res.status,swapId: res.txId, itemId: res.itemId }));
+                    setTimeout(
+                       () => showModal()
+                    ,1000)
+                    showModal()
                     return
                 }
             }
@@ -234,12 +251,17 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    executeWithrawItem: async (item:UserBridgeWithdrawableBalanceItem) => {
+    executeWithrawItem: async (item:UserBridgeWithdrawableBalanceItem,success,error) => {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
             const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            await sc.withdraw(dispatch,item)
+            const res = await sc.withdraw(dispatch,item);
+            if(!!res){
+                success('Withdrawal was Successful')   
+                return;
+            }
+            error('Withdrawal failed');
         }catch(e) {
             if(!!e.message){
                 dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
@@ -255,25 +277,24 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             const connect = inject<Connect>(Connect);
             const network = connect.network() as any;
             const items = await sc.getUserWithdrawItems(dispatch,network);
-            console.log(items,'itemsitems');
             if(items.withdrawableBalanceItems.length > 0){
-                const pendingItems = items.withdrawableBalanceItems.filter((e:any) => e.used === 'pending');
-                if(pendingItems.length > 0){
-                    console.log(pendingItems,'pendingitems'); 
-                    pendingItems.forEach(
-                        async (item:UserBridgeWithdrawableBalanceItem) => {
-                            if(item.used === 'pending'){
-                                await sc.withdrawableBalanceItemUpdateTransaction(dispatch,item.receiveTransactionId,item.useTransactions[0].id)
+                if(items.withdrawableBalanceItems){
+                    const pendingItems = items.withdrawableBalanceItems.filter((e:any) => e.used === 'pending');
+                    if(pendingItems.length > 0){
+                        pendingItems.forEach(
+                            async (item:UserBridgeWithdrawableBalanceItem) => {
+                                if(item.used === 'pending'){
+                                    await sc.withdrawableBalanceItemUpdateTransaction(dispatch,item.receiveTransactionId,item.useTransactions[0].id)
+                                }
                             }
+                        );
+                        const items = await sc.getUserWithdrawItems(dispatch,network);
+                        if(items.withdrawableBalanceItems.length > 0){
+                            dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
                         }
-                    );
-                    const items = await sc.getUserWithdrawItems(dispatch,network);
-                    if(items.withdrawableBalanceItems.length > 0){
-                        dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
+        
                     }
-    
                 }
-
             }
          
         }catch(e) {
@@ -283,6 +304,50 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         }finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
+    },
+    checkTxStatus: async (txId:string,sendNetwork:string,timestamp:number) => {
+        try {
+            await IocModule.init(dispatch);
+            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
+            const res = await sc.checkTxStatus(dispatch,txId,sendNetwork,timestamp);
+            if(res){
+                return res;
+            }
+            return '';
+        }catch(e) {
+            if(!!e.message){
+                dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
+            }
+        }finally {
+        }
+    },
+    checkifItemIsCreated: async (itemId:string) => {
+        try {
+            await IocModule.init(dispatch);
+            await IocModule.init(dispatch);
+            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
+            const connect = inject<Connect>(Connect);
+            const network = connect.network() as any;
+            const items = await sc.getUserWithdrawItems(dispatch,network);
+            if(items.withdrawableBalanceItems.length > 0){
+                const findMatch = items.withdrawableBalanceItems.filter((e:any)=>e.receiveTransactionId === itemId);
+                console.log(findMatch,'matches');
+                if(findMatch.length > 0){
+                    dispatch(addAction(Actions.WITHDRAWAL_ITEMS_FETCHED,{items: items.withdrawableBalanceItems}));
+                    return 'created'
+                }
+            }
+            return '';
+        }catch(e) {
+            if(!!e.message){
+                dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
+            }
+            
+        }finally {
+        }
+    },
+    openPanelHandler: () => {
+        dispatch(addAction(Actions.TRIGGER_PANEL, {}));
     }
 
 } as swapDisptach )
@@ -301,7 +366,8 @@ const defaultState = {
     message: '',
     allowanceRequired: false,
     availableLiquidity: '0',
-    currenciesDetails: {}
+    currenciesDetails: {},
+    panelOpen: false,
 }
 
 export function reduce(state: any = defaultState, action: AnyAction){
@@ -336,7 +402,7 @@ export function reduce(state: any = defaultState, action: AnyAction){
                 ...state,currenciesDetails: action.payload.value[0],selectedToken: ''
             }
         case Actions.SWAP_SUCCESS:
-            return {...state,message: action.payload.message,messageType: 'success', amount: ''}
+            return {...state,message: action.payload.message,messageType: 'success', amount: '',swapId: action.payload.swapId,itemId: action.payload.itemId}
         case Actions.APPROVAL_SUCCESS:
             return {...state,message: action.payload.message,messageType: 'success'}
         case TokenBridgeActions.AUTHENTICATION_FAILED:
@@ -349,6 +415,8 @@ export function reduce(state: any = defaultState, action: AnyAction){
             return {...state, amount: '0',selectedToken: ''}
         case Actions.CHECK_ALLOWANCE:
             return {...state, allowanceRequired: action.payload.value}
+        case Actions.TRIGGER_PANEL:
+            return {...state, panelOpen: !state.openPanel}
         default:
             return state;
     }

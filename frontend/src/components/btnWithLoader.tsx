@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-export default class ButtonLoader extends Component<{onPress: ()=> void,disabled:boolean}> {
+export default class ButtonLoader extends Component<{onPress: ()=> void,disabled:boolean,completed: boolean}> {
   state = {
     loading: false
   };
@@ -17,8 +17,10 @@ export default class ButtonLoader extends Component<{onPress: ()=> void,disabled
               style={{ marginRight: "5px" }}
             />
           )}
-          {loading && <span>Withdrawing Item</span>}
-          {!loading && this.props.disabled ? <span>Withdrawal processed</span> : <span>Withdraw Item</span>}
+          {(loading && !this.props.completed && !this.props.disabled) && <span>Withdrawing Item</span>}
+          {(!loading && this.props.disabled && !this.props.completed) && <span>Withdrawal processed</span>}
+          {(!loading && !this.props.disabled && !this.props.completed) && <span>Withdraw Item</span>}
+          {(!loading && this.props.disabled && this.props.completed) && <span>Withdrawal Successful</span>}
         </button>
       </div>
     );

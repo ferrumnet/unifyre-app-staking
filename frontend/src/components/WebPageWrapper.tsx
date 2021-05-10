@@ -12,6 +12,13 @@ export function WebPageWrapper(props: {
     const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
     const history = useHistory();
     const groupId = Utils.getGroupIdFromHref();
+    
+    const handleDismiss = () => {
+        dismissPanel();
+        if(props.bodyDismiss){
+            props.bodyDismiss()
+        }
+    }
     const dektopItems = (PageWrapperUtils.platform() === 'desktop' && !props.isBridge) ? (
         <>
             <ActionButton
@@ -62,8 +69,8 @@ export function WebPageWrapper(props: {
         >
             <SidePaneContainer
                 isBridge={props.isBridge || false}
-                isOpen={isOpen}
-                dismissPanel={dismissPanel}
+                isOpen={isOpen||props.panelOpen}
+                dismissPanel={handleDismiss}
             />
                 {props.children}
             </ResponsivePageWrapper>

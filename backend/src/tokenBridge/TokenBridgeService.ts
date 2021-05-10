@@ -2,7 +2,7 @@ import { MongooseConnection } from "aws-lambda-helper";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { ChainUtils } from "ferrum-chain-clients";
 import { Injectable, Network, ValidationUtils } from "ferrum-plumbing";
-import { Connection, Document, Model } from "mongoose";
+import { Connection, Document, Model} from "mongoose";
 import { PairAddressSignatureVerifyre } from "./common/PairAddressSignatureVerifyer";
 import { TokenBridgeContractClinet } from "./TokenBridgeContractClient";
 import { RequestMayNeedApprove, SignedPairAddress, SignedPairAddressSchemaModel, UserBridgeWithdrawableBalanceItem, UserBridgeWithdrawableBalanceItemModel } from "./TokenBridgeTypes";
@@ -98,11 +98,20 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
 
     async getUserWithdrawItems(network: string, address: string): Promise<UserBridgeWithdrawableBalanceItem[]> {
         this.verifyInit();
-        const all = await this.balanceItem?.find({})
-        const items = (await this.balanceItem!.find({
-            sendNetwork: network, sendAddress: ChainUtils.canonicalAddress(network as any, address),
-        })) || [];
-        console.log({sendNetwork: network, address: ChainUtils.canonicalAddress(network as any, address)})
+        const items = (
+            await this.balanceItem!.find(
+                {
+                    '$or': [
+                        {
+                            'sendAddress': ChainUtils.canonicalAddress(network as any, address)
+                        },
+                        {
+                            'receiveAddress': ChainUtils.canonicalAddress(network as any, address)
+                        }
+                    ]
+                })
+            );
+        console.log({receiveNetwork: network, address: ChainUtils.canonicalAddress(network as any, address)})
         return items.map(i => i.toJSON());
     }
 
@@ -121,7 +130,14 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         if (!!txItem) {
             const txStatus = await this.helper.getTransactionStatus(item!.sendNetwork, tid, txItem.timestamp);
             txItem.status = txStatus;
-            console.log(`Updating status for withdraw item ${id}: ${txStatus}-${tid}`)
+            console.log(`Updating status for withdraw item ${id}: ${txStatus}-${tid}`);
+            if(txStatus === ('timedout' || 'failed')){
+                item.used = 'failed';
+            }else if(txStatus === 'successful'){
+                item.used = 'completed'
+            }else{
+                item.used = 'pending'
+            }
         } else {
             const txTime = Date.now();
             const txStatus = await this.helper.getTransactionStatus(item!.sendNetwork, tid, txTime);
@@ -136,6 +152,16 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
             }
         }
         return await this.updateWithdrawItem(item);
+    }
+
+    async getSwapTransactionStatus(tid: string,sendNetwork: string,timestamp:number) {
+        ValidationUtils.isTrue(!!tid, "tid not found.");
+        ValidationUtils.isTrue(!!sendNetwork, "sendNetwork not found.");
+        ValidationUtils.isTrue(!!timestamp, "timestamp not found.");
+        const txStatus = await this.helper.getTransactionStatus(sendNetwork, tid, timestamp);
+        if(!!txStatus){
+            return txStatus
+        }           
     }
 
     async getUserPairedAddress(network: string, address: string): Promise<SignedPairAddress|undefined> {
