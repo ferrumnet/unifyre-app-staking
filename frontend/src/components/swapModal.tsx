@@ -123,9 +123,8 @@ export function SwapModal (props: {
               icon={modalStatus === 2 && <LoadingOutlined style={{color: `${theme.get(Theme.Colors.textColor)}`}}/>}  
             />
             <Step 
-              status={modalStatus === 3 ? "finish" : "process"} 
+              status={modalStatus > 2 ? "finish" : "wait"} 
               title="Claim Widthdrawal" 
-              icon={modalStatus === 3 && <LoadingOutlined style={{color: `${theme.get(Theme.Colors.textColor)}`}}/>} 
               description={
                 <div className={styles.center}>
                   {modalStatus === 3 && <a style={{color: `${theme.get(Theme.Colors.textColor)}`,marginTop: '0.2rem'}} onClick={()=>{props.claim(); props.hideModal()}}>Claim</a> }

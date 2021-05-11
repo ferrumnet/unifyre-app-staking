@@ -205,7 +205,8 @@ function ConnectedWallet(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:st
 }
 
 function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:string)=>void}) {
-    
+    const theme = useContext(ThemeContext);
+    const styles = themedStyles(theme);    
     const ConBot = ConnectorContainer.Connect(IocModule.container(), ConButton);    
     return (
         <div className="centered-body">
@@ -214,7 +215,7 @@ function MainComponent(props: MainProps&MainDispatch&{con:()=>void,onErr:(v:stri
                 <>
                     <div className="body-content">
                         <div>
-                            <div> Connect Your Wallet To See Your Paired Addresses. </div>
+                            <div style={styles.headerStyles}> Connect Your Wallet To See Your Paired Addresses. </div>
                             <Gap/>
                             <div>  
                                 <ConBot 

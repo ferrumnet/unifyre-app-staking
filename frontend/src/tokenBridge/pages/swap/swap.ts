@@ -410,7 +410,7 @@ export function reduce(state: any = defaultState, action: AnyAction){
                 ...state,message: action.payload.message,messageType: 'error', amount: ''
             }
         case Actions.WITHDRAWAL_ITEMS_FETCHED:
-            return {...state, userWithdrawalItems: action.payload.items}
+            return {...state, userWithdrawalItems: action.payload.items.reverse()}
         case Actions.DISCONNECT:
             return {...state, amount: '0',selectedToken: ''}
         case Actions.CHECK_ALLOWANCE:

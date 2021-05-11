@@ -151,10 +151,10 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge
                                                Sender Currency : {e.receiveCurrency}
                                             </p >
                                             <p style={{...styles.accInfo}}>
-                                               Sender Network : {e.sendNetwork}
+                                               Sender Network : {e.receiveNetwork}
                                             </p>
                                             <p style={{...styles.accInfo}}>
-                                               Reciever Network : {e.receiveNetwork}
+                                               Reciever Network : {e.sendNetwork}
                                             </p>
                                             <p style={{...styles.accInfo}}>
                                                Reciever Address : {e.receiveAddress}
