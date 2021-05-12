@@ -63,7 +63,6 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       // Prevent infinite loop if onLoad causes error
         onBridgeLoad().catch(console.error);
     }, [fatalError]);
-
     const themeVariables = useTheme();
     const theme = _loadTheme(themeVariables, props.customTheme);
     const styles = themedStyles(theme);
@@ -83,18 +82,22 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                 authError={props.error}
                 isBridgeHome={!(props.initialised && (props.connected || props.isPaired))}
                 isBridge
-                >
+                panelOpen={props.panelOpen}
+                bodyDismiss={props.openPanelHandler}
+              >
                 <Gap/>
                   <div className="main-header" style={styles.headerStyles}> Ferrum Token Bridge </div>
                 <Switch>
-                    <Route path='/:gid/bridge'>
+                    <Route path='/bridge'>
                       <DummyBridgeContainer onConnected={props.onConnected}/>
                     </Route>
                     <Route path='/:gid/liquidity'>
                         <LiquidityContainer/>
                     </Route>
                     <Route path='/:gid/swap'>
-                        <SwapContainer/>
+                        <SwapContainer
+                            con={props.openPanelHandler}
+                        />
                     </Route>
                     <Route path='/'>
                         <MainContainer

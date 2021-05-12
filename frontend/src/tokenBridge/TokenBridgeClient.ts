@@ -21,7 +21,8 @@ export const TokenBridgeActions = {
     BRIDGE_LOAD_FAILED: 'BRIDGE_LOAD_FAILED',
     SOURCE_CURRENCIES_RECEIVED: 'SOURCE_CURRENCIES_RECEIVED',
     USER_AVAILABLE_LIQUIDITY_FOR_TOKEN: "USER_AVAILABLE_LIQUIDITY_FOR_TOKEN",
-    SWAP_SUCCESS: 'SWAP_SUCCESS'
+    SWAP_SUCCESS: 'SWAP_SUCCESS',
+    GROUP_INFO_LOADED: 'GROUP_INFO_LOADED'
 }
 
 const Actions = TokenBridgeActions;
@@ -85,6 +86,8 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             if (!groupInfo) {
                 return undefined;
             }
+            dispatch(addAction(Actions.GROUP_INFO_LOADED, groupInfo));
+
             return groupInfo;
         } catch (e) {
             logError('Error loading group info', e);
@@ -98,6 +101,19 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
         const res = await this.api({
             command: 'getSourceCurrencies', data: {network}, params: [] } as JsonRpcRequest);
         return res;
+    }
+
+    async checkTxStatus(dispatch: Dispatch<AnyAction>,txId: string,sendNetwork: string,timestamp: number) {
+        try {
+        const res = await this.api({
+            command: 'GetSwapTransactionStatus', data: {tid: txId,sendNetwork,timestamp}, params: [] } as JsonRpcRequest);
+        return res;
+        } catch(e) {
+            dispatch(addAction(Actions.BRIDGE_LOAD_FAILED, {
+                message: e.message || '' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'getAvailableLiquidity' }));
+        }
     }
 
     public async getAvailableLiquidity(dispatch: Dispatch<AnyAction>,
@@ -279,7 +295,10 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 {currency, amount, action: isApprove ? 'approve' : 'addLiquidity'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
-            return 'success';
+            return {
+                "status":'success',
+                "txId": requestId.split('|')[0],
+            };
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_ADD_LIQUIDITY_FAILED, {
                 message: e.message || '' }));
@@ -303,7 +322,10 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
                 {currency, amount, action: 'removeLiquidity'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
             await this.processRequest(dispatch, requestId);
-            return 'success';
+            return {
+                "status":'success',
+                "txId": requestId.split('|')[0],
+            };
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_REMOVE_LIQUIDITY_FAILED, {
                 message: e.message || '' }));
@@ -328,8 +350,12 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             const requestId = await this.client.sendTransactionAsync(this.network!, requests,
                 {currency, amount, targetCurrency, action: isApprove ? 'approve' : 'swap'});
             ValidationUtils.isTrue(!!requestId, 'Could not submit transaction.');
-            await this.processRequest(dispatch, requestId);
-            return 'success';
+            const response = await this.processRequest(dispatch, requestId);            
+            return {
+                "status":'success',
+                "txId": requestId.split('|')[0],
+                "itemId": response
+            };
         } catch(e) {
             dispatch(addAction(Actions.BRIDGE_SWAP_FAILED, {
                 message: e.message || '' }));
@@ -377,6 +403,7 @@ export class TokenBridgeClient extends ApiClient implements Injectable {
             // dispatch(addAction(Actions.USER_STAKE_EVENTS_UPDATED, { updatedEvents: [stakeEvent] }));
             dispatch(addAction(CommonActions.CONTINUATION_DATA_RECEIVED, {action,
                 mainTxId: txIds[0]}));
+            return txIds[0];
         } catch(e) {
             logError('Error processRequest', e);
             dispatch(addAction(CommonActions.CONTINUATION_DATA_FAILED, {message: 'Could send a request. ' + e.message || '' }));

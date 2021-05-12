@@ -505,7 +505,7 @@ option{
                 justify-content: space-between;
 
                 &.swap-entry{
-                    justify-content: space-between;
+                    justify-content: space-around;
 
                     &.swap-buttons{
                         width: 50%;
@@ -765,6 +765,11 @@ option{
         border-style: solid;
         border-color: white;
     }
+}
+
+.ant-steps-item-title{
+    font-size: 12px !important;
+    color: white !important
 }
 
 .bottom-stick{

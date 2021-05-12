@@ -12,6 +12,7 @@ import { Connect, CurrencyList } from 'unifyre-extension-web3-retrofit';
 import { SignedPairAddress } from "./../../TokenBridgeTypes";
 import { PairAddressSignatureVerifyre } from "../../PairAddressSignatureVerifyer";
 import { Utils } from "../../../common/Utils";
+import { ValidationUtils } from "ferrum-plumbing";
 
 export const MainBridgeActions = {
     BRIDGE_INIT_FAILED: 'BRIDGE_INIT_FAILED',
@@ -56,6 +57,7 @@ export interface MainProps {
     signedPairedAddress?: SignedPairAddress,
     pairedAddresses?: SignedPairAddress,
     connected: boolean,
+    groupId: string
 }
 
 export interface MainState {
@@ -80,7 +82,8 @@ export interface MainState {
     pairedAddress?: PairedAddress,
     signedPairedAddress: SignedPairAddress,
     pairedAddresses?: SignedPairAddress,
-    connected: boolean
+    connected: boolean,
+    groupId: string
 }
 
 export interface MainDispatch extends ReponsivePageWrapperDispatch  {
@@ -93,8 +96,8 @@ export interface MainDispatch extends ReponsivePageWrapperDispatch  {
     onReconnect: () => void,
     pairAddresses: (network:string,address: string) => void,
     unPairAddresses: (pair: SignedPairAddress) => void,
-    startSwap: (history:any) => void,
-    manageLiquidity: (history:any) => void,
+    startSwap: (history:any,groupId:String) => void,
+    manageLiquidity: (history:any,groupId:String) => void,
 }
 
 function mapStateToProps(state:RootState) : MainProps {
@@ -117,7 +120,8 @@ function mapStateToProps(state:RootState) : MainProps {
         destSigned: state.ui.bridgeMain.destSigned,
         destAddress: state.ui.bridgeMain.destAddress,
         pairedAddress: state.ui.bridgeMain.pairedAddress,
-        destNetwork: state.ui.bridgeMain.destNetwork
+        destNetwork: state.ui.bridgeMain.destNetwork,
+        groupId: state.data.groupData.info.groupId,
     };
 
 } 
@@ -231,9 +235,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             paired.address1 = addr;
             paired.address2 = address2;
             paired.network1 = network;
-            console.log(paired,'hththththkj===mmmm')
             const vrf = inject<TokenBridgeClient>(TokenBridgeClient);
             const sc = inject<PairAddressService>(PairAddressService);
+            ValidationUtils.isTrue(!(paired.network1 === paired.network2),'base and destination network cannot be the same');
             const res = await sc.signPairAddress1(paired);
             let SignedPair = {
                 pair: paired,
@@ -259,18 +263,16 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
                 network1: 'ETHEREUM',
                 network2: 'RINKEBY',
             }
+            const vrf = inject<PairAddressSignatureVerifyre>(PairAddressSignatureVerifyre)
+            const sc = inject<PairAddressService>(PairAddressService);
+            const tb = inject<TokenBridgeClient>(TokenBridgeClient);
             dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
             await IocModule.init(dispatch);
-            const connect = inject<Connect>(Connect);
-            connect.connect()
-            const addr = connect.account()!;
             paired.address1 = address1;
             paired.address2 = address;
             paired.network1 = network1;
             paired.network2 = network2;
-            const vrf = inject<PairAddressSignatureVerifyre>(PairAddressSignatureVerifyre)
-            const sc = inject<PairAddressService>(PairAddressService);
-            const tb = inject<TokenBridgeClient>(TokenBridgeClient);
+            ValidationUtils.isTrue(!(paired.network1 === paired.network2),'base and destination network cannot be the same');
             const res = await sc.signPairAddress2(paired);
             let SignedPair = {
                 pair: paired,
@@ -290,13 +292,11 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, ownProps: any) => ({
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }
     },
-    startSwap: async (history:any) => {  
-        const groupId = Utils.getGroupIdFromHref();
-        history.replace(`${groupId}/swap`);
+    startSwap: async (history:any,groupId:String) => {  
+        history.push((groupId ? `/${groupId}` : '') + '/swap');
     },
-    manageLiquidity: async (history:any) => {
-        const groupId = Utils.getGroupIdFromHref();
-        history.replace(`${groupId}/liquidity`);
+    manageLiquidity: async (history:any,groupId:String) => {
+        history.push((groupId ? `/${groupId}` : '') + '/liquidity');
     },
     resetPair: async () => {
         dispatch(addAction(Actions.RESET_PAIR,{}));
@@ -399,7 +399,7 @@ function reduce(state: any = defaultMainState, action: AnyAction){
         case Actions.DEST_ADDRESS_SIGNATURE:
             return {...state, destSignature: action.payload.sign,destSigned: true}
         case Actions.RESET_PAIR:
-            return {...state, ...defaultMainState, initialised: false, connected: false}
+            return {...state, isPaired: false, initialised: false, connected: false}
         case Actions.PAIR_VERIFIED:
             return {...state, pairVerified: true}
         case Actions.DISCONNECT:

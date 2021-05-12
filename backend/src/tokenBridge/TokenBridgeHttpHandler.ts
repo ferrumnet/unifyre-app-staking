@@ -1,9 +1,10 @@
-import { LambdaHttpRequest, LambdaHttpResponse } from "aws-lambda-helper";
+import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { Injectable, JsonRpcRequest, ValidationUtils } from "ferrum-plumbing";
 import { TokenBridgeService } from "./TokenBridgeService";
 import { BridgeConfigStorage } from './processor/BridgeConfigStorage';
 export class TokenBridgeHttpHandler implements Injectable {
     constructor(
+        private helper: EthereumSmartContractHelper,
         private svc: TokenBridgeService,
         private bgs: BridgeConfigStorage
     ) {
@@ -46,6 +47,8 @@ export class TokenBridgeHttpHandler implements Injectable {
             case 'swapGetTransaction':
                 ValidationUtils.isTrue(!!userId, 'user must be signed in');
                 return this.swapGetTransaction(req, userId!);
+            case 'GetSwapTransactionStatus':
+                return this.getSwapTransactionStatus(req);
             case 'getSourceCurrencies':
                 return this.bgs.getSourceCurrencies(req.data.network)
             default:
@@ -95,7 +98,8 @@ export class TokenBridgeHttpHandler implements Injectable {
             network,
         } = req.data;
         ValidationUtils.isTrue(!!network, "'network' must be provided");
-        return { 'withdrawableBalanceItems': await this.svc.getUserWithdrawItems(network, userId.toLowerCase())};
+        const items = await this.svc.getUserWithdrawItems(network, userId.toLowerCase());
+        return { 'withdrawableBalanceItems': items};
     }
 
     async updateWithdrawItemAddTransaction(req: JsonRpcRequest) {
@@ -105,6 +109,16 @@ export class TokenBridgeHttpHandler implements Injectable {
         ValidationUtils.isTrue(!!id, "'id' must be provided");
         ValidationUtils.isTrue(!!transactionId, "'transactionId' must be provided");
         return this.svc.updateWithdrawItemAddTransaction(id, transactionId);
+    }
+
+    async getSwapTransactionStatus(req: JsonRpcRequest) {
+        const {
+            tid,sendNetwork,timestamp
+        } = req.data;
+        ValidationUtils.isTrue(!!tid, "tid not found.");
+        ValidationUtils.isTrue(!!sendNetwork, "sendNetwork not found.");
+        ValidationUtils.isTrue(!!timestamp, "timestamp not found.");
+        return this.svc.getSwapTransactionStatus(tid,sendNetwork,timestamp);
     }
 
     async updateUserPairedAddress(req: JsonRpcRequest) {

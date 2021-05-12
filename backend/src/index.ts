@@ -161,8 +161,9 @@ export class stakingAppModule implements Module {
                 ));
         container.register(TokenBridgeHttpHandler,
                 c=> new TokenBridgeHttpHandler(
+                    c.get(EthereumSmartContractHelper),
                     c.get(TokenBridgeService),
-                    c.get(BridgeConfigStorage)
+                    c.get(BridgeConfigStorage),
                 )
         );
         container.registerSingleton('LambdaHttpHandler',
@@ -179,7 +180,7 @@ export class stakingAppModule implements Module {
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
         container.registerSingleton(TokenBridgeHttpHandler,
-            c => new TokenBridgeHttpHandler(c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
+            c => new TokenBridgeHttpHandler(c.get(EthereumSmartContractHelper),c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
         container.registerSingleton(PairAddressSignatureVerifyre, c=>
             new PairAddressSignatureVerifyre()
         ),

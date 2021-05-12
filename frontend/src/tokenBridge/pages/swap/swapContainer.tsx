@@ -1,19 +1,24 @@
-import React, { useEffect,useContext } from 'react';
+import React, { useEffect,useContext,useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Swap,swapDisptach,swapProps } from './swap';
 import { Divider } from '@fluentui/react-northstar'
 import { TextField} from 'office-ui-fabric-react';
-import { PrimaryButton } from 'office-ui-fabric-react';
+import { useId, useBoolean } from '@fluentui/react-hooks';
 import {
     Gap,WebThemedButton
     // @ts-ignore
 } from 'desktop-components-library';
 import { useToasts } from 'react-toast-notifications';
-import { formatter, Utils } from '../../../common/Utils';
+import { formatter } from '../../../common/Utils';
 import {ThemeContext, Theme} from 'unifyre-react-helper';
+import {SwapModal} from './../../../components/swapModal';
+import { ReloadOutlined } from '@ant-design/icons';
+import 'antd/dist/antd.css';
 
-function SwapComponent(props:swapDisptach&swapProps){
+function SwapComponent(props: swapDisptach&swapProps&{con:()=>void}){
+    const [isModalOpen, { setTrue: showModal, setFalse: hideModal }] = useBoolean(false);
+    const [refreshing,setRefreshing] = useState(false);
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);   
     const histroy = useHistory();
@@ -39,12 +44,35 @@ function SwapComponent(props:swapDisptach&swapProps){
         addToast(v, { appearance: 'error',autoDismiss: true })        
     };
 
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await props.tokenSelected(props.currenciesDetails.targetCurrency,props.selectedToken,props.addresses,props.pairedAddress.pair,histroy);
+        setRefreshing(false);
+    }
+
     const onSuccessMessage = async (v:string) => {    
         addToast(v, { appearance: 'success',autoDismiss: true })        
     };
-    let pendingItems = props.userWithdrawalItems.filter(e=>e.used === 'pending').length;
+    let unUsedItems = props.userWithdrawalItems.filter(e=>e.used === '').length;
+    let unUsedTotal = props.userWithdrawalItems.filter(e=>e.used === '').reduce((a, b) => Number(a.receiveAmount||a) + Number(b.receiveAmount), 0);
+    
+    console.log(props,'props8989');
+    
     return (
         <div className="centered-body">
+            <SwapModal
+                isModalOpen={isModalOpen}
+                showModal={showModal}
+                hideModal={hideModal}
+                status={1}
+                txId={props.swapId}
+                sendNetwork={props.network}
+                timestamp={Date.now()}
+                callback={props.checkTxStatus}
+                itemCallback={props.checkifItemIsCreated}
+                itemId={props.itemId}
+                claim={props.con}
+            />
             <>
                 <div className="body-not-centered swap swap-page">
                     <div className="header title ">  
@@ -52,9 +80,14 @@ function SwapComponent(props:swapDisptach&swapProps){
                             Swap Accross Chains
                             <Divider/>
                         </div>
+                        <div>
+                            <div className="space-out">
+                                { props.selectedToken && <div style={{...styles.textStyles}} onClick={()=>handleRefresh()}> Refresh Balance Data <ReloadOutlined style={{color: `${theme.get(Theme.Colors.textColor)}`,width: '20px'}} spin={refreshing}/> </div> }
+                            </div>
+                        </div>
                     </div>
                     {
-                        pendingItems > 0 ? <div className="content notif centered itemlist">You have {pendingItems} Item(s) ready for withdrawal</div>
+                        unUsedItems > 0 ? <div className="content notif centered itemlist" style={styles.headerStyles}>You have {unUsedItems} Item(s) with {unUsedTotal} tokens ready for <span  style={styles.pointerStyle} onClick={props.con}>Withdrawal.</span></div>
                         : <>
                             <Gap/>
                         </>
@@ -65,17 +98,17 @@ function SwapComponent(props:swapDisptach&swapProps){
                             <>
                                 <select name="token" id="token" 
                                     className="content token-select" disabled={props.addresses.length === 0} 
-                                    style={styles.headerStyles}
                                     onChange={(e)=>props.tokenSelected(props.currenciesDetails.targetCurrency,e.target.value,props.addresses,props.pairedAddress.pair,histroy)}
                                     value={props.selectedToken}
+                                    style={{...styles.textStyles,...styles.optionColor}}
                                 >
-                                    <option value={''}>Select Token</option>
+                                    {!props.selectedToken && <option style={{...styles.textStyles,...styles.optionColor}} value={''}>Select Token</option>}
                                     {
                                         props.addresses.length > 0 ?
                                             props.addresses.map(e=>
-                                                <option value={e.symbol}>{e.symbol}</option>
+                                                <option style={{...styles.textStyles,...styles.optionColor}} value={e.symbol}>{e.symbol}</option>
                                             )
-                                        : <option value={'Not Available'}>Not Available</option>
+                                        : <option style={{...styles.textStyles,...styles.optionColor}} value={'Not Available'}>Not Available</option>
                                     }
                                 </select>
                             </>
@@ -117,17 +150,21 @@ function SwapComponent(props:swapDisptach&swapProps){
                                 <WebThemedButton
                                     text={'SWAP'}
                                     onClick={
-                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
+                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired,showModal)
                                     }
                                     disabled={!props.selectedToken || (Number(props.amount) <= 0) || props.allowanceRequired}
                                 />
-                                <WebThemedButton
-                                    text={'APPROVE'}
-                                    onClick={
-                                        () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired)
-                                    }
-                                    disabled={!props.selectedToken || (Number(props.amount) <= 0) || !props.allowanceRequired}
-                                />
+                                {
+                                    props.allowanceRequired &&
+                                        <WebThemedButton
+                                            text={'APPROVE'}
+                                            onClick={
+                                                () => props.onSwap(props.amount,props.balance,props.swapDetails.currency,props.currenciesDetails.targetCurrency,onMessage,onSuccessMessage,props.allowanceRequired,showModal)
+                                            }
+                                            disabled={!props.selectedToken || (Number(props.amount) <= 0) || !props.allowanceRequired}
+                                        />
+                                }
+                                
                             </div>
                         </div>
                         <Gap size="small"/>
@@ -171,6 +208,16 @@ const themedStyles = (theme) => ({
     },
     headerStyles: {
         color: theme.get(Theme.Colors.textColor),
+    },
+    textStyles: {
+        color: theme.get(Theme.Colors.textColor),
+    },
+    optionColor: {
+        backgroundColor: theme.get(Theme.Colors.bkgShade0)
+    },
+    pointerStyle: {
+        cursor: "pointer",
+        color:  theme.get(Theme.Button.btnPrimary) || '#ceaa69',
     }
 });
 

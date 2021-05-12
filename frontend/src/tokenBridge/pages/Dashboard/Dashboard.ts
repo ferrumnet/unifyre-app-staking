@@ -1,5 +1,5 @@
 import { AnyAction, Dispatch } from "redux";
-import { DashboardState, RootState } from "../../../common/RootState";
+import { BridgeDashboardState, RootState } from "../../../common/RootState";
 import { inject, IocModule } from '../../../common/IocModule';
 import { addAction, CommonActions } from "../../../common/Actions";
 import { TokenBridgeClient } from "../../TokenBridgeClient";
@@ -12,6 +12,7 @@ export const DashboardActions = {
     INIT_SUCCEED: 'INIT_SUCCEED',
     CLEAR_ERROR: 'CLEAR_ERROR',
     ERROR_OCCURED: 'ERROR_OCCURED',
+    TRIGGER_PANEL: 'TRIGGER_PANEL'
 };
 
 const Actions = DashboardActions;
@@ -20,16 +21,19 @@ export interface DashboardDispatch extends ReponsivePageWrapperDispatch {
     onBridgeLoad: () => Promise<void>;
     onClear: () => void;
     onError: (v:string) => void;
+    openPanelHandler:() => void;
 }
 
-export interface DashboardProps extends DashboardState {
+export interface DashboardProps extends BridgeDashboardState {
     initialized: boolean,
     isHome: boolean,
     isPaired: boolean,
     initialised:boolean,
     connected: boolean,
     customTheme?: any;
-    userWithdrawalItems: any[]
+    userWithdrawalItems: any[],
+    panelOpen: boolean,
+    groupId: string
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
@@ -78,6 +82,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onDisconnected: () => {
 
     },
+    openPanelHandler: () => {
+        dispatch(addAction(Actions.TRIGGER_PANEL, {}));
+    }
 });
 
 function mapStateToProps (state: RootState):DashboardProps {
@@ -88,32 +95,37 @@ function mapStateToProps (state: RootState):DashboardProps {
         ...state.ui.dashboard,
         initialized: state.ui.dashboard.initialized,
         fatalError: state.ui.dashboard.fatalError,
+        panelOpen: state.ui.bridgeDashboard.panelOpen || false,
         error: state.ui.dashboard.error,
         isHome: state.ui.dashboard.isHome || false,
         initialised: state.ui.bridgeMain.initialised,
         isPaired: state.ui.bridgeMain.isPaired,
         connected: address.network ? true : false,
-        userWithdrawalItems: state.ui.swap.userWithdrawalItems || []
+        userWithdrawalItems: state.ui.swap.userWithdrawalItems || [],
+        groupId: state.data.groupData.info.groupId,
     }
 }
 
 const defaultDashboardState = {
     initialized: false,
-    userWithdrawalItems: []
+    panelOpen: false,
+    userWithdrawalItems: [],
 }
 
-function reduce(state: DashboardState = defaultDashboardState, action: AnyAction){
+function reduce(state: BridgeDashboardState = defaultDashboardState, action: AnyAction){
     switch(action.type) {
         case Actions.INIT_FAILED:
             return {...state, initialized: false, fatalError: action.payload.message};
         case Actions.INIT_SUCCEED:
-            return {...state, initialized: true, fatalError: undefined,error: undefined};
+            return {...state, initialized: true,panelOpen: false, fatalError: undefined,error: undefined};
         case Actions.CLEAR_ERROR:
             return {...state, error: undefined};
         case Actions.ERROR_OCCURED:
-            return {...state, fatalError: action.payload.message,error: 'hrty'};
+            return {...state, fatalError: action.payload.message};
         case LiquidityActions.WITHDRAWAL_ITEMS_FETCHED:
             return {...state, userWithdrawalItems: action.payload.items}
+        case Actions.TRIGGER_PANEL:
+            return {...state, panelOpen: !state.panelOpen}
         default:
             return state;
     }

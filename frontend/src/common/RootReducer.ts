@@ -17,6 +17,8 @@ import { ConnectorContainer } from "../connect/ConnectContainer";
 import { Main } from  '../tokenBridge/pages/main/main';
 import { Swap } from '../tokenBridge/pages/swap/swap';
 import { Liquidity } from '../tokenBridge/pages/liquidity/liquidity';
+import { Dashboard as bridgeDashboard } from '../tokenBridge/pages/Dashboard/Dashboard';
+
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
         case CommonActions.WAITING:
@@ -84,6 +86,7 @@ const data = combineReducers({
 const ui = combineReducers({
     flags,
     dashboard: Dashboard.reduce,
+    bridgeDashboard: bridgeDashboard.reduce,
     stakeToken: StakeToken.reduce,
     unstakeToken: UnstakeToken.reduce,
     continuation: ConfirmTxn.reduce,

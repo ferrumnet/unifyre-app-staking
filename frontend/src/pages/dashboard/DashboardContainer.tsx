@@ -37,6 +37,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
               onConnected={props.onConnected}
               onDisconnected={props.onDisconnected}
               onConnectionFailed={props.onConnectionFailed}
+              panelOpen={false}
             >
               <Switch>
                   <Route path='/confirm/:transactionId'>

@@ -12,6 +12,8 @@ import { Dialogue, } from 'unifyre-web-components';
 import AlertTemplate from 'react-alert-template-basic'
 import { WebDashboardContainer } from './pages/dashboard/WebDashboardContainer';
 import { WebThemeLoader } from './themeLoader';
+import { ToastProvider, useToasts } from 'react-toast-notifications';
+
 // optional configuration
 const options = {
   // you can also just use 'bottom center'
@@ -23,11 +25,13 @@ function App() {
     return (
         <Provider store={store}>
           <Dialogue.Component />
-          <AlertProvider template={AlertTemplate} {...options}>
-            <Router>
-              <WebDashboardContainer />
-            </Router>
-          </AlertProvider>
+          <ToastProvider>
+            <AlertProvider template={AlertTemplate} {...options}>
+              <Router>
+                <WebDashboardContainer />
+              </Router>
+            </AlertProvider>
+          </ToastProvider>
         </Provider>
     );  
 }

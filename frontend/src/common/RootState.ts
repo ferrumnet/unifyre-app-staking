@@ -23,6 +23,16 @@ export interface DashboardState {
     userWithdrawalItems?: any[]
 }
 
+export interface BridgeDashboardState {
+    initialized: boolean;
+    fatalError?: string;
+    connectError?: string;
+    isHome?: boolean;
+    error?: string;
+    panelOpen: boolean;
+    userWithdrawalItems?: any[]
+}
+
 export interface StakeTokenState {
     error?: string;
     amount: string;
@@ -68,6 +78,7 @@ export interface RootState {
             waiting: boolean,
         },
         dashboard: DashboardState,
+        bridgeDashboard: BridgeDashboardState,
         stakeToken: StakeTokenState,
         unstakeToken: StakeTokenState,
         continuation: ContinuationState,
