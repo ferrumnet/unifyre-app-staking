@@ -5,7 +5,6 @@ import {Transactions} from './transactions';
 import { Utils } from '../common/Utils';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
-import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { RootState } from '../common/RootState';
 import {
     Accordion,

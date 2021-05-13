@@ -1,6 +1,5 @@
 import React,{Dispatch, useEffect, useReducer} from 'react';
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
-import { useBoolean } from '@uifabric/react-hooks';
 import { Connect } from 'unifyre-extension-web3-retrofit/dist/contract/Connect';
 import { WalletConnectWeb3Provider } from 'unifyre-extension-web3-retrofit/dist/contract/WalletConnectWeb3Provider';
 import { AppUserProfile } from 'unifyre-extension-sdk/dist/client/model/AppUserProfile';
