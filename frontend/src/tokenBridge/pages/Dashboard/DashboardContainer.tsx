@@ -88,7 +88,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                 <Gap/>
                   <div className="main-header" style={styles.headerStyles}> Ferrum Token Bridge </div>
                 <Switch>
-                    <Route path='/bridge'>
+                    <Route path='/bridgetmp'>
                       <DummyBridgeContainer onConnected={props.onConnected}/>
                     </Route>
                     <Route path='/:gid/liquidity'>

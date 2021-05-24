@@ -5,7 +5,7 @@ import {AbiCoder} from 'web3-eth-abi';
 import { PayBySignatureData } from '../TokenBridgeTypes';
 
 const NAME = "FERRUM_TOKEN_BRIDGE_POOL";
-const VERSION = "000.001";
+const VERSION = "000.002";
 
 export function domainSeparator(eth: Eth, netId: number, contractAddress: HexString) {
     const hashedName = Web3.utils.keccak256(Web3.utils.utf8ToHex(NAME));
@@ -24,9 +24,9 @@ export function domainSeparator(eth: Eth, netId: number, contractAddress: HexStr
 export function fixSig(sig: HexString) {
     const rs = sig.substring(0, sig.length - 2);
     let v = sig.substring(sig.length - 2);
-    if (v == '00' || '37') {
+    if (v === '00' || v ==='37' || v === '25') {
         v = '1b'
-        } else if (v == '01' || '38') {
+        } else if (v === '01' || v === '38' || v === '26') {
         v = '1c'
     }
     return rs+v;

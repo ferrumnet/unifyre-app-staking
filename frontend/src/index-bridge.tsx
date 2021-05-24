@@ -7,6 +7,7 @@ import './fonts/SawarabiGothic-Regular.ttf';
 import { BackendMode } from './common/Utils';
 
 BackendMode.mode = 'web3';
+BackendMode.app = 'bridge';
 
 ReactDOM.render(
   <React.StrictMode>

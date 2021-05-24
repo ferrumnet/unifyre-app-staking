@@ -19,6 +19,7 @@ export interface BridgeProcessorConfig {
     payer: NetworkRelatedConfig;
     addressManagerEndpoint: string;
     addressManagerSecret: string;
+    contractClient: {[k: string]: string};
 }
 
 //@ts-ignore

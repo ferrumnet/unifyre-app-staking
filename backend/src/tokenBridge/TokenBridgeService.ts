@@ -65,6 +65,13 @@ export class TokenBridgeService extends MongooseConnection implements Injectable
         return { isApprove: false, requests: [req] };
     }
 
+    async withdrawSignedVerify(targetCurrency: string, payee: string, amount: string,
+        hash: string, salt: string, signature: string, expectedAddress: string) {
+        console.log('About to call withdrawSignedVerify')
+        return await this.contract.withdrawSignedVerify(targetCurrency,
+            payee, amount, hash, salt, signature, expectedAddress);
+    }
+
     async getWithdrawItemByReceiveTransaction(receiveTransactionId: string): Promise<UserBridgeWithdrawableBalanceItem> {
         this.verifyInit();
         const rv = await this.balanceItem!.findOne({receiveTransactionId});
