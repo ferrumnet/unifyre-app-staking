@@ -25,6 +25,7 @@ export interface StakingRewards {
 
 export class BackendMode {
     static mode: ApplicationMode = 'unifyre';
+    static app: 'staking' | 'bridge' = 'staking';
 }
 
 export function logError(msg: string, err: Error) {

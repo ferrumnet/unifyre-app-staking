@@ -1,4 +1,4 @@
-import { ChainClientFactory, SimpleTransferTransaction } from "ferrum-chain-clients";
+import { ChainClientFactory, ETHEREUM_CHAIN_ID_FOR_NETWORK, SimpleTransferTransaction } from "ferrum-chain-clients";
 import { Injectable, Logger, LoggerFactory, Network, ValidationUtils } from "ferrum-plumbing";
 import { Big } from 'big.js';
 import { BridgeProcessorModule } from "./BridgeProcessorModule";
@@ -10,7 +10,7 @@ import { CHAIN_ID_FOR_NETWORK, PayBySignatureData, UserBridgeWithdrawableBalance
 import { BridgeConfigStorage } from "./BridgeConfigStorage";
 import { EthereumSmartContractHelper } from "aws-lambda-helper/dist/blockchain";
 import { fixSig, produceSignatureWithdrawHash, randomSalt } from "./BridgeUtils";
-import { toRpcSig } from 'ethereumjs-util';
+import { toRpcSig, ecrecover } from 'ethereumjs-util';
 import { SignedPairAddress } from "../common/TokenBridgeTypes";
 
 export class BridgeProcessor implements Injectable {
@@ -23,6 +23,7 @@ export class BridgeProcessor implements Injectable {
         private pairVerifyer: PairAddressSignatureVerifyre,
         private helper: EthereumSmartContractHelper,
         private privateKey: string,
+        private processorAddress: string,
         logFac: LoggerFactory,
     ) {
         this.log = logFac.getLogger('BridgeProcessor')
@@ -42,7 +43,7 @@ export class BridgeProcessor implements Injectable {
         const relevantTokens = await this.tokenConfig.getSourceCurrencies(network);
         ValidationUtils.isTrue(!!relevantTokens.length, `No relevent token found in config for ${network}`);
         try {
-            console.log(relevantTokens.map((j:any) => j.sourceCurrency),'soucre currencies')
+            console.log(relevantTokens.map((j:any) => j.sourceCurrency),'soucre currencies');
             const incoming = await client.getRecentTransactionsByAddress(
                 poolAddress, relevantTokens.map((j:any) => j.sourceCurrency));
                 //@ts-ignore
@@ -140,6 +141,12 @@ export class BridgeProcessor implements Injectable {
                 used: '',
                 useTransactions: [],
             } as UserBridgeWithdrawableBalanceItem;
+            await this.svc.withdrawSignedVerify(conf!.targetCurrency, targetAddress,
+                targetAmount.toFixed(),
+                payBySig.hash,
+                payBySig.salt,
+                payBySig.signature,
+                this.processorAddress);
             await this.svc.newWithdrawItem(processed);
             return [true, processed];
         } catch (e) {
@@ -152,6 +159,7 @@ export class BridgeProcessor implements Injectable {
         : Promise<PayBySignatureData> {
         const amountStr = await this.helper.amountToMachine(currency, amount);
         const [_, token] = EthereumSmartContractHelper.parseCurrency(currency);
+        // const salt = '0x0000000000000000000000000000000000000000000000000000000000000000' // TODO: randomSalt();
         const salt = randomSalt();
         const chainId = CHAIN_ID_FOR_NETWORK[network];
         const payBySig = produceSignatureWithdrawHash(
@@ -167,6 +175,7 @@ export class BridgeProcessor implements Injectable {
         // E.g. Have an ecnrypted SK as ENV. Configure KMS to only work with a certain IP
         const sigP = await this.chain.forNetwork(network as any)
             .sign(this.privateKey, payBySig.hash.replace('0x', ''), true);
+        // Verify the signature...
         const baseV = sigP.v - chainId * 2 - 8;
         const rpcSig = fixSig(toRpcSig(baseV + 2 + 8, Buffer.from(sigP.r, 'hex'),
             Buffer.from(sigP.s, 'hex'), 1));

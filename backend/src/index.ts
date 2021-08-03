@@ -134,11 +134,6 @@ export class stakingAppModule implements Module {
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
         container.registerSingleton(SmartContratClient,
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
-        container.registerSingleton(TokenBridgeContractClinet,
-            c => new TokenBridgeContractClinet(
-                c.get(EthereumSmartContractHelper),
-                {'BSC': stakingAppConfig.web3ProviderBsc,},
-            ));
         container.registerSingleton(
             StakingFarmContractClient,
             c=> new StakingFarmContractClient(
@@ -153,12 +148,6 @@ export class stakingAppModule implements Module {
                     c.get(StakingFarmContractClient),
                     ));
         container.registerSingleton(BridgeConfigStorage,c=>new BridgeConfigStorage())
-        container.registerSingleton(TokenBridgeService,
-            c => new TokenBridgeService(
-                c.get(EthereumSmartContractHelper),
-                c.get(TokenBridgeContractClinet),
-                c.get(PairAddressSignatureVerifyre)
-                ));
         container.register(TokenBridgeHttpHandler,
                 c=> new TokenBridgeHttpHandler(
                     c.get(EthereumSmartContractHelper),

@@ -70,7 +70,7 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
       // Prevent infinite loop if onLoad causes error
       if(groupId === 'admin'){
         onAdminLoad(history).catch(console.error);
-      } else if (groupId === 'bridge') {
+      } else if (BackendMode.app === 'bridge') {
         onBridgeLoad().catch(console.error);
       } else {
         if (!fatalError) {

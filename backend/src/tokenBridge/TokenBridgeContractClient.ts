@@ -5,6 +5,7 @@ import abiDecoder from 'abi-decoder';
 import { HexString, Injectable, ValidationUtils } from 'ferrum-plumbing';
 import { CustomTransactionCallRequest } from 'unifyre-extension-sdk';
 import { CHAIN_ID_FOR_NETWORK, PayBySignatureData, UserBridgeWithdrawableBalanceItem } from './TokenBridgeTypes';
+import { ChainUtils } from 'ferrum-chain-clients';
 const Helper = EthereumSmartContractHelper;
 
 export class TokenBridgeContractClinet implements Injectable {
@@ -21,6 +22,19 @@ export class TokenBridgeContractClinet implements Injectable {
         const address = this.contractAddress[network];
         ValidationUtils.isTrue(!!address, `No address for network ${network}`)
         return this.bridgePool(network, address);
+    }
+
+    async withdrawSignedVerify(targetCurrency: string, payee: string, amount: string,
+        hash: string, salt: string, signature: string, expectedAddress: string) {
+        const [network, token] = EthereumSmartContractHelper.parseCurrency(targetCurrency);
+        const amountInt = await this.helper.amountToMachine(targetCurrency, amount);
+        console.log('Pre Result of withdrawSignedVerify', {targetCurrency, payee, amount, hash, salt, signature});
+        const res = await this.instance(network).methods.withdrawSignedVerify(token, payee, amountInt,
+            salt, signature).call();
+        console.log('Result of withdrawSignedVerify', res);
+        ValidationUtils.isTrue(res[0] === hash, 'Invalid hash - cannot verify');
+        ValidationUtils.isTrue(ChainUtils.addressesAreEqual(network as any, res[1], expectedAddress),
+            `Invalid signature: expected ${expectedAddress}. Got ${res[1]}`);
     }
 
     protected bridgePool(network: string, contractAddress: string) {
