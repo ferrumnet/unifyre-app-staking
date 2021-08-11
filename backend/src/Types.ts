@@ -94,6 +94,7 @@ export interface StakingAppConfig {
     web3ProviderEthereum: string;
     web3ProviderBsc: string;
     web3ProviderBscTestnet: string;
+    web3ProviderPolygon: string;
     backend: string;
     cmkKeyArn: string;
     adminSecret: string;

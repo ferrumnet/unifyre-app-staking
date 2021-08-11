@@ -36,13 +36,13 @@ export function logError(msg: string, err: Error) {
 export class Utils {
     static getQueryparams(): any {
         const rv: any = {};
-        const queryParams = (window.location.href.split('?')[1] || '').split('&').map(p => p.split('='));
+        const queryParams = (window.location.href.split('?')[1] || '')?.split('&')?.map(p => p.split('='));
         queryParams.forEach(p => rv[p[0]] = p[1]);
         return rv;
     }
 
     static getQueryparam(param: string): string | undefined {
-        const queryParams = (window.location.href.split('?')[1] || '').split('&').map(p => p.split('='));
+        const queryParams = (window.location.href.split('?')[1] || '')?.split('&')?.map(p => p.split('='));
         return (queryParams.find(p => p[0] === param) || [])[1];
     }
 

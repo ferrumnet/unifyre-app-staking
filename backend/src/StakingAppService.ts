@@ -99,6 +99,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         Promise<[UserStake, StakingApp, StakeEvent[]]> {
         let stakingContract = await this.getStaking(contractAddress);
         ValidationUtils.isTrue(!!stakingContract, 'Contract not registerd');
+        ValidationUtils.isTrue(!!(stakingContract?.network ===  network), `You are Connected to the wrong Network for this Contract. Kindly Connect to ${stakingContract?.network}`);
         const fromCont = await this.contract(stakingContract!.contractType).contractInfo(
             stakingContract!.network, contractAddress);
         stakingContract = {...stakingContract, ...fromCont,
