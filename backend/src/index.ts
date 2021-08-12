@@ -73,6 +73,7 @@ export class stakingAppModule implements Module {
                 web3ProviderRinkeby: getEnv('WEB3_PROVIDER_RINKEBY'),
                 web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
                 web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC'),
+                web3ProviderPolygon: getEnv('WEB3_PROVIDER_POLYGON'),
                 backend: getEnv('UNIFYRE_BACKEND'),
                 region,
                 cmkKeyArn: getEnv('CMK_KEY_ARN'),
@@ -127,6 +128,7 @@ export class stakingAppModule implements Module {
                     'RINKEBY': stakingAppConfig.web3ProviderRinkeby,
                     'BSC': stakingAppConfig.web3ProviderBsc,
                     'BSC_TESTNET': stakingAppConfig.web3ProviderBscTestnet,
+                    'POLYGON': stakingAppConfig.web3ProviderPolygon,
                 } as Web3ProviderConfig;
         container.registerSingleton(EthereumSmartContractHelper,
             () => new EthereumSmartContractHelper(networkProviders));

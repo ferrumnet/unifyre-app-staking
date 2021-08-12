@@ -20,6 +20,7 @@ export const DEFAULT_TOKEN_FOR_WEB3_MODE = {
     1: 'ETHEREUM:0xe5caef4af8780e59df925470b050fb23c43ca68c',
     97: 'BSC_TESTNET:0xae13d989dac2f0debff460ac112a837c89baa7cd',
     56: 'BSC:0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
+    137: 'POLYGON:0xd99bafe5031cc8b345cb2e8c80135991f12d7130'
 };
 
 const Actions = ConnectActions;
