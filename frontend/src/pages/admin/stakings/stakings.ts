@@ -247,7 +247,7 @@ function reduce(state:SaerchStakingGroupInfoState = defaultGroupInfoState  , act
         case Actions.STAKING_CHANGED:
             return {...state, currency: action.payload.val}
         case Actions.STAKING_RESET:
-            return {...state, groupInfos: state.stakings}
+            return {...state, groupInfos: action.payload.val}
         case Actions.STAKING_SELECTED:
             return {...state, selectedStaking: action.payload.info,selected: !state.selected, new: false }
         case Actions.STAKING_INFOS_SAVED:
