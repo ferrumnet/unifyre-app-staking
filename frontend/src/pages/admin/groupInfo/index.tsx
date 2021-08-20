@@ -9,9 +9,15 @@ import './groupinfo.scss';
 import { connect } from 'react-redux';
 import { GroupInfo, GroupInfoDispatch,GroupInfoProps } from './groupinfo';
 import { GroupInfo as InfoType } from '../../../common/Types';
-import ReactJson from 'react-json-view'
 import { defaultvar,Networks } from '../../../common/Utils';
 
+function safeCleanup(j: string): string {
+	try {
+		return JSON.stringify(JSON.parse(j), undefined, 4);
+	} catch(e) {
+		return j;
+	}
+}
 
 function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
     useEffect(()=>{
@@ -126,23 +132,13 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                     <div>
                         <div> Theme Variables </div>
                         {
-                            (props.originalInfo.themeVariables)  &&
-                            <ReactJson
-                                onEdit={(v:any) => props.onSelectedInfoChange(v || '','themeVariables')}
-                                src={JSON.parse(props.selectedInfo.themeVariables || '{}')}
-                            />
-                        }
-                        {
-                            (!props.originalInfo.themeVariables || props.selectedInfo.themeVariables === '') &&
                             <TextArea 
                                 fluid 
-                                value={
-                                    props.selectedInfo.themeVariables || defaultvar
-                                }
+                                value={safeCleanup(props.selectedInfo.themeVariables || defaultvar)}
                                 defaultValue = {defaultvar.toString()}
                                 placeholder="Type here..." 
                                 className="variable-container"
-                                onChange={(v:any) => props.onSelectedInfoChange(v.target.value || '','themeVariables')}
+                                onChange={(v:any) => props.onSelectedInfoChange(v.target.value || '{}','themeVariables')}
                             />
                         }
                         <Gap/>
@@ -151,6 +147,7 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                         {props.error}
                         <p></p>
                         <PrimaryButton 
+							disabled={!!props.error}
                             onClick={
                                 ()=> props.selectedInfo._id ? 
                                 props.updateGroupInfo(props.selectedInfo,props.fetchGroups) 

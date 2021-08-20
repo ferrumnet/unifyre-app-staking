@@ -39,7 +39,7 @@ export class TokenBridgeContractClinet implements Injectable {
 
     protected bridgePool(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
-        return new web3.Contract(bridgeAbi, contractAddress);
+        return new web3.Contract(bridgeAbi as any, contractAddress);
     }
 
     async estimateGasOrDefault(method: any, from: string, defaultGas?: number) {

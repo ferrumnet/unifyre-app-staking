@@ -58,6 +58,14 @@ function checkEmpty(data: InfoType){
     return false
 }
 
+function isValidJson(j: string): boolean {
+	try {
+		return !!JSON.parse(j);
+	} catch(e) {
+		return false;
+	}
+}
+
 function mapStateToProps(state: RootState): GroupInfoProps {
     return {
         ...state.ui.adminGroupInfo,
@@ -135,7 +143,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         dispatch(addAction(GroupInfoActions.INFO_SELECTED,{info: infos[val] }))
     },
     onSelectedInfoChange: (val:any,field: string) => {
-
         dispatch(addAction(GroupInfoActions.SELECTED_INFO_CHANGED,{value: val,field: field}))
     },
 })
@@ -191,7 +198,11 @@ function reduce(state:GroupInfoState = defaultGroupInfoState  , action:AnyAction
         case Actions.RETURN: 
             return {...state, selected: !state.selected, selectedInfo: defaultGroupInfoState.selectedInfo,}
         case Actions.SELECTED_INFO_CHANGED:
-            return {...state,selectedInfo: {...state.selectedInfo, [action.payload.field]: action.payload.value},error: ''}
+			let s: any = {...state,selectedInfo: {...state.selectedInfo, [action.payload.field]: action.payload.value},error: ''};
+			if (action.payload.field === 'themeVariables') {
+				s.error = s.error || (isValidJson(action.payload.value) ? '' : 'Bad JSON');
+			}
+            return s
         case Actions.ERROR:
             return {...state, error: action.payload.message}
         default:

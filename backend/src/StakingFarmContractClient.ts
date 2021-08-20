@@ -14,7 +14,7 @@ export class StakingFarmContractClient extends SmartContratClient {
 
     protected stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
-        return new web3.Contract(stakingFarmAbi.abi, contractAddress);
+        return new web3.Contract(stakingFarmAbi.abi as any, contractAddress);
     }
 
     __name__() { return 'StakingFarmContractClient'; }

@@ -1,4 +1,4 @@
-import { ChainClientFactory, ETHEREUM_CHAIN_ID_FOR_NETWORK, SimpleTransferTransaction } from "ferrum-chain-clients";
+import { ChainClientFactory, SimpleTransferTransaction } from "ferrum-chain-clients";
 import { Injectable, Logger, LoggerFactory, Network, ValidationUtils } from "ferrum-plumbing";
 import { Big } from 'big.js';
 import { BridgeProcessorModule } from "./BridgeProcessorModule";

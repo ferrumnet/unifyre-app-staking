@@ -223,12 +223,12 @@ export class SmartContratClient implements Injectable {
 
     protected stakingContinuationApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
-        return new web3.Contract(stakingContinuationAbi, contractAddress);
+        return new web3.Contract(stakingContinuationAbi as any, contractAddress);
     }
 
     protected stakingApp(network: string, contractAddress: string) {
         const web3 = this.helper.web3(network);
-        return new web3.Contract(stakingAbi, contractAddress);
+        return new web3.Contract(stakingAbi as any, contractAddress);
     }
 
     private async stakeToken(network: string,

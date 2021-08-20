@@ -29,7 +29,7 @@ export function WithdrawViewInfoBox(props: {contract: StakingApp,
     );
     const fields = [
         {
-            label: 'You staked balance',
+            label: 'Your staked balance',
             value: `${props.userStake?.amountInStake || '0'} ${props.contract.symbol || ''}`
         },
         {

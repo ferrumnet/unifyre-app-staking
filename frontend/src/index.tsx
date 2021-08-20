@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App-tokenBridge';
+import App from './App-web3';
 import * as serviceWorker from './serviceWorker';
 import './fonts/SawarabiGothic-Regular.ttf';
 import { BackendMode } from './common/Utils';
 
 BackendMode.mode = 'web3';
-BackendMode.app = 'bridge';
+BackendMode.app = 'staking';
 
 ReactDOM.render(
   <React.StrictMode>
