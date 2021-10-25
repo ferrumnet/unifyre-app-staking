@@ -9,19 +9,22 @@ import { StakingAppClient } from '../services/StakingAppClient';
 interface LoaderParams {
     network: string;
     userAddress: string;
+    stakingNetwork?:string
 }
 
 interface LoaderDispatch {
-    onLoad: (network: string, userAddress: string, contractAddress: string) => Promise<void>;
+    onLoad: (network: string, userAddress: string, contractAddress: string,stakingNetwork?: string) => Promise<void>;
 }
 
 function mapStateToProps(state: RootState): LoaderParams {
     const userProfile = state.data.userData?.profile;
+    const stakingData = state.data.stakingData.selectedContract;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
     return {
-        network: address.network,
+        network: stakingData?.network || address.network,
         userAddress: address.address,
+        stakingNetwork: stakingData?.network
     };
 }
 
@@ -44,12 +47,12 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
 
 function Loader(params: LoaderParams&LoaderDispatch) {
     const { contractAddress } = useParams<{contractAddress: string}>();
-    const { network, userAddress, onLoad } = params;
+    const { network, userAddress, onLoad, stakingNetwork } = params;
     useEffect(() => {
         if (contractAddress) {
-            onLoad(network, userAddress, contractAddress);
+            onLoad(network, userAddress, contractAddress,stakingNetwork);
         }
-    }, [contractAddress, network, userAddress, onLoad]);
+    }, [contractAddress, network, userAddress, onLoad,stakingNetwork]);
     return (
         <>
         </>
