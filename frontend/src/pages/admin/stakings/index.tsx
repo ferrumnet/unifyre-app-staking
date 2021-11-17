@@ -159,7 +159,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                     <Gap size={"small"}/>
                     <Divider/>
                     <Row centered>
-                        <div> Staking Url : {`https://stake.unifyre.io/${getGroupId(props.currency)}/info/${props.selectedStaking.contractAddress}`}</div>
+                        <div> Staking Url : {`https://stake.unifyre.io/${getGroupId(props.currency)}/info/${props.selectedStaking.contractAddress}/${props.selectedStaking.network}`}</div>
                     </Row>
                     <Gap/>
                     <Gap/>

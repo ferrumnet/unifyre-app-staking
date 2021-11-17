@@ -32,12 +32,21 @@ export interface DashboardProps extends DashboardState {
 }
 
 function mapStateToProps(state: RootState): DashboardProps {
+    const userProfile = state.data.userData?.profile;
+    const stakingData = state.data.stakingData.selectedContract;
+    const addr = userProfile?.accountGroups[0]?.addresses || {};
+    const address = addr[0] || {};
+    const netError = stakingData?.network && address?.network &&
+        (stakingData?.network !== address?.network) ?
+        `You are connected to ${address.network}. Please connect to ${stakingData!.network} for the current staking` :
+        '';
     return {
         ...state.ui.dashboard,
         homepage: state.data.groupData.info.homepage,
         customTheme: state.data.groupData.info.themeVariables,
         footerHtml: state.data.groupData.info.footerHtml,
         noMainPage: state.data.groupData.info.noMainPage,
+        error: netError || state.ui.dashboard.error,
     };
 }
 
