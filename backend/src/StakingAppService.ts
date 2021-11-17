@@ -71,10 +71,11 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return await this.adminUpdateStakingInfo({...data});
     }
 
-    async getStakingByContractAddress(contractAddress: string): Promise<StakingApp|undefined> {
+    async getStakingByContractAddress(network: string,
+            contractAddress: string): Promise<StakingApp|undefined> {
         this.verifyInit();
-        return this.cache.getAsync(`PUBLIC_STAKE.${contractAddress}`, async () => {
-            const cot = await this.getStaking(contractAddress);
+        return this.cache.getAsync(`PUBLIC_STAKE.${network}.${contractAddress}`, async () => {
+            const cot = await this.getStaking(network, contractAddress);
             if (!cot) { return undefined; }
             const fromCont = await this.contract(cot!.contractType).contractInfo(
                 cot!.network, contractAddress);
@@ -88,16 +89,21 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         return apps.map(a => a.toJSON());
     }
 
-    async getStaking(contractAddress: string): Promise<StakingApp|undefined> {
+    async getStaking(network: string, contractAddress: string): Promise<StakingApp|undefined> {
         this.verifyInit();
-        const apps = await this.stakingModel!.findOne({contractAddress}).exec();
-        return apps?.toJSON();
+        const apps = await this.stakingModel!.find({contractAddress}).exec() || [];
+        const allStakes = apps.map(a => a.toJSON());
+        if (allStakes.length === 1 && !network) {
+            return allStakes[0];
+        }
+        return allStakes.length > 0 ? allStakes.filter(s => s.network === network)[0] :
+            undefined;
     }
 
     async getStakingContractForUser(
         network: string, contractAddress: string, userAddress: string, userId: string):
         Promise<[UserStake, StakingApp, StakeEvent[]]> {
-        let stakingContract = await this.getStaking(contractAddress);
+        let stakingContract = await this.getStaking(network, contractAddress);
         ValidationUtils.isTrue(!!stakingContract, 'Contract not registerd');
         ValidationUtils.isTrue(!!(stakingContract?.network ===  network), `You are Connected to the wrong Network for this Contract. Kindly Connect to ${stakingContract?.network}`);
         const fromCont = await this.contract(stakingContract!.contractType).contractInfo(
@@ -194,9 +200,10 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     async stakeTokenSignAndSendGetTransactions(
             userId: string,
             email: string,
+            network: string,
             contractAddress: string, userAddress: string, amount: string):
             Promise<CustomTransactionCallRequest[]> {
-        const stakingContract = (await this.getStaking(contractAddress))!;
+        const stakingContract = (await this.getStaking(network, contractAddress))!;
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         if (stakingContract.maxContribution) {
             ValidationUtils.isTrue(new Big(stakingContract.maxContribution).gte(new Big(amount)),
@@ -237,7 +244,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const user = await client.getUserProfile();
         const txs = await this.stakeTokenSignAndSendGetTransactions(user.userId, 
             user.email || '',
-            contractAddress, userAddress, amount);
+            network, contractAddress, userAddress, amount);
         const payload = { network, userAddress, amount, contractAddress, action: 'stake' };
         const requestId = await client.sendTransactionAsync(network, txs, payload);
         // Disabling the response for Lambda. AWS API kill the connection after a few seconds
@@ -258,7 +265,8 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     };
 
     async stakeEventProcessTransactions(userId: string, token: string,
-        eventType: 'stake'|'unstake', contractAddress: string, amount: string, txIds: string[], ) {
+        eventType: 'stake'|'unstake', network: string,
+            contractAddress: string, amount: string, txIds: string[], ) {
         const client = this.uniClientFac();
         let email: string = '';
         let address: string = userId;
@@ -271,7 +279,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
             ValidationUtils.isTrue(!!addr, 'Error accessing unifyre. Cannot access user address');
             address = addr.address;
         }
-        const stakingContract = (await this.getStaking(contractAddress))!;
+        const stakingContract = (await this.getStaking(network, contractAddress))!;
         const mainTxId = txIds.pop()!;
         return await this.processTransaction(
             eventType,
@@ -310,7 +318,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     async unstakeTokenSignAndSendGetTransaction(
             network: Network, contractAddress: string, userAddress: string, amount: string):
             Promise<CustomTransactionCallRequest[]> {
-        const stakingContract = (await this.getStaking(contractAddress))!
+        const stakingContract = (await this.getStaking(network, contractAddress))!
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         return this.contract(stakingContract.contractType).unStake(
             stakingContract,
@@ -369,7 +377,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     async takeRewardsSignAndSendGetTransaction(
             network: Network, contractAddress: string, userAddress: string):
             Promise<CustomTransactionCallRequest[]> {
-        const stakingContract = (await this.getStaking(contractAddress))!
+        const stakingContract = (await this.getStaking(network, contractAddress))!
         ValidationUtils.isTrue(!!stakingContract && !!stakingContract.currency, 'Staking contract not found: ' + contractAddress)
         return this.contract(stakingContract.contractType).takeRewards(
             stakingContract,
@@ -466,11 +474,23 @@ export class StakingAppService extends MongooseConnection implements Injectable 
         const st = {...stake};
         const version = stake._v;
         st._v = (version || 0) + 1;
-        const updated = await this.stakingModel!.findOneAndUpdate({ contractAddress: stake.contractAddress },
+        stake.contractAddress = stake.contractAddress.toLowerCase();
+        const updated = await this.stakingModel!.findOneAndUpdate(
+            {'$and': [{ network: stake.network }, { contractAddress: stake.contractAddress }]},
             { '$set': { ...st } }).exec();
         console.log('UPDATING STAKE INFO ', updated, st._id, version);
         ValidationUtils.isTrue(!!updated, 'Error updating Stake Info. Update returned empty. Retry');
         return updated?.toJSON();
+    }
+
+    async adminDeleteStakingInfo(network: string, contractAddress: string) {
+        this.verifyInit();
+        contractAddress = contractAddress.toLowerCase();
+        const deleted = await this.stakingModel!.findOneAndDelete(
+            {'$and': [{ 'network': network as any }, { contractAddress }]});
+        console.log('DELETED STAKE INFO ', deleted, network, contractAddress);
+        ValidationUtils.isTrue(!!deleted, 'Error deleting Stake Info. Update returned empty. Retry');
+        return deleted?.toJSON();
     }
 
     private async updateGroupInfoItem(info: GroupInfo) {
@@ -526,6 +546,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     }
 
     private async saveStakingApp(pd:StakingApp) { 
+        pd.contractAddress = pd.contractAddress.toLowerCase();
         this.verifyInit();
         return new this.stakingModel!(pd).save();
     }

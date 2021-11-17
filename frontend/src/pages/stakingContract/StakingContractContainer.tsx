@@ -150,7 +150,7 @@ function StakingView(props: StakingContractProps&StakingContractDispatch) {
                                 text={
                                     props.filled ? 'Filled' :
                                         props.userStake?.amountInStake === '0' ? `Start Winning` : `Stake More ${symbol}`}
-                                onClick={() => props.onContractSelected(history,props.contract.contractAddress,false)}
+                                onClick={() => props.onContractSelected(history,props.contract.network,props.contract.contractAddress,false)}
                                 disabled={props.filled}
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
@@ -260,7 +260,7 @@ function WithdrawView(props: StakingContractProps&StakingContractDispatch) {
                                 highlight={true}
                                 disabled={props.state !== 'withdraw' && props.state !== 'maturity'}
                                 text={`Un stake`}
-                                onClick={() => props.onContractSelected(history,props.contract.contractAddress,true)}
+                                onClick={() => props.onContractSelected(history,props.contract.network,props.contract.contractAddress,true)}
                                 textStyle={{...styles.mediumText,...styles.btnText}}
                             />
                         </Row>

@@ -43,7 +43,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         const res = await client.selectStakingContract(dispatch, contract.network,
             contract.contractAddress, userAddress);
         if (!!res) {
-            history.push((groupId ? `/${groupId}` : '') + '/info/' + contract.contractAddress);
+            history.push((groupId ? `/${groupId}` : '') + '/info/' + contract.contractAddress + '/' + contract.network);
         }
     }
 } as MainDispatch);

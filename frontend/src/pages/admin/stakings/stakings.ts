@@ -41,6 +41,7 @@ export interface SaerchStakingGroupInfoDispatch {
     onSelectedInfoChange: (v: any,field: string) => void;
     updateGroupInfo: (infos:InfoType,cb:()=>void) => void;
     updateStakings: (staking: StakingApp,cb:()=>void,fp: () =>void) => void;
+    deleteStakings: (staking: StakingApp,cb:()=>void,fp: () =>void) => void;
     addNewStakings: (staking: StakingApp,cb:()=>void,fp: () =>void) => void;
     addGroupInfo: (infos:InfoType,cb:()=>void) => void;
     fetchGroups: () => void;
@@ -56,7 +57,6 @@ export interface SaerchStakingGroupInfoProps{
     stakings: StakingApp[]
     new: boolean
 }
-
 
 function mapStateToProps(state: RootState): SaerchStakingGroupInfoProps {
     return {
@@ -131,6 +131,25 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             const client = inject<StakingAppClient>(StakingAppClient);
             delete staking._id
             const res = await client.updateStakingInfo(dispatch,staking);
+            if(res)
+            {
+                dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_INFOS_SAVED, { data: res[0] }));
+                fp();
+                dispatch(addAction(SaerchStakingGroupInfoActions.RETURN,{}))
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
+        }
+    },
+    deleteStakings: async (staking: StakingApp,cb:()=>void,fp: () =>void) => {
+        try {
+            dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
+            await IocModule.init(dispatch);
+            const client = inject<StakingAppClient>(StakingAppClient);
+            delete staking._id
+            const res = await client.deleteStakingInfo(dispatch,staking);
             if(res)
             {
                 dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_INFOS_SAVED, { data: res[0] }));

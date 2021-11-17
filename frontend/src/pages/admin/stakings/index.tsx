@@ -216,6 +216,14 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                             }>
                             {props.selectedStaking._id ? 'Update Staking Info' : 'Add Staking to Group'}
                         </PrimaryButton>
+                        &nbsp;
+                        <PrimaryButton
+                            onClick={() =>
+                                props.deleteStakings(props.selectedStaking, props.onReturn,()=>props.fetchStakings(props.currency))}
+                            disabled={!props.selectedStaking._id}    
+                        >
+                            Delete
+                        </PrimaryButton>
                     </div>
                     <Gap/>
                 </div>

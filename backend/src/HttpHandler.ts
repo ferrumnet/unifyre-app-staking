@@ -85,6 +85,11 @@ export class HttpHandler implements LambdaHttpHandler {
                     //admin save new contract
                     body = await this.adminUpdateStakingContactInfo(req);
                     break;
+                case 'adminDeleteStakingContractInfo':
+                    ValidationUtils.isTrue(userId === this.adminHash, 'Bad admin hash');
+                    //admin save new contract
+                    body = await this.adminDeleteStakingContactInfo(req);
+                    break;
                 case 'getStakingsForToken':
                     body = await this.getStakingsForToken(req);
                     break;
@@ -184,7 +189,7 @@ export class HttpHandler implements LambdaHttpHandler {
         } catch (e) {
             console.error('Error while calling API', req, e);
             return {
-                body: JSON.stringify({error: e.toString()}),
+                body: JSON.stringify({error: (e as Error).toString()}),
                 headers: {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Methods': 'POST',
@@ -228,11 +233,18 @@ export class HttpHandler implements LambdaHttpHandler {
         return await this.userSvc.updateStakeInfo(req.data as any);
     }
 
+    async adminDeleteStakingContactInfo(req: JsonRpcRequest) {
+        const {network,
+            contractAddress} = req.data;
+        ValidationUtils.isTrue(!!network, '"network" must be provided');
+        ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
+        return await this.userSvc.adminDeleteStakingInfo(network, contractAddress);
+    }
 
     async getStakingsByContractAddress(req: JsonRpcRequest) {
-        const {contractAddress} = req.data;
+        const {network, contractAddress} = req.data;
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
-        return await this.userSvc.getStakingByContractAddress(contractAddress);
+        return await this.userSvc.getStakingByContractAddress(network, contractAddress);
     }
 
     signInAdmin(secret?: string): undefined | string {
@@ -270,7 +282,7 @@ export class HttpHandler implements LambdaHttpHandler {
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!userAddress, '"userAddress" must be provided');
         return await this.userSvc.stakeTokenSignAndSendGetTransactions(
-            userAddress, '', contractAddress, userAddress, amount);
+            userAddress, '', network, contractAddress, userAddress, amount);
     }
 
     async stakeTokenSignAndSend(req: JsonRpcRequest): Promise<{requestId: string, stakeEvent?: StakeEvent}> {
@@ -285,12 +297,13 @@ export class HttpHandler implements LambdaHttpHandler {
     }
 
     async stakeEventProcessTransactions(userId: string, req: JsonRpcRequest): Promise<{stakeEvent: StakeEvent}> {
-        const {token, amount, eventType, contractAddress, txIds} = req.data;
+        const {token, amount, eventType, network, contractAddress, txIds} = req.data;
         ValidationUtils.isTrue(!!amount, '"amount" must be provided');
         ValidationUtils.isTrue(!!eventType, '"eventType" must be provided');
         ValidationUtils.isTrue(!!contractAddress, '"contractAddress" must be provided');
         ValidationUtils.isTrue(!!txIds, '"txIds" must be provided');
-        const stakeEvent = await this.userSvc.stakeEventProcessTransactions(userId, token, eventType, contractAddress,
+        const stakeEvent = await this.userSvc.stakeEventProcessTransactions(
+            userId, token, eventType, network, contractAddress,
             amount, txIds);
         //@ts-ignore
         return {stakeEvent};

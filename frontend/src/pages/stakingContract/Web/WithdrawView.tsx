@@ -126,7 +126,7 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
                     disabled={!props.userAddress || 
                         (props.state !== 'withdraw' && props.state !== 'maturity')}
                     onClick={() => props.onContractSelected(
-                        history,props.contract.contractAddress, true, props.groupId)}
+                        history,props.contract.network,props.contract.contractAddress, true, props.groupId)}
                     />
             </Row>
         </LeftBox>

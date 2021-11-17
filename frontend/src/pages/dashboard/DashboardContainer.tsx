@@ -43,11 +43,20 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   <Route path='/confirm/:transactionId'>
                         <ConfirmTxnContainer/>
                   </Route>
+                  <Route path='/unstake/:contractAddress/:network'>
+                        <UnstakeTokenContainer/>
+                  </Route>
                   <Route path='/unstake/:contractAddress'>
                         <UnstakeTokenContainer/>
                   </Route>
                   <Route path='/stake/:contractAddress'>
                         <StakeTokenContainer/>
+                  </Route>
+                  <Route path='/stake/:contractAddress/:network'>
+                        <StakeTokenContainer/>
+                  </Route>
+                  <Route path='/info/:contractAddress/:network'>
+                        <StakingContractContainer />
                   </Route>
                   <Route path='/info/:contractAddress'>
                         <StakingContractContainer />

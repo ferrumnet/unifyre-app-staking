@@ -172,6 +172,22 @@ export class StakingAppClient implements Injectable {
         }
     }
 
+    async deleteStakingInfo(dispatch: Dispatch<AnyAction>,stake: StakingApp){
+        dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        try {
+            const res = await this.api({
+                command: 'adminDeleteStakingContractInfo', data: {...stake}, params: [] } as JsonRpcRequest);
+            if(res){
+                return res;
+            }
+            return;
+        } catch (e) {
+            logError('Error sigining in', e);
+            dispatch(addAction(Actions.AUTHENTICATION_FAILED, { message: 'An Error Occured Processing, try again later' }));
+        } finally {
+            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'signInToServer' }));
+        }
+    }
 
     async getAllGroupInfos(dispatch: Dispatch<AnyAction>){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
@@ -265,11 +281,12 @@ export class StakingAppClient implements Injectable {
     }
 
     async selectStakingContractByAddress(dispatch: Dispatch<AnyAction>,
+            network: string,
             contractAddress: string): Promise<[UserStake,{}]|undefined> {
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'selectStakingContractByAddress' }));
             const stakingContract = await this.api({
-                command: 'getStakingByContractAddress', data: {contractAddress}, params: [] } as JsonRpcRequest);
+                command: 'getStakingByContractAddress', data: {network, contractAddress}, params: [] } as JsonRpcRequest);
             if (!stakingContract) {
                 dispatch(addAction(Actions.GET_STAKING_CONTRACT_FAILED, { message: 'Could not get the staking contract data' }));
                 return;
@@ -443,9 +460,11 @@ export class StakingAppClient implements Injectable {
             }
             const txIds = (response.response || []).map(r => r.transactionId);
             const payload = response.requestPayload || {};
-            const { amount, contractAddress, action } = payload;
+            const { amount, network, contractAddress, action } = payload;
             const res = await this.api({
-                command: 'stakeEventProcessTransactions', data: {token, amount, eventType: action || 'stake',
+                command: 'stakeEventProcessTransactions', data: {
+                    token, amount, eventType: action || 'stake',
+                    network,
                     contractAddress, txIds},
                 params: []}as JsonRpcRequest) as {stakeEvent?: StakeEvent};
             const stakeEvent = res.stakeEvent;

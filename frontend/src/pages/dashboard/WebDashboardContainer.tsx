@@ -110,6 +110,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                   <Route path='/:groupId/stake/:contractAddress'>
                         <WebStakeTokenContainer/>
                   </Route>
+                  <Route path='/:gid/info/:contractAddress/:network'>
+                        <WebStakingContractContainer />
+                  </Route>
                   <Route path='/:gid/info/:contractAddress'>
                         <WebStakingContractContainer />
                   </Route>

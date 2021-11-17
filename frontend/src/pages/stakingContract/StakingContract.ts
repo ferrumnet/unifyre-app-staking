@@ -30,7 +30,7 @@ export interface StakingContractProps {
 }
 
 export interface StakingContractDispatch {
-    onContractSelected: (history: History, address: string, withdraw:boolean, groupId?: string) => void;
+    onContractSelected: (history: History, network: string, address: string, withdraw:boolean, groupId?: string) => void;
 }
 
 function mapStateToProps(state: RootState): StakingContractProps {
@@ -69,13 +69,13 @@ function mapStateToProps(state: RootState): StakingContractProps {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    onContractSelected: (history, address,withdraw, groupId) => {
+    onContractSelected: (history, network, address,withdraw, groupId) => {
         dispatch(addAction(StakingAppServiceActions.CONTRACT_SELECTED, {address}));
         const gidPre = groupId ? `/${groupId}` : '';
         if(withdraw){
-            history.push(`${gidPre}/unstake/${address}`);
+            history.push(`${gidPre}/unstake/${address}/${network}`);
         }else{
-            history.push(`${gidPre}/stake/${address}`);
+            history.push(`${gidPre}/stake/${address}/${network}`);
         }
     }
 } as StakingContractDispatch);

@@ -180,7 +180,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
             <PrimaryButton text={props.filled ? 'Filled' : 'Stake Now'}
                 disabled={props.filled}
                 onClick={() => props.onContractSelected(
-                    history,props.contract.contractAddress,false, props.groupId)}
+                    history,props.contract.network,props.contract.contractAddress,false, props.groupId)}
                 />
         </Row>
     ) : (

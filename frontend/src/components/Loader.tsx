@@ -34,7 +34,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             if (!network || !userAddress || !contratAddress) {
                 if (!!contratAddress) {
                     const client = inject<StakingAppClient>(StakingAppClient);
-                    await client.selectStakingContractByAddress(dispatch, contratAddress);
+                    await client.selectStakingContractByAddress(dispatch,
+                        network,
+                        contratAddress);
                 }
                 return;
             }
@@ -46,11 +48,13 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
 } as LoaderDispatch);
 
 function Loader(params: LoaderParams&LoaderDispatch) {
-    const { contractAddress } = useParams<{contractAddress: string}>();
-    const { network, userAddress, onLoad, stakingNetwork } = params;
+    let { network, contractAddress } = useParams<{network: string, contractAddress: string}>();
+    console.log('NETWORK GOTO', network, contractAddress)
+    const { userAddress, onLoad, stakingNetwork } = params;
+    network = network || params.network;
     useEffect(() => {
         if (contractAddress) {
-            onLoad(network, userAddress, contractAddress,stakingNetwork);
+            onLoad(network , userAddress, contractAddress,stakingNetwork);
         }
     }, [contractAddress, network, userAddress, onLoad,stakingNetwork]);
     return (
