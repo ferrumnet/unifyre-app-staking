@@ -24,7 +24,7 @@ function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     ) : undefined;
     const whitelisted = (!!props.contract.emailWhitelist || !!props.contract.addressWhitelist) ? (
         <Row withPadding centered>
-            <ThemedText.H3>You must be on the whiltelist to stake in this contract</ThemedText.H3>
+            <ThemedText.H3>You must be on the whitelist to stake in this contract</ThemedText.H3>
         </Row>
     ) : undefined;
     return (
