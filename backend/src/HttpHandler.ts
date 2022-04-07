@@ -9,7 +9,6 @@ import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
 import { StakingAppService } from "./StakingAppService";
 import { StakeEvent } from "./Types";
 import Web3 from "web3";
-import { TokenBridgeHttpHandler } from "./tokenBridge/TokenBridgeHttpHandler";
 
 function handlePreflight(request: any) {
     if (request.method === 'OPTIONS' || request.httpMethod === 'OPTIONS') {
@@ -33,7 +32,6 @@ export class HttpHandler implements LambdaHttpHandler {
         private adminSecret: string,
         private authRandomKey: string,
         private networkConfig: Web3ProviderConfig,
-        private tokenBridge: TokenBridgeHttpHandler,
         ) {
         this.adminHash = Web3.utils.sha3('__ADMIN__' + this.adminSecret)!;
     }
@@ -161,7 +159,6 @@ export class HttpHandler implements LambdaHttpHandler {
                 //     //todo: update user data after staking         
                 //     break;
                 default:
-                    body = await this.tokenBridge.handle(req, userId);
                     if (!body) {
                         return {
                             body: JSON.stringify({error: 'bad request'}),

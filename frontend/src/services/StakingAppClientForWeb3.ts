@@ -1,6 +1,7 @@
+//@ts-nocheck
 import { JsonRpcRequest, Network, ValidationUtils } from "ferrum-plumbing";
 import { AnyAction, Dispatch } from "redux";
-import { CustomTransactionCallRequest } from "unifyre-extension-sdk";
+import { CustomTransactionCallRequest, UnifyreExtensionKitClient } from "unifyre-extension-sdk";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
 import { addAction, CommonActions } from "../common/Actions";
 import { StakingAppClient, StakingAppServiceActions } from "./StakingAppClient";
@@ -8,10 +9,12 @@ import { Big } from 'big.js';
 import { logError } from "../common/Utils";
 import { GroupInfo } from "../common/Types";
 import { IocModule } from "../common/IocModule";
-import { Connect } from "unifyre-extension-web3-retrofit";
+import { Connect, UnifyreExtensionWeb3Client } from "unifyre-extension-web3-retrofit";
+import { inject } from "../connect/types";
 const Actions = StakingAppServiceActions;
 
 export class StakingAppClientForWeb3 extends StakingAppClient {
+    
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
@@ -55,8 +58,14 @@ export class StakingAppClientForWeb3 extends StakingAppClient {
             if (!txs || !txs.length) {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not create a stake transaction.' }));
             }
-            const requestId = await this.client.sendTransactionAsync(network, txs,
-                {amount, contractAddress, action: 'stake'});
+            inject
+            const connect = inject<UnifyreExtensionWeb3Client>(UnifyreExtensionWeb3Client);
+            
+            const res = await connect.getUserProfile()
+            const requestId = await connect.sendTransactionAsync(network, txs,
+                {amount, contractAddress, action: 'stake'})
+            console.log(requestId,'resresres')
+    
             if (!requestId) {
                 dispatch(addAction(Actions.STAKING_FAILED, { message: 'Could not submit transaction.' }));
             }

@@ -1,12 +1,13 @@
 import React,{Dispatch, useEffect, useReducer} from 'react';
-import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
+import { UnifyreExtensionKitClient, } from 'unifyre-extension-sdk';
 import { Connect } from 'unifyre-extension-web3-retrofit/dist/contract/Connect';
-import { WalletConnectWeb3Provider } from 'unifyre-extension-web3-retrofit/dist/contract/WalletConnectWeb3Provider';
+import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract/Web3ModalProvider';
 import { AppUserProfile } from 'unifyre-extension-sdk/dist/client/model/AppUserProfile';
 import { ValidationUtils } from 'ferrum-plumbing';
 import { AnyAction } from 'redux';
-import { CurrencyList } from 'unifyre-extension-web3-retrofit';
-
+import { CurrencyList, UnifyreExtensionWeb3Client } from 'unifyre-extension-web3-retrofit';
+import {StakingAppClient} from './../services/StakingAppClient';
+import { BRIDGE_NETWORKS } from './types';
 export const ConnectActions = {
     CONNECTION_SUCCEEDED: 'CONNECTION_SUCCEEDED',
     CONNECTION_FAILED: 'CONNECTION_FAILED',
@@ -14,13 +15,15 @@ export const ConnectActions = {
     CONNET_CLEAR_ERROR: 'CONNET_CLEAR_ERROR',
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
 }
+import { Networks } from 'ferrum-plumbing';
 
 export const DEFAULT_TOKEN_FOR_WEB3_MODE = {
     4: 'RINKEBY:0x93698a057cec27508a9157a946e03e277b46fe56',
     1: 'ETHEREUM:0xe5caef4af8780e59df925470b050fb23c43ca68c',
     97: 'BSC_TESTNET:0xae13d989dac2f0debff460ac112a837c89baa7cd',
     56: 'BSC:0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
-    137: 'POLYGON:0xd99bafe5031cc8b345cb2e8c80135991f12d7130'
+    137: 'POLYGON:0xd99bafe5031cc8b345cb2e8c80135991f12d7130',
+
 };
 
 const Actions = ConnectActions;
@@ -28,10 +31,11 @@ const Actions = ConnectActions;
 type Connector = () => Promise<boolean>;
 
 export interface IConnectDpendencies {
-    client: UnifyreExtensionKitClient;
+    client: UnifyreExtensionWeb3Client;
     connect: Connect;
     currencyList: CurrencyList;
-    provider: WalletConnectWeb3Provider;
+    provider: Web3ModalProvider;
+    ApiClient: any;
 }
 
 export interface IConnectOwnProps {
@@ -96,8 +100,14 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         const newNetworkCurrencies = (dep.currencyList.get() || []).filter(c => c.startsWith(network || 'NA'));
         if (net && newNetworkCurrencies.length == 0) {
             const defaultCur = (DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any];
+            
             console.log(`Connected to net id ${net} with no defined currency: ${defaultCur}`);
-            dep.currencyList.set([defaultCur]);
+            console.log(dep.currencyList.get(),'currencyList.get()currencyList.get()')
+            const cur2 = dep.currencyList.get();
+            dep.currencyList.set([...BRIDGE_NETWORKS].map(n => Networks.for(n).baseCurrency));
+            dep.currencyList.set([...cur2,...dep.currencyList.get()])
+            console.log(dep.currencyList.get(),'currencyList.get()currencyList.get()')
+
         }
         
         // Subscribe to session disconnection
@@ -106,9 +116,11 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
             dispatch({type: Actions.DISCONNECT, payload: {}});
             onDisconnected();
         });
-        const res = await connector();
-        console.log('CONNECTEOR RETURNED!', res);
+        const userProfile = await dep.client.getUserProfile();
+        const res = await dep.ApiClient.signInToServer2(userProfile);
+        console.log(userProfile,"userProfileuserProfile")
         if (res) {
+            
             const userProfile = await dep.client.getUserProfile();
             onUserDataReceived(userProfile);
             console.log(userProfile,'user--profile')
@@ -125,9 +137,7 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
             } catch (de) {
                 console.error('Error disconnecting provider ', de);
             }
-            dispatch({type: Actions.CONNECTION_FAILED, payload:
-                { message: `Connection failed ${e.message}` }});
-            onError(e);
+            console.log(e)
         }
     }
 }
@@ -143,6 +153,7 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
             const res = await connector();
             if (res) {
                 const userProfile = await dep.client.getUserProfile();
+                console.log(userProfile,'popopret')
                 onUserDataReceived(userProfile);
                   console.log('popopret',userProfile)
                 dispatch({type: Actions.CONNECTION_SUCCEEDED, payload: {}});
@@ -153,9 +164,7 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
                 onError(e);
             }
         } catch(e) {
-            dispatch({type: Actions.CONNECTION_FAILED, payload:
-                { message: `Connection failed ${e.message}` }});
-            onError(e);
+            console.log(e)
         }
     },
     clearError: () => {

@@ -16,11 +16,8 @@ import { KMS } from 'aws-sdk';
 import { StakingAppConfig } from './Types';
 import { EthereumSmartContractHelper, Web3ProviderConfig } from 'aws-lambda-helper/dist/blockchain';
 import { StakingFarmContractClient } from './StakingFarmContractClient';
-import { TokenBridgeHttpHandler } from './tokenBridge/TokenBridgeHttpHandler';
-import {BridgeConfigStorage} from './tokenBridge/processor/BridgeConfigStorage';
-import { TokenBridgeService } from './tokenBridge/TokenBridgeService';
-import { TokenBridgeContractClinet } from './tokenBridge/TokenBridgeContractClient';
-import { PairAddressSignatureVerifyre } from './tokenBridge/common/PairAddressSignatureVerifyer';
+import { AppConfig } from "./Appconfig";
+import { Web3RetrofitModule } from "unifyre-extension-web3-retrofit";
 
 const global = { init: false };
 const STAKING_APP_ID = 'STAKING';
@@ -44,6 +41,7 @@ export async function handler(event: any, context: any) {
     } catch (e) {
         console.error(e);
         return {
+            //@ts-ignore
             body: e.message,
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -57,39 +55,46 @@ export async function handler(event: any, context: any) {
 
 export class stakingAppModule implements Module {
     async configAsync(container: Container) {
+        await AppConfig.instance().forChainProviders();
+        await AppConfig.instance().fromSecret('', 'BRIDGE');
+        await AppConfig.instance().fromSecret('', 'CRUCIBLE');
+        await AppConfig.instance().fromSecret('', 'LEADERBOARD');
+        await AppConfig.instance().fromSecret('', 'GOVERNANCE');
+        (await AppConfig.instance()
+        .fromSecret('', 'BRIDGE_BACKEND'))
         const region = process.env.AWS_REGION || process.env[AwsEnvs.AWS_DEFAULT_REGION] || 'us-east-2';
         const stakingAppConfArn = process.env[AwsEnvs.AWS_SECRET_ARN_PREFIX + 'UNI_APP_STAKING_APP'];
         let stakingAppConfig: StakingAppConfig = {} as any;
         if (stakingAppConfArn) {
             stakingAppConfig = await new SecretsProvider(region, stakingAppConfArn).get();
         } else {
+            let chains= AppConfig.instance().getChainProviders();
             stakingAppConfig = {
-                database: {
-                    connectionString: getEnv('MONGOOSE_CONNECTION_STRING'),
-                } as MongooseConfig,
-                authRandomKey: getEnv('RANDOM_SECRET'),
-                signingKeyHex: getEnv('REQUEST_SIGNING_KEY'),
-                web3ProviderEthereum: getEnv('WEB3_PROVIDER_ETHEREUM'),
-                web3ProviderRinkeby: getEnv('WEB3_PROVIDER_RINKEBY'),
-                web3ProviderBsc: getEnv('WEB3_PROVIDER_BSC'),
-                web3ProviderBscTestnet: getEnv('WEB3_PROVIDER_BSC_TESTNET'),
-                web3ProviderPolygon: getEnv('WEB3_PROVIDER_POLYGON'),
-                backend: getEnv('UNIFYRE_BACKEND'),
+                database:  AppConfig.instance().get('database') || {connectionString: getEnv('MONGOOSE_CONNECTION_STRING')} as MongooseConfig,
+                authRandomKey:AppConfig.instance().get('jwtRandomBase') || getEnv('RANDOM_SECRET'),
+                signingKeyHex: AppConfig.instance().get('REQUEST_SIGNING_KEY') || getEnv('REQUEST_SIGNING_KEY'),
+                web3ProviderEthereum: chains['ETHEREUM'] || getEnv('WEB3_PROVIDER_ETHEREUM'),
+                web3ProviderRinkeby: chains['RINKEBY'] || getEnv('WEB3_PROVIDER_RINKEBY'),
+                web3ProviderBsc:  chains['BSC'] || getEnv('WEB3_PROVIDER_BSC'),
+                web3ProviderBscTestnet: chains['BSC_TESTNET'] || getEnv('WEB3_PROVIDER_BSC_TESTNET'),
+                web3ProviderPolygon:chains['POLYGON'] || getEnv('WEB3_PROVIDER_POLYGON'),
+                backend: AppConfig.instance().get('cmkKeyId'),
                 region,
-                cmkKeyArn: getEnv('CMK_KEY_ARN'),
-                adminSecret: getEnv('ADMIN_SECRET'),
+                cmkKeyArn: AppConfig.instance().get('cmkKeyId') || getEnv('CMK_KEY_ARN'),
+                adminSecret: AppConfig.instance().get('stakingAdminSecret') || getEnv('ADMIN_SECRET'),
                 bridgeConfig: {
                     contractClient: {
-                        'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM'),
-                        'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY'),
-                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
-                        'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET'),
+                        'ETHEREUM': getEnv('TOKEN_BRDIGE_CONTRACT_ETHEREUM') || '',
+                        'RINKEBY': getEnv('TOKEN_BRDIGE_CONTRACT_RINKEBY')|| '',
+                        'BSC': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET')|| '',
+                        'BSC_TESTNET': getEnv('TOKEN_BRDIGE_CONTRACT_BSC_TESTNET')|| '',
                     }
                 }
             } as StakingAppConfig;
         }
+        const netConfig = AppConfig.instance().getChainProviders();
 
-        console.log(stakingAppConfig,'appconfig');
+        console.log(stakingAppConfig,'appconfig', AppConfig.instance().get());
         // makeInjectable('CloudWatch', CloudWatch);
         // container.register('MetricsUploader', c =>
         //     new CloudWatchClient(c.get('CloudWatch'), 'WalletAddressManager', [
@@ -122,6 +127,7 @@ export class stakingAppModule implements Module {
         await container.registerModule(
             new UnifyreBackendProxyModule(STAKING_APP_ID, stakingAppConfig.authRandomKey,
                 signingKeyHex!,));
+         await container.registerModule(new Web3RetrofitModule('BASE', []));
 
         const networkProviders = {
                     'ETHEREUM': stakingAppConfig.web3ProviderEthereum,
@@ -131,7 +137,7 @@ export class stakingAppModule implements Module {
                     'POLYGON': stakingAppConfig.web3ProviderPolygon,
                 } as Web3ProviderConfig;
         container.registerSingleton(EthereumSmartContractHelper,
-            () => new EthereumSmartContractHelper(networkProviders));
+            () => new EthereumSmartContractHelper(netConfig));
         container.registerSingleton(SmartContratClient,
             c => new SmartContratClient(c.get(EthereumSmartContractHelper),));
         container.registerSingleton(SmartContratClient,
@@ -149,45 +155,45 @@ export class stakingAppModule implements Module {
                     c.get(SmartContratClient),
                     c.get(StakingFarmContractClient),
                     ));
-        container.registerSingleton(BridgeConfigStorage,c=>new BridgeConfigStorage())
-        container.register(TokenBridgeHttpHandler,
-                c=> new TokenBridgeHttpHandler(
-                    c.get(EthereumSmartContractHelper),
-                    c.get(TokenBridgeService),
-                    c.get(BridgeConfigStorage),
-                )
-        );
+                    
+        // container.register(TokenBridgeHttpHandler,
+        //         c=> new TokenBridgeHttpHandler(
+        //             c.get(EthereumSmartContractHelper),
+        //             c.get(TokenBridgeService),
+        //             c.get(BridgeConfigStorage),
+        //         )
+        // );
         container.registerSingleton('LambdaHttpHandler',
                 c => new HttpHandler(
                     c.get(UnifyreBackendProxyService),
                     c.get(StakingAppService),
                     stakingAppConfig.adminSecret,
                     stakingAppConfig.authRandomKey,
-                    networkProviders,
-                    c.get(TokenBridgeHttpHandler)
+                    networkProviders
                     ));
         container.registerSingleton("LambdaSqsHandler",
             () => new Object());
         container.register(LoggerFactory,
             () => new LoggerFactory((name: string) => new ConsoleLogger(name)));
-        container.registerSingleton(TokenBridgeHttpHandler,
-            c => new TokenBridgeHttpHandler(c.get(EthereumSmartContractHelper),c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
-        container.registerSingleton(PairAddressSignatureVerifyre, c=>
-            new PairAddressSignatureVerifyre()
-        ),
-        container.registerSingleton(TokenBridgeService,
-            c => new TokenBridgeService(c.get(EthereumSmartContractHelper),
-                c.get(TokenBridgeContractClinet),
-                c.get(PairAddressSignatureVerifyre),
-            ));
-        container.registerSingleton(TokenBridgeContractClinet, c => new TokenBridgeContractClinet(
-            c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,
-        ));
-        await container.get<TokenBridgeService>(TokenBridgeService).init(stakingAppConfig.database);
+        // container.registerSingleton(TokenBridgeHttpHandler,
+        //     c => new TokenBridgeHttpHandler(c.get(EthereumSmartContractHelper),c.get(TokenBridgeService),c.get(BridgeConfigStorage)))
+        // container.registerSingleton(PairAddressSignatureVerifyre, c=>
+        //     new PairAddressSignatureVerifyre()
+        // ),
+        // container.registerSingleton(TokenBridgeService,
+        //     c => new TokenBridgeService(c.get(EthereumSmartContractHelper),
+        //         c.get(TokenBridgeContractClinet),
+        //         c.get(PairAddressSignatureVerifyre),
+        //     ));
+        // container.registerSingleton(TokenBridgeContractClinet, c => new TokenBridgeContractClinet(
+        //     c.get(EthereumSmartContractHelper), stakingAppConfig.bridgeConfig?.contractClient,
+        // ));
+        // await container.get<TokenBridgeService>(TokenBridgeService).init(stakingAppConfig.database);
+        console.log(stakingAppConfig.database,"======")
+        //@ts-ignore
         await container.get<StakingAppService>(StakingAppService).init(stakingAppConfig.database);
-        await container.get<BridgeConfigStorage>(BridgeConfigStorage).init(stakingAppConfig.database);
+        // await container.get<BridgeConfigStorage>(BridgeConfigStorage).init(stakingAppConfig.database);
 
         // Paired address
-        container.register(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
     }
 }

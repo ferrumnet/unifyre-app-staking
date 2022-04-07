@@ -76,7 +76,7 @@ const groupInfoSchema: Schema = new Schema<GroupInfo>({
   noMainPage: String,
 });
 
-export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('staking', StakingAppSchema);
+export const StakingAppModel = (c: Connection) => c.model<StakingApp&Document>('stakings', StakingAppSchema);
 
 export const StakeEventModel = (c: Connection) => c.model<StakeEvent&Document>('stakeEvent', StakeEventSchema);
 

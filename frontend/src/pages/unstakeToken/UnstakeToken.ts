@@ -56,7 +56,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 history.replace(`${gidPrefix}/continuation`);
             }
         } catch (e) {
+            //@ts-ignore
             logError('StakeToken.mapDispatchToProps', e);
+            //@ts-ignore
             dispatch(addAction(StakingAppServiceActions.UN_STAKING_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeToken' }));
@@ -81,7 +83,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 history.replace(`${gidPrefix}/continuation`);
             }
         } catch (e) {
+            //@ts-ignore
             logError('StakeToken.mapDispatchToProps', e);
+            //@ts-ignore
             dispatch(addAction(StakingAppServiceActions.UN_STAKING_FAILED, { message: e.toString() }));
         } finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'unstakeToken' }));

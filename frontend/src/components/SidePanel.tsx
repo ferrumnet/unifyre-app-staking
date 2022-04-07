@@ -69,9 +69,10 @@ export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             }
             error('Withdrawal failed');
         }catch(e) {
-            if(!!e.message){
-                dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
-            }
+            console.log(e)
+            // if(!!e.message){
+            //     dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
+            // }
         }finally {
             dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
         }

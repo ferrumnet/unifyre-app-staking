@@ -10,10 +10,11 @@
     "@fluentui/react-theme-provider": "^0.14.4",
     "@popperjs/core": "^2.9.2",
     "@ramonak/react-progress-bar": "^1.0.3",
+    "@reduxjs/toolkit": "^1.8.1",
     "@sentry/browser": "^5.24.2",
     "@sentry/tracing": "^5.24.2",
     "@walletconnect/web3-provider": "^1.3.6",
-    "antd": "^4.15.4",
+    "antd": "^4.19.3",
     "big.js": "^5.2.2",
     "desktop-components-library": "git+https://github.com/ferrumnet/desktop-components-library.git",
     "eth-sig-util": "^3.0.1",
@@ -30,6 +31,7 @@
     "react-alert-template-oldschool-dark": "^1.0.1",
     "react-animated-progress-bar": "^1.0.4",
     "react-app-rewired": "^2.1.6",
+    "react-bootstrap": "^2.2.2",
     "react-circular-progressbar": "^2.0.3",
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
@@ -95,6 +97,6 @@
     "fluent-typescript": "^0.0.4",
     "jest": "^24.9.0",
     "node-sass": "^4.14.1",
-    "typescript": "^3.7.2"
+    "typescript": "^4.6.3"
   }
 }

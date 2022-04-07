@@ -18,6 +18,7 @@ import { Main } from  '../tokenBridge/pages/main/main';
 import { Swap } from '../tokenBridge/pages/swap/swap';
 import { Liquidity } from '../tokenBridge/pages/liquidity/liquidity';
 import { Dashboard as bridgeDashboard } from '../tokenBridge/pages/Dashboard/Dashboard';
+import { connectSlice } from './../connect/ConnectButtonWrapper';
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
     switch (action.type) {
@@ -81,6 +82,7 @@ const data = combineReducers({
     stakingData,
     userPreference: userPreferenceReducer,
     groupData: groupData,
+    account: connectSlice.reducer,
 });
 
 const ui = combineReducers({

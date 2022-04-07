@@ -92,6 +92,7 @@ export class StakingAppService extends MongooseConnection implements Injectable 
     async getStaking(network: string, contractAddress: string): Promise<StakingApp|undefined> {
         this.verifyInit();
         const apps = await this.stakingModel!.find({contractAddress}).exec() || [];
+        console.log(apps,"")
         const allStakes = apps.map(a => a.toJSON());
         if (allStakes.length === 1 && !network) {
             return allStakes[0];

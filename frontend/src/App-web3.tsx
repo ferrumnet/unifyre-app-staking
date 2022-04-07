@@ -19,7 +19,7 @@ const options = {
   // you can also just use 'bottom center'
   timeout: 4000,
 }
-
+//@ts-nocheck
 function App() {
     WebThemeLoader();
     return (

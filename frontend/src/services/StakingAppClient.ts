@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Injectable, JsonRpcRequest, ValidationUtils, Network, JsonApiClient } from "ferrum-plumbing";
 import { Dispatch, AnyAction } from "redux";
 import { addAction, CommonActions } from "../common/Actions";
@@ -8,6 +9,7 @@ import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserP
 import { GroupInfo, StakeEvent, UserStake } from "../common/Types";
 import { Big } from 'big.js';
 import { StakingApp } from '../common/Types';
+import { Connect, UnifyreExtensionWeb3Client } from "unifyre-extension-web3-retrofit";
 
 export const StakingAppServiceActions = {
     TOKEN_NOT_FOUND_ERROR: 'TOKEN_NOT_FOUND_ERROR',
@@ -35,15 +37,43 @@ function openUnifyre() {
     setTimeout(() => { if (w) { w.close(); } }, 4000);
 }
 
+export function addressForUser(user?: AppUserProfile) {
+    if (!user) { return undefined; }
+    return (user.accountGroups || [])[0].addresses[0] || {};
+}
+
+
 export class StakingAppClient implements Injectable {
     protected jwtToken: string = '';
     private token: string = '';
     constructor(
         protected client: UnifyreExtensionKitClient,
-    ) { }
+        protected web3client: UnifyreExtensionWeb3Client,
 
-    __name__() { return 'StakingAppClient'; }
+    ) {
+   
+     }
 
+     __name__() { return 'StakingAppClient'; }
+
+    async signInToServer2(userProfile: AppUserProfile): Promise<AppUserProfile|undefined> {
+        ValidationUtils.isTrue(!!userProfile, '"userProfile" must be provided');
+        const address = addressForUser(userProfile);
+        ValidationUtils.isTrue(!!address, 'User must have a valid "address"');
+        const userAddress = address!.address;
+        const network = address!.network;
+        const res = await this.api({
+            command: 'signInUsingAddress', data: {userAddress}, params: [] } as JsonRpcRequest);
+        const { unsecureSession } = res;
+        if (!unsecureSession) {
+            throw new Error('Could not connect to backend');
+        }
+        this.address = userAddress;
+        this.network = network;
+        this.jwtToken = unsecureSession;
+        return res;
+    }
+   
     async signInToServer(dispatch: Dispatch<AnyAction>): Promise<AppUserProfile|undefined> {
         const token = this.getToken(dispatch);
         if (!token) { return; }
@@ -326,8 +356,7 @@ export class StakingAppClient implements Injectable {
 
     async refreshStakeEvents(dispatch: Dispatch<AnyAction>, events: StakeEvent[]) {
         try {
-            const pendingTxs = events.filter(e => e.transactionStatus === 'pending')
-                .map(tx => tx.mainTxId);
+            const pendingTxs = events.filter(e => e.transactionStatus === 'pending')?.map(tx => tx.mainTxId);
             if (!!pendingTxs.length) {
                 const updatedEvents = await this.api({
                     command: 'updateStakingEvents', data: { txIds: pendingTxs }, params: []});
@@ -458,7 +487,7 @@ export class StakingAppClient implements Injectable {
             if (response.rejected) {
                 throw new Error((response as any).reason || 'Request was rejected');
             }
-            const txIds = (response.response || []).map(r => r.transactionId);
+            const txIds = (response.response || [])?.map(r => r.transactionId);
             const payload = response.requestPayload || {};
             const { amount, network, contractAddress, action } = payload;
             const res = await this.api({

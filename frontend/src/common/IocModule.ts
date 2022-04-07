@@ -28,7 +28,7 @@ interface Config {
 const LOCAL_DEV_CONF = {
     // unifyreBackend: 'http://localhost:9000/api/',
     unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
-    poolDropBackend: 'http://localhost:8080',
+    poolDropBackend: 'https://r87ukhl9q2.execute-api.us-east-2.amazonaws.com/default/updated-staking-backend-dev',
     //poolDropBackend: 'http://da208211a392.ngrok.io',
     isProd: false,
 } as Config;
@@ -65,13 +65,17 @@ export class IocModule {
         c.register(LoggerFactory, () => new LoggerFactory(n => new ConsoleLogger(n)));
         c.register('JsonStorage', () => new DummyStorage());
         await c.registerModule(new ClientModule(CONFIG.unifyreBackend, 'STAKING'));
+        console.log(BackendMode.mode,'BackendModeBackendModeBackendMode')
         if (BackendMode.mode === 'unifyre') {
             c.registerSingleton(StakingAppClient,
-                c => new StakingAppClient(c.get(UnifyreExtensionKitClient)));
+                c => new StakingAppClient(c.get(UnifyreExtensionKitClient),c.get(UnifyreExtensionWeb3Client)));
         } else {
+            c.registerSingleton('Web3ModalProvider', () => new Web3ModalProvider(providers));
             await c.registerModule(new Web3RetrofitModule('STAKING', []));
             c.registerSingleton(StakingAppClient, c =>
-                new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient)));
+                new StakingAppClient(c.get(UnifyreExtensionKitClient),c.get(UnifyreExtensionWeb3Client)));
+            c.registerSingleton(StakingAppClientForWeb3, c =>
+                new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient),c.get(UnifyreExtensionWeb3Client)));
             c.registerSingleton(TokenBridgeClient, c => new TokenBridgeClient(
                     c.get(UnifyreExtensionKitClient),
                     CONFIG.poolDropBackend
@@ -79,11 +83,9 @@ export class IocModule {
             );
             const client = c.get<StakingAppClient>(StakingAppClient);
             const providers = await client.loadHttpProviders(dispatch);
-            c.registerSingleton('Web3ModalProvider', () => new Web3ModalProvider(providers));
         }
 
-        c.registerSingleton(ConnectorContainer, c => new ConnectorContainer(
-            c.get(UnifyreExtensionKitClient), c.get(Connect), c.get(CurrencyList), c.get('Web3ModalProvider')));
+        c.registerSingleton(ConnectorContainer, c => new ConnectorContainer());
 
         c.registerSingleton(UserPreferenceService, () => new UserPreferenceService());
         IntlManager.instance.load([stringsEn], 'en-US');
@@ -96,6 +98,9 @@ export class IocModule {
         c.registerSingleton(PairAddressService, c => new PairAddressService(
             c.get(UnifyreExtensionWeb3Client), c.get(Connect)));
         c.registerSingleton(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
+
+        await c.registerModule(new Web3RetrofitModule('BASE', []));
+
     }
 
     static container() {
