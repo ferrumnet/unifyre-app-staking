@@ -11,6 +11,7 @@ export interface ReponsivePageWrapperProps {
     homepage?: string;
     navBarContent?: any;
     isBridge?: boolean,
+    isAdminPage?:boolean;
     isBridgeHome?: boolean,
     panelOpen:boolean,
     bodyDismiss?: () => void,

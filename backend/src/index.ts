@@ -55,6 +55,8 @@ export async function handler(event: any, context: any) {
 
 export class stakingAppModule implements Module {
     async configAsync(container: Container) {
+        const res = await AppConfig.instance().get()
+        console.log(res, 'res')
         await AppConfig.instance().forChainProviders();
         await AppConfig.instance().fromSecret('', 'BRIDGE');
         await AppConfig.instance().fromSecret('', 'CRUCIBLE');
@@ -69,6 +71,7 @@ export class stakingAppModule implements Module {
             stakingAppConfig = await new SecretsProvider(region, stakingAppConfArn).get();
         } else {
             let chains= AppConfig.instance().getChainProviders();
+            console.log(chains)
             stakingAppConfig = {
                 database:  AppConfig.instance().get('database') || {connectionString: getEnv('MONGOOSE_CONNECTION_STRING')} as MongooseConfig,
                 authRandomKey:AppConfig.instance().get('jwtRandomBase') || getEnv('RANDOM_SECRET'),

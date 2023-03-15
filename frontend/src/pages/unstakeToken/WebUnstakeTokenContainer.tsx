@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
@@ -16,6 +16,11 @@ import { WithdrawViewInfoBox } from '../stakingContract/Web/WithdrawView';
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     const history = useHistory();
 
+    useEffect( ()=> {
+        props.onAmountToUnstakeChanged('0')
+    }
+    ,[])
+
     const error = props.error ? (
         <Row withPadding>
             <ErrorMessage text={props.error} />
@@ -27,7 +32,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
             <span>&nbsp;</span> 
             <PrimaryButton
                 text={'Take Rewards Only'}
-                onClick ={()=> props.onTakeRewards(history, props)}
+                onClick ={()=> props.onTakeRewards(history as any, props)}
             />
         </>
     ) : undefined;
@@ -73,7 +78,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                     text={'Un-stake'}
                     disabled={!props.userAddress || (
                         props.state !== 'withdraw' && props.state !== 'maturity')}
-                    onClick ={()=> props.onUnstakeToken(history,props)}
+                    onClick ={()=> props.onUnstakeToken(history as any,props)}
                 />
                 {takeRewards}
             </Row>

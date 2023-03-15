@@ -65,7 +65,6 @@ export class ConnectorContainer implements Injectable {
         try {
             const conti = container.get<ConnectorContainer>(ConnectorContainer);
             conti.control = control;
-            console.log(conti)
             conti.mapStateToProps = conti.mapStateToProps.bind(conti);
             conti.mapDispatchToProps = conti.mapDispatchToProps.bind(conti);
             return connect(conti.mapStateToProps, conti.mapDispatchToProps)(ConnectButtonWapper);

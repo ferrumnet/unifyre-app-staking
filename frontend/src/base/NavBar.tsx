@@ -39,12 +39,12 @@ function ErrorBar(props: {error: string}) {
 export function ConButton(props: {connected: boolean, address: string, onClick: () => void, error?: string,isBridge?:boolean}) {
     const theme = useContext(ThemeContext);   
     const styles = themedStyles(theme);
-    console.log(props)
     return (
         <>
             {
+                (!props.connected) &&
                     <WebThemedButton
-                        text={props.connected ? Utils.shorten(props.address) : 'Connect'} 
+                        text={props.connected ? (props.address ? Utils.shorten(props.address) : ('Connection Failed, Invalid Wallet Network Detected')) : 'Connect'} 
                         onClick={props.onClick} 
                         highlight={false}
                         customStyle={styles.btnStyle}
@@ -149,7 +149,6 @@ export function BridgeNavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapp
                         <>
                             {props.children}
                             <div>
-                                <div>helllo</div>
                                 {ConBot2}
                             </div>
                             <div>
@@ -195,14 +194,17 @@ export function NavBar(props: ReponsivePageWrapperProps&ReponsivePageWrapperDisp
                 </a>
                 {props.children}
                 <div className="nav-children">
-                    <ConBot 
-                        onConnect={props.onConnected}
-                        onConnectionFailed={props.onConnectionFailed}
-                        dataSelector={(state: RootState) => state.data.userData}
-                        // appInitialized={props.initialized}
-                        appInitialized={true}
-                        isBridge={false}
-                    />
+                    {
+                        !props.isAdminPage &&
+                            <ConBot 
+                                onConnect={props.onConnected}
+                                onConnectionFailed={props.onConnectionFailed}
+                                dataSelector={(state: RootState) => state.data.userData}
+                                // appInitialized={props.initialized}
+                                appInitialized={true}
+                                isBridge={false}
+                            />
+                    }
                 </div>
             </div>
             {error}

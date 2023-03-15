@@ -46,10 +46,11 @@ function mapStateToProps(state: RootState): ConfirmationProps {
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
     onLoad: async (requestId: string) => {
-        const client = inject<StakingAppClient>(StakingAppClient);            
+        const client = inject<StakingAppClient>(StakingAppClient);    
         await client.processRequest(dispatch, requestId);
     },
     onRefresh: async (props:ConfirmationProps) => {
+        console.log(props.stakeEvent, 'stakeEvevent')
         if (!props.stakeEvent) { return; }
         const client = inject<StakingAppClient>(StakingAppClient);            
         await client.refreshStakeEvents(dispatch, [props.stakeEvent!]);

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory
+ } from 'react-router-dom';
 import { StakingContractDispatch, StakingContractProps } from '../StakingContract';
 import './staking.scss';
 import {List} from '../../../components/list';
@@ -126,7 +127,7 @@ export function WithdrawView (props: StakingContractProps&StakingContractDispatc
                     disabled={!props.userAddress || 
                         (props.state !== 'withdraw' && props.state !== 'maturity')}
                     onClick={() => props.onContractSelected(
-                        history,props.contract.network,props.contract.contractAddress, true, props.groupId)}
+                        history as any,props.contract.network,props.contract.contractAddress, true, props.groupId)}
                     />
             </Row>
         </LeftBox>

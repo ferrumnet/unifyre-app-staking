@@ -3,10 +3,11 @@ import { RootState } from "../../common/RootState";
 import { formatter, StakingState, Utils } from "../../common/Utils";
 import { StakingApp,UserStake } from "../../common/Types";
 import { addAction } from "../../common/Actions";
-import { StakingAppServiceActions } from "../../services/StakingAppClient";
+import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
 import { History } from 'history';
 import { Big } from 'big.js';
 import { LocaleManager } from "unifyre-react-helper";
+import { inject } from "../../connect/types";
 
 export interface StakingContractProps {
     userAddress: string;
@@ -31,6 +32,7 @@ export interface StakingContractProps {
 
 export interface StakingContractDispatch {
     onContractSelected: (history: History, network: string, address: string, withdraw:boolean, groupId?: string) => void;
+    onLoad: (network: string, userAddress: string, contratAddress: string) => {}
 }
 
 function mapStateToProps(state: RootState): StakingContractProps {
@@ -77,7 +79,23 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
         }else{
             history.push(`${gidPre}/stake/${address}/${network}`);
         }
-    }
+    },
+    onLoad: async (network, userAddress, contratAddress) => {
+        try {
+            if (!network || !userAddress || !contratAddress) {
+                if (!!contratAddress) {
+                    const client = inject<StakingAppClient>(StakingAppClient);
+                    await client.selectStakingContractByAddress(dispatch,
+                        network,
+                        contratAddress);
+                }
+                return;
+            }
+            const client = inject<StakingAppClient>(StakingAppClient);
+            await client.selectStakingContract(dispatch, network, contratAddress, userAddress);
+        } catch (e) {
+        }
+    },
 } as StakingContractDispatch);
 
 export const StakingContract = ({

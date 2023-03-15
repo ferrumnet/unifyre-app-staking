@@ -9,7 +9,7 @@ import './groupinfo.scss';
 import { connect } from 'react-redux';
 import { GroupInfo, GroupInfoDispatch,GroupInfoProps } from './groupinfo';
 import { GroupInfo as InfoType } from '../../../common/Types';
-import { defaultvar,Networks } from '../../../common/Utils';
+import { defaultvar,NetworksDropdownValues } from '../../../common/Utils';
 
 function safeCleanup(j: string): string {
 	try {
@@ -34,6 +34,11 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
             </div>
         </div>
     )
+
+    const reMap = (value) => {
+        const selection = NetworksDropdownValues.find(e=>e.value===value)
+        return selection?.identifier || value
+    }
 
     return(
         <div>
@@ -90,10 +95,10 @@ function SearchGroupInfo(props: GroupInfoProps&GroupInfoDispatch) {
                     <div>
                         <div> Network </div>
                         <Dropdown
-                            items={Networks}
+                            items={NetworksDropdownValues.map(e=>e.identifier)}
                             placeholder={`Select Network`}
                             checkable
-                            value={props.selectedInfo.network}
+                            value={reMap(props.selectedInfo.network)}
                             onChange={(e:any, selectedOption) => props.onSelectedInfoChange(
                                 //@ts-ignore
                                 selectedOption.value || '', 'network'

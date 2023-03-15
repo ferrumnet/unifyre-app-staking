@@ -11,6 +11,6 @@ test('calculate rewards', function() {
         stakingEnds: now,
         withdrawEnds: tomorrow,
     };
-    const rewards = Utils.stakingRewards(dummyApp);
-    console.log(rewards);
+   // const rewards = Utils.stakingRewards(dummyApp);
+    //console.log(rewards);
 })

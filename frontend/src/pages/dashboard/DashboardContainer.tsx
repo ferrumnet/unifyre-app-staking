@@ -18,7 +18,8 @@ import { defaultDarkThemeConstantsBuilder, Theme, ThemeConstantProvider } from '
 function DashboardComponent(props: DashboardProps&DashboardDispatch) {
     const {onLoad} = props;
     useEffect(() => {
-        onLoad();
+      console.log("heeleelleel")
+      onLoad();
     }, [onLoad]);
     let themeProvider = new ThemeConstantProvider('unifyre', defaultDarkThemeConstantsBuilder
       .set(Theme.Font.main, "'Open Sans', sans-serif")

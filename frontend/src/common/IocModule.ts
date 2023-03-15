@@ -13,9 +13,6 @@ import * as Sentry from "@sentry/browser";
 import { Connect, CurrencyList, UnifyreExtensionWeb3Client } from 'unifyre-extension-web3-retrofit';
 import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract/Web3ModalProvider';
 import { ConnectorContainer } from '../connect/ConnectContainer';
-import { PairAddressService } from '../tokenBridge/PairAddressService';
-import { PairAddressSignatureVerifyre } from '../tokenBridge/PairAddressSignatureVerifyer';
-import { TokenBridgeClient } from '../tokenBridge/TokenBridgeClient';
 
 class DummyStorage {}
 
@@ -30,6 +27,7 @@ const LOCAL_DEV_CONF = {
     unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
     poolDropBackend: 'https://r87ukhl9q2.execute-api.us-east-2.amazonaws.com/default/updated-staking-backend-dev',
     //poolDropBackend: 'http://da208211a392.ngrok.io',
+    //'https://r87ukhl9q2.execute-api.us-east-2.amazonaws.com/default/updated-staking-backend-dev'
     isProd: false,
 } as Config;
 
@@ -41,17 +39,33 @@ const REMOTE_DEV_CONF = {
 
 const PROD_CONF = {
     unifyreBackend: 'https://ube.ferrumnetwork.io/api/',
-    poolDropBackend: 'https://y6sl343dn6.execute-api.us-east-2.amazonaws.com/default/prod-unifyre-extension-staking-backend',
+    poolDropBackend: 'https://r87ukhl9q2.execute-api.us-east-2.amazonaws.com/default/updated-staking-backend-dev',
     isProd: true,
 } as Config;
 
 const DEV_USES_LOCAL: boolean = true;
 const NODE_ENV = process.env.NODE_ENV;
 
+const STAGING_PREFIXES = ['dev','qa','uat','staging','prod'];
+
+const url = () =>{
+
+    // @ts-ignore
+	const base = (window.location?.origin || '').toLowerCase();
+
+    const prefix = STAGING_PREFIXES.find(p => base.includes(`-${p}`||`https://${p}`));
+
+    if (prefix) {
+        console.log(prefix,'current-prefix')
+        return prefix;
+    }
+}
 // export const CONFIG = PROD_CONF;
 
-export const CONFIG = NODE_ENV === 'production' ? PROD_CONF :
-    (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
+export const CONFIG = url() === 'prod' ? PROD_CONF 
+                    : url() === 'dev' ? LOCAL_DEV_CONF 
+                    : url() === 'staging' ? LOCAL_DEV_CONF 
+                    : (DEV_USES_LOCAL ? LOCAL_DEV_CONF : REMOTE_DEV_CONF);
 
 export class IocModule {
     private static _container: Container;
@@ -76,11 +90,6 @@ export class IocModule {
                 new StakingAppClient(c.get(UnifyreExtensionKitClient),c.get(UnifyreExtensionWeb3Client)));
             c.registerSingleton(StakingAppClientForWeb3, c =>
                 new StakingAppClientForWeb3(c.get(UnifyreExtensionKitClient),c.get(UnifyreExtensionWeb3Client)));
-            c.registerSingleton(TokenBridgeClient, c => new TokenBridgeClient(
-                    c.get(UnifyreExtensionKitClient),
-                    CONFIG.poolDropBackend
-                )
-            );
             const client = c.get<StakingAppClient>(StakingAppClient);
             const providers = await client.loadHttpProviders(dispatch);
         }
@@ -94,10 +103,6 @@ export class IocModule {
         // init other dependencies
         c.get<UserPreferenceService>(UserPreferenceService).init(dispatch);
 
-        // PairAddressService
-        c.registerSingleton(PairAddressService, c => new PairAddressService(
-            c.get(UnifyreExtensionWeb3Client), c.get(Connect)));
-        c.registerSingleton(PairAddressSignatureVerifyre, () => new PairAddressSignatureVerifyre());
 
         await c.registerModule(new Web3RetrofitModule('BASE', []));
 

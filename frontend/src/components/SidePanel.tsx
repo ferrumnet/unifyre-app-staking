@@ -21,16 +21,12 @@ import {
 } from 'unifyre-web-components';
 import ButtonLoader from './btnWithLoader';
 import { AnyAction, Dispatch } from "redux";
-import { TokenBridgeActions } from "../tokenBridge/TokenBridgeClient";
 import { inject, IocModule } from '../common/IocModule';
 import { addAction, CommonActions } from "../common/Actions";
-import { TokenBridgeClient } from "../tokenBridge/TokenBridgeClient";
-import { UserBridgeWithdrawableBalanceItem } from "../tokenBridge/TokenBridgeTypes";
 import { useToasts } from 'react-toast-notifications';
 
 export interface SidePanelProps {
     stakeEvents: StakeEvent[];
-    userWithdrawalItems: UserBridgeWithdrawableBalanceItem[],
     Network: string
 }
 
@@ -40,46 +36,16 @@ export function mapStateToProps(state: RootState): SidePanelProps {
     const address = addr[0] || {};
     return {
         stakeEvents: state.data.stakingData.stakeEvents,
-        userWithdrawalItems: state.ui.swap.userWithdrawalItems || [],
         Network: address.network
     };
 }
 
-export interface swapDisptach {
-    executeWithrawItem: (item:UserBridgeWithdrawableBalanceItem,dis:()=>void,success:(v:string)=>void,error:(v:string)=>void) => void,
-}
-
 
 export const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
-    executeWithrawItem: async (
-            item:UserBridgeWithdrawableBalanceItem,
-            dis:()=>void,
-            success:(v:string)=>void,
-            error:(v:string)=>void
-        ) => {
-        try {
-            dispatch(addAction(CommonActions.WAITING, { source: 'dashboard' }));
-            dis();
-            await IocModule.init(dispatch);
-            const sc = inject<TokenBridgeClient>(TokenBridgeClient);
-            const res = await sc.withdraw(dispatch,item)
-            if(!!res){
-                success('Withdrawal was Successful and is processing...')        
-                return;
-            }
-            error('Withdrawal failed');
-        }catch(e) {
-            console.log(e)
-            // if(!!e.message){
-            //     dispatch(addAction(TokenBridgeActions.AUTHENTICATION_FAILED, {message: e.message }));
-            // }
-        }finally {
-            dispatch(addAction(CommonActions.WAITING_DONE, { source: 'dashboard' }));
-        }
-    }
+
 
 });
-function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge: boolean}&SidePanelProps&swapDisptach){
+function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge: boolean}&SidePanelProps){
     const theme = useContext(ThemeContext);
     const styles = themedStyles(theme);
     const { addToast } = useToasts();
@@ -125,64 +91,7 @@ function StakingSidePane (props:{isOpen:boolean,dismissPanel:() => void,isBridge
                 {
                     props.isBridge && 
                     <Accordion>
-                        { props.userWithdrawalItems.map(
-                                e => <div>
-                                <AccordionItem>
-                                        <AccordionItemHeading>
-                                            <AccordionItemButton>
-                                                <div style={styles.tokenInfo}>
-                                                    <div style={styles.tokenSymbol}>
-                                                        <img 
-                                                        style={{"width":'30px'}} src={stakeImg}
-                                                        alt="token"
-                                                        />
-                                                    </div>
-                                                    <div style={styles.textStyles}>
-                                                        Swap {e.receiveAmount} to {Utils.shorten(e.receiveCurrency)}
-                                                    </div>
-                                                </div> 
-                                            </AccordionItemButton>
-                                        </AccordionItemHeading>
-                                        <AccordionItemPanel>
-                                            <p style={{...styles.accInfo}} >
-                                               Receiver Currency : {e.receiveCurrency}
-                                            </p>
-                                            <p style={{...styles.accInfo}}>
-                                               Sender Currency : {e.receiveCurrency}
-                                            </p >
-                                            <p style={{...styles.accInfo}}>
-                                               Sender Network : {e.receiveNetwork}
-                                            </p>
-                                            <p style={{...styles.accInfo}}>
-                                               Reciever Network : {e.sendNetwork}
-                                            </p>
-                                            <p style={{...styles.accInfo}}>
-                                               Reciever Address : {e.receiveAddress}
-                                            </p>
-                                            <p style={{...styles.accInfo}}>
-                                               Token Address : {e.payBySig.token}
-                                            </p>
-                                            {
-                                                e.sendNetwork === props.Network &&
-                                                <>
-                                                    {
-                                                        (!e.used  || e.used === 'failed') && <ButtonLoader completed={false} onPress={()=>{props.executeWithrawItem(e,props.dismissPanel,onSuccessMessage,onMessage);props.dismissPanel()}} disabled={false}/>
-                                                    }
-                                                    {
-                                                        (e.used === 'pending') && <ButtonLoader onPress={()=>{}} disabled={true} completed={false}/>
-                                                    }
-                                                    {
-                                                        (e.used === 'completed') && <ButtonLoader onPress={()=>{}} disabled={true} completed={true}/>
-                                                    }
-                                                </>      
-                                            }
-                                           
-                                        </AccordionItemPanel>
-                                    </AccordionItem>
-                                    <Gap size={"small"}/>
-                                </div>
-                            )
-                        }
+                    
                     </Accordion>
 
                 }

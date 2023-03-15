@@ -7,7 +7,7 @@ import {
     Gap, Row,
     // @ts-ignore
 } from 'unifyre-web-components';
-import { dataFormat, formatter, Utils } from "../../../common/Utils";
+import { dataFormat, formatter, remappedNetwork, Utils } from "../../../common/Utils";
 import {ThemeContext, Theme, intl} from 'unifyre-react-helper';
 import {
     ThemedText,
@@ -64,7 +64,7 @@ export function StakingContractAddress(props: {
     return (
         <>
             <Row >
-                <ThemedText.H3>CONNECTED TO <b>{props.network}</b> NETWORK</ThemedText.H3>
+                <ThemedText.H3>CONNECTED TO <b>{remappedNetwork(props.network)?.identifier || props.network}</b> NETWORK</ThemedText.H3>
             </Row>
             <Gap size='small' />
             <Row >
@@ -180,7 +180,7 @@ export function StakingView (props: StakingContractProps&StakingContractDispatch
             <PrimaryButton text={props.filled ? 'Filled' : 'Stake Now'}
                 disabled={props.filled}
                 onClick={() => props.onContractSelected(
-                    history,props.contract.network,props.contract.contractAddress,false, props.groupId)}
+                    history as any,props.contract.network,props.contract.contractAddress,false, props.groupId)}
                 />
         </Row>
     ) : (

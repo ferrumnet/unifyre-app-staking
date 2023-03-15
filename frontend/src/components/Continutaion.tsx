@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Utils } from '../common/Utils';
+//@ts-ignore
 import { History } from 'history';
 import { useHistory } from 'react-router';
 
@@ -14,7 +15,7 @@ export function ContinuationComponent(props: ContinuationDispatch) {
         if (requestId) {
             const payload = Utils.getQueryparams();
             const {page} = payload;
-            props.onContinuation(history, requestId!, page, payload);
+            props.onContinuation(history as any, requestId!, page, payload);
         }
     }, [requestId]);
     return (<></>);

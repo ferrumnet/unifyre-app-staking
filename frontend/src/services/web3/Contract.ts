@@ -5,6 +5,7 @@ import { logError } from '../../common/Utils';
 import FerrumJson from './resources/abi/FerrumToken.json'
 import FestakingJson from './resources/abi/Festaking-abi.json';
 import FestakingBytecode from './resources/abi/Festaking-bytecode.json';
+import { Big } from 'big.js';
 
 export class ContractCallError extends Error {
     constructor(msg: string, public error: any) {
@@ -48,7 +49,9 @@ class ContractBase {
       } catch (e) {
         if (e instanceof ContractCallError) {
           throw e;
+
         }
+        //@ts-ignore
         logError(`Error calling contract method: ${topic}`, e);
         throw new ContractCallError(`Error calling contract method: ${topic}`, e);
       }

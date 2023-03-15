@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import {
@@ -17,6 +17,10 @@ import { StakingRight } from '../stakingContract/Web/StakingView';
 function StakeTokenComponent(props: StakeTokenProps&StakeTokenDispatch) {
     const history = useHistory();
     
+    useEffect( ()=> {
+        props.onAmountToStakeChanged('0')
+    }
+    ,[])
 
     const error = props.error ? (
         <Row withPadding>

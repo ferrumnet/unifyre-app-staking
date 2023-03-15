@@ -19,7 +19,7 @@ export class UserPreferenceService implements Injectable {
             if (strLoaded) {
                 this.pref = JSON.parse(strLoaded);
             }
-        } catch (e) { logError('UserPreferenceService', e); }
+        } catch (e) { logError('UserPreferenceService', e as any); }
     }
 
     init(dispatch: Dispatch<AnyAction>) {
@@ -33,7 +33,7 @@ export class UserPreferenceService implements Injectable {
         const perfJ = JSON.stringify(this.pref);
         try {
             localStorage.setItem(USER_PREFERENCE_STORAGE_KEY, perfJ);
-        } catch (e) { logError('Error using localStorage ', e); }
+        } catch (e) { logError('Error using localStorage ', e as any); }
         dispatch(addAction(UserPreferenceActions.USER_PREFERENCE_LOADED, { userPreference }));
     }
 

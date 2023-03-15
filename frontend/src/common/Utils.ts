@@ -74,7 +74,7 @@ export class Utils {
         return `${s.substr(0, 10)}...${s.substr(s.length - 10)}`;
     }
 
-    static linkForAddress(network: string, addr: string) {
+    static linkForAddress(network, addr) {
         switch (network.toLocaleLowerCase()) {
             case 'rinkeby':
                 return `https://rinkeby.etherscan.io/address/${addr}`;
@@ -84,11 +84,41 @@ export class Utils {
                 return `https://bscscan.com/address/${addr}`;
             case 'bsc_testnet':
                 return `https://testnet.bscscan.com/address/${addr}`;
+            case 'mumbai_testnet':
+                return `https://mumbai.polygonscan.com/address/${addr}`;
+            case 'polygon':
+                return `https://polygonscan.com/address/${addr}`;
+            case 'avax_testnet':
+                return `https://testnet.snowtrace.io/address/${addr}`;
+            case 'avax_mainnet':
+                return `https://testnet.snowtrace.io/address/${addr}`;
+            case 'moon_moonbase':
+                return `https://moonbase.moonscan.io/address/${addr}`;
+            case 'avax_mainnnet':
+                return `https://snowtrace.io/address/${addr}`;
+            case 'moon_moonriver':
+                return `https://moonriver.moonscan.io/address/${addr}`;
+            case 'ftm_testnet':
+                return `https://testnet.ftmscan.com/address/${addr}`;
+            case 'ftm_mainnet':
+                return `https://ftmscan.com/address/${addr}`;
+            case 'harmony_testnet_0':
+                return `https://explorer.pops.one/address/${addr}`;
+            case 'harmony_mainnet_0':
+                return `https://explorer.harmony.one/address/${addr}`;
+            case 'ftm_mainnet':
+                return `https://ftmscan.com/address/${addr}`;
+            case 'shiden_testnet':
+                return `https://shibuya.subscan.io/address/${addr}`;
+            case 'velas_mainnet':
+                return `https://evmexplorer.velas.com/address/${addr}`;
+            case 'arbitrum_ethereum':
+                return `https://arbiscan.io/address/${addr}`;
         }
         return '';
     }
 
-    static linkForTransaction(network: string, tid: string) {
+    static linkForTransaction(network, tid) {
         switch (network.toLocaleLowerCase()) {
             case 'rinkeby':
                 return `https://rinkeby.etherscan.io/tx/${tid}`;
@@ -98,9 +128,40 @@ export class Utils {
                 return `https://bscscan.com/tx/${tid}`;
             case 'bsc_testnet':
                 return `https://testnet.bscscan.com/tx/${tid}`;
+            case 'mumbai_testnet':
+                return `https://mumbai.polygonscan.com/tx/${tid}`;
+            case 'polygon':
+                return `https://polygonscan.com/tx/${tid}`;
+            case 'avax_testnet':
+                return `https://testnet.snowtrace.io//tx/${tid}`;
+            case 'avax_mainnet':
+                return `https://testnet.snowtrace.io//tx/${tid}`;
+            case 'moon_moonbase':
+                return `https://moonbase.moonscan.io/tx/${tid}`;
+            case 'avax_mainnnet':
+                return `https://snowtrace.io/tx/${tid}`;
+            case 'moon_moonriver':
+                return `https://moonriver.moonscan.io/tx/${tid}`;
+            case 'ftm_testnet':
+                return `https://testnet.ftmscan.com/tx/${tid}`;
+            case 'ftm_mainnet':
+                return `https://ftmscan.com/tx/${tid}`;
+            case 'harmony_testnet_0':
+                return `https://explorer.pops.one/tx/${tid}`;
+            case 'harmony_mainnet_0':
+                return `https://explorer.harmony.one/tx/${tid}`;
+            case 'ftm_mainnet':
+                return `https://ftmscan.com/tx/${tid}`;
+            case 'shiden_testnet':
+                 return `https://shibuya.subscan.io/tx/${tid}`;
+            case 'velas_mainnet':
+                return `https://evmexplorer.velas.com/tx/${tid}`;
+            case 'arbitrum_ethereum':
+                return `https://arbiscan.io/tx/${tid}`;
         }
         return '';
     }
+
 
     static selectedContrat(state: RootState, contractAddress: string): StakingApp | undefined {        
         return state.data.stakingData.contracts.find(c => c.contractAddress ===  contractAddress);
@@ -351,4 +412,36 @@ export const defaultvar = `{"themePrimary": "",
     "white": ""
 }`
 
-export const Networks = ['ETHEREUM','BSC','RINKEBY','BSC_TESTNET', 'POLYGON']
+export const Networks = ['ETHEREUM', 'RINKEBY', 'RINKEBY', 'BSC', 'BSC_TESTNET', 'POLYGON', 'MUMBAI_TESTNET', 'AVAX_TESTNET','AVALANCHE'
+,'MOONRIVER', 'HARMONY_TESTNET','HARMONY','FTM_TESTNET','FANTOM','SHIDEN_TESTNET','SHIDEN_MAINNET','FUSE_MAINNET','VELAS_MAINNET', 'ARBITRUM_ETHEREUM']
+
+export const NetworksDropdownValues = [
+    {value:'ETHEREUM',"identifier": 'ETHEREUM'}, 
+    {value:'RINKEBY',"identifier": 'RINKEBY'}, 
+    {value:'BSC',"identifier": 'BSC'}, 
+    {value:'BSC_TESTNET',"identifier": 'BSC_TESTNET'}, 
+    {value:'POLYGON',"identifier": 'POLYGON'}, 
+    {value:'MUMBAI_TESTNET',"identifier": 'MUMBAI_TESTNET'}, 
+    {value:'AVAX_TESTNET',"identifier": 'AVAX_TESTNET'}, 
+    {value:'AVAX_MAINNET',"identifier": 'AVALANCHE'}, 
+    {value:'MOON_MOONRIVER',"identifier": 'MOONRIVER'}, 
+    {value:'HARMONY_TESTNET_0',"identifier": 'HARMONY_TESTNET'}, 
+    {value:'HARMONY_MAINNET_0',"identifier": 'HARMONY'}, 
+    {value:'FTM_TESTNET',"identifier": 'FTM_TESTNET'}, 
+    {value:'FTM_MAINNET',"identifier": 'FANTOM'}, 
+    {value:'SHIDEN_TESTNET',"identifier": 'SHIDEN_TESTNET'}, 
+    {value:'SHIDEN_MAINNET',"identifier": 'SHIDEN'}, 
+    {value:'FUSE_MAINNET',"identifier": 'FUSE'},
+    {value:'ARBITRUM_ETHEREUM',"identifier": 'ARBITRUM_ETHEREUM'},
+//    
+]
+
+export const remappedNetwork = (val) => {
+   return NetworksDropdownValues.find(e=>(e.identifier === val || e.value === val))
+}
+
+export function isLessThan24HourAgo(date) {
+    const twentyFourHrInMs = 24 * 60 * 60 * 1000;  
+    const twentyFourHoursAgo = Date.now() - twentyFourHrInMs;
+    return date > twentyFourHoursAgo;
+  }

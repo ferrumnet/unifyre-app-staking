@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Dispatch, AnyAction } from 'redux';
 import { inject } from '../common/IocModule';
 import { RootState } from '../common/RootState';
+import { NetworksDropdownValues } from '../common/Utils';
 import { StakingAppClient } from '../services/StakingAppClient';
 
 interface LoaderParams {
@@ -21,6 +22,7 @@ function mapStateToProps(state: RootState): LoaderParams {
     const stakingData = state.data.stakingData.selectedContract;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
+    console.log(addr,'addraddr')
     return {
         network: stakingData?.network || address.network,
         userAddress: address.address,
@@ -51,10 +53,13 @@ function Loader(params: LoaderParams&LoaderDispatch) {
     let { network, contractAddress } = useParams<{network: string, contractAddress: string}>();
     console.log('NETWORK GOTO', network, contractAddress)
     const { userAddress, onLoad, stakingNetwork } = params;
-    network = network || params.network;
+    const remappedNetwork = NetworksDropdownValues.find(e=>e.identifier === network)
+    network = remappedNetwork?.value || network || params.network;
+    console.log(userAddress)
     useEffect(() => {
+        console.log(userAddress,"helloo")
         if (contractAddress) {
-            onLoad(network , userAddress, contractAddress,stakingNetwork);
+            onLoad(network as any , userAddress, contractAddress,stakingNetwork);
         }
     }, [contractAddress, network, userAddress, onLoad,stakingNetwork]);
     return (

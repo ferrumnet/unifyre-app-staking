@@ -3,6 +3,7 @@ import { UnifyreExtensionKitClient, } from 'unifyre-extension-sdk';
 import { Connect } from 'unifyre-extension-web3-retrofit/dist/contract/Connect';
 import { Web3ModalProvider } from 'unifyre-extension-web3-retrofit/dist/contract/Web3ModalProvider';
 import { AppUserProfile } from 'unifyre-extension-sdk/dist/client/model/AppUserProfile';
+import { Networks } from 'ferrum-plumbing';
 import { ValidationUtils } from 'ferrum-plumbing';
 import { AnyAction } from 'redux';
 import { CurrencyList, UnifyreExtensionWeb3Client } from 'unifyre-extension-web3-retrofit';
@@ -15,7 +16,6 @@ export const ConnectActions = {
     CONNET_CLEAR_ERROR: 'CONNET_CLEAR_ERROR',
     USER_DATA_RECEIVED: 'USER_DATA_RECEIVED',
 }
-import { Networks } from 'ferrum-plumbing';
 
 export const DEFAULT_TOKEN_FOR_WEB3_MODE = {
     4: 'RINKEBY:0x93698a057cec27508a9157a946e03e277b46fe56',
@@ -23,7 +23,7 @@ export const DEFAULT_TOKEN_FOR_WEB3_MODE = {
     97: 'BSC_TESTNET:0xae13d989dac2f0debff460ac112a837c89baa7cd',
     56: 'BSC:0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
     137: 'POLYGON:0xd99bafe5031cc8b345cb2e8c80135991f12d7130',
-
+    42161: 'ARBITRUM_ETHEREUM:0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
 };
 
 const Actions = ConnectActions;
@@ -97,12 +97,13 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
         await dep.client.signInWithToken('');
         const net = await dep.connect.getProvider()!.netId();
         const network = await dep.connect.network()
+        console.log(dep.currencyList.get(), 'dep.currencyList.get()dep.currencyList.get()', network)
         const newNetworkCurrencies = (dep.currencyList.get() || []).filter(c => c.startsWith(network || 'NA'));
         if (net && newNetworkCurrencies.length == 0) {
             const defaultCur = (DEFAULT_TOKEN_FOR_WEB3_MODE as any)[net as any];
             
             console.log(`Connected to net id ${net} with no defined currency: ${defaultCur}`);
-            console.log(dep.currencyList.get(),'currencyList.get()currencyList.get()')
+            console.log(dep.currencyList.get(),'currencyList.get()currencyList.get()',BRIDGE_NETWORKS)
             const cur2 = dep.currencyList.get();
             dep.currencyList.set([...BRIDGE_NETWORKS].map(n => Networks.for(n).baseCurrency));
             dep.currencyList.set([...cur2,...dep.currencyList.get()])
@@ -116,9 +117,14 @@ async function doConnect(dispatch: Dispatch<AnyAction>,
             dispatch({type: Actions.DISCONNECT, payload: {}});
             onDisconnected();
         });
+
+        // Subscribe to session disconnection
+        dep.connect.getProvider()!.addEventListener('change', async (reason: string) => {
+            doConnect(dispatch, dep,onDisconnected,onError,connector,onUserDataReceived,isAutoConnect)
+        });
+
         const userProfile = await dep.client.getUserProfile();
         const res = await dep.ApiClient.signInToServer2(userProfile);
-        console.log(userProfile,"userProfileuserProfile")
         if (res) {
             
             const userProfile = await dep.client.getUserProfile();

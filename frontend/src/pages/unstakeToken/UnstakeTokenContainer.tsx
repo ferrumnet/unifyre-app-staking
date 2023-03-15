@@ -10,6 +10,7 @@ import { UnstakeToken, UnstakeTokenDispatch, UnstakeTokenProps } from './Unstake
 import { useHistory } from 'react-router-dom';
 import {ThemeContext} from 'unifyre-react-helper';
 
+
 function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
     const history = useHistory();
     const theme = useContext(ThemeContext);
@@ -23,6 +24,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
         <Row withPadding>
             <ThemedButton
                 disabled={!props.userAddress}
+                //@ts-ignore
                 text={`Take Rewards Only`} onClick={()=>{props.onTakeRewards(history, props)}}/>
         </Row>
     ) : undefined;
@@ -65,6 +67,7 @@ function UnstakeTokenComponent(props: UnstakeTokenProps&UnstakeTokenDispatch) {
                   {error}
                   <Row withPadding>
                         <ThemedButton
+                            //@ts-ignore
                             text={`UnStake`} onClick={()=>{props.onUnstakeToken(history, props)}}/>
                   </Row>
                   {takeRewards}

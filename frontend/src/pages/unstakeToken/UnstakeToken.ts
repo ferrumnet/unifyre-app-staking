@@ -6,6 +6,7 @@ import { StakeToken, StakeTokenProps } from "../stakeToken/StakeToken";
 import { logError } from "../../common/Utils";
 import { ValidationUtils } from "ferrum-plumbing";
 import { inject, IocModule } from "../../common/IocModule";
+///@ts-ignore
 import { History} from 'history';
 import { Big } from 'big.js';
 

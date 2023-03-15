@@ -94,8 +94,10 @@ export const onConnect = createAsyncThunk('connect/onConnect',
         await client.signInWithToken('');
         const net = await connect.getProvider()!.netId();
         const network = await connect.network();
+        console.log(network, 'networknetwork')
         const newNetworkCurrencies = (currencyList.get() || []).filter(c => c.startsWith(network || 'NA'));
         if (net && newNetworkCurrencies.length == 0) {
+
             currencyList.set([...BRIDGE_NETWORKS].map(n => Networks.for(n).baseCurrency));
             console.log(currencyList.get(),'currencyList.get()currencyList.get()')
         }
@@ -143,13 +145,13 @@ export function ConnectButtonWapper(props: IConnectOwnProps) {
     useSelector((state:any) => console.log(state))
     const connected = useSelector((state:any) => 
         !!state.data.account?.user?.userId);
-    const address = useSelector((state:any) => 
+    const address:any = useSelector((state:any) => 
         addressForUser(state.data.account?.user));
     const balances = useSelector((state:any) => 
         addressesForUser(state.data.account?.user));
     const error = useSelector((state:any) => 
         state.data.account.connectionError);
-    
+    console.log(address)
     const connector = async () => {
         dispatch(onConnect({isAutoConnect: true}));
     }

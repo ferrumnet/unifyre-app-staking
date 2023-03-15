@@ -7,7 +7,7 @@ export function StakeCompletionProgress(props: {completion: number, thin?: boole
   return (
     <ReactProgressBar 
         completed={10}
-        bgcolor={props.thin ? 'rgb(57, 57, 62)' : "rgb(255, 59, 47)"}
+        bgColor={props.thin ? 'rgb(57, 57, 62)' : "rgb(255, 59, 47)"}
         height={props.thin ? '3.5px' : '12px'}
         labelAlignment={'center'}
         baseBgColor={props.thin ? 'rgb(224, 224, 222)' : '#1b1d1d'}

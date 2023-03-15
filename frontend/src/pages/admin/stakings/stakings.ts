@@ -114,7 +114,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
             if(res)
             {
                 dispatch(addAction(SaerchStakingGroupInfoActions.STAKING_INFOS_SAVED, { data: res[0] }));
-                cb();
                 fp();
                 dispatch(addAction(SaerchStakingGroupInfoActions.RETURN,{}))
             }

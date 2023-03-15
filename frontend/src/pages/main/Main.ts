@@ -1,6 +1,7 @@
 import { AnyAction, Dispatch } from "redux";
 import { RootState } from "../../common/RootState";
 import { StakingApp } from "../../common/Types";
+//@ts-ignore
 import { History } from 'history';
 import { StakingAppClient } from "../../services/StakingAppClient";
 import { inject } from "../../common/IocModule";

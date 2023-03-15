@@ -24,7 +24,7 @@ function LoginDashboard(props: adminDashDispatch&adminDashProps){
             <Row withPadding centered>
                 <Text size={'medium'} content={props.error} />
             </Row>
-            <PrimaryButton onClick={()=>props.signIn(props.secret,history)}>Admin Log In</PrimaryButton>
+            <PrimaryButton onClick={()=>props.signIn(props.secret,history as any)}>Admin Log In</PrimaryButton>
 
         </div>
     )

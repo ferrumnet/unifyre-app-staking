@@ -14,10 +14,6 @@ import { GroupData, StakingDataState } from "./RootState";
 import { Utils } from "./Utils";
 import { GroupInfo } from "./Types";
 import { ConnectorContainer } from "../connect/ConnectContainer";
-import { Main } from  '../tokenBridge/pages/main/main';
-import { Swap } from '../tokenBridge/pages/swap/swap';
-import { Liquidity } from '../tokenBridge/pages/liquidity/liquidity';
-import { Dashboard as bridgeDashboard } from '../tokenBridge/pages/Dashboard/Dashboard';
 import { connectSlice } from './../connect/ConnectButtonWrapper';
 
 function flags(state: { waiting: boolean } = { waiting: false }, action: AnyAction) {
@@ -88,16 +84,12 @@ const data = combineReducers({
 const ui = combineReducers({
     flags,
     dashboard: Dashboard.reduce,
-    bridgeDashboard: bridgeDashboard.reduce,
     stakeToken: StakeToken.reduce,
     unstakeToken: UnstakeToken.reduce,
     continuation: ConfirmTxn.reduce,
     adminGroupInfo: Group.reduce,
     adminStakings: SaerchStakingGroupInfo.reduce,
     adminDash: AdminDash.reduce,
-    bridgeMain: Main.reduce,
-    swap: Swap.reduce,
-    liquidity: Liquidity.reduce
 });
 
 export const rootReducer = combineReducers({ data, ui });

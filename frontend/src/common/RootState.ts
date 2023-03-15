@@ -3,9 +3,7 @@ import { GroupInfo, StakeEvent, StakingApp, UserStake } from "./Types";
 import { GroupInfoState } from '../pages/admin/groupInfo/groupinfo';
 import { SaerchStakingGroupInfoState } from '../pages/admin/stakings/stakings';
 import { adminDashState as AdminDashState } from '../pages/admin/dashboard/adminDash';
-import { MainState } from '../tokenBridge/pages/main/main';
-import { swapState } from '../tokenBridge/pages/swap/swap';
-import { liquidityState } from '../tokenBridge/pages/liquidity/liquidity';
+
 export interface UserPreference {
     lastRedirectLink?: string;
     lastSuccessMessage?: string;
@@ -60,12 +58,6 @@ export interface GroupData {
     info: GroupInfo,
 }
 
-
-export interface BridgeMainState extends MainState{
-    connectError: string,
-    initialised: boolean,
-}
-
 export interface RootState {
     data : {
         userData: { profile: AppUserProfile },
@@ -84,9 +76,6 @@ export interface RootState {
         continuation: ContinuationState,
         adminGroupInfo: GroupInfoState
         adminStakings: SaerchStakingGroupInfoState,
-        adminDash: AdminDashState,
-        bridgeMain: BridgeMainState,
-        swap: swapState,
-        liquidity: liquidityState
+        adminDash: AdminDashState
     }
 }

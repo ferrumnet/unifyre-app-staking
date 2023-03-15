@@ -2,7 +2,7 @@
 import { Injectable, JsonRpcRequest, ValidationUtils, Network, JsonApiClient } from "ferrum-plumbing";
 import { Dispatch, AnyAction } from "redux";
 import { addAction, CommonActions } from "../common/Actions";
-import { logError, Utils } from "../common/Utils";
+import { isLessThan24HourAgo, logError, NetworksDropdownValues, Utils } from "../common/Utils";
 import { UnifyreExtensionKitClient } from 'unifyre-extension-sdk';
 import { CONFIG } from "../common/IocModule";
 import { AppUserProfile } from "unifyre-extension-sdk/dist/client/model/AppUserProfile";
@@ -58,6 +58,7 @@ export class StakingAppClient implements Injectable {
 
     async signInToServer2(userProfile: AppUserProfile): Promise<AppUserProfile|undefined> {
         ValidationUtils.isTrue(!!userProfile, '"userProfile" must be provided');
+
         const address = addressForUser(userProfile);
         ValidationUtils.isTrue(!!address, 'User must have a valid "address"');
         const userAddress = address!.address;
@@ -154,8 +155,9 @@ export class StakingAppClient implements Injectable {
     async getStakingsForToken(dispatch: Dispatch<AnyAction>,currency: string){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
+            const curr = `${currency.split(':')[0]}:${currency.split(':')[1].toLowerCase()}`
             const res = await this.api({
-                command: 'getStakingsForToken', data: {currency}, params: [] } as JsonRpcRequest);
+                command: 'getStakingsForToken', data: {currency:curr}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
             }
@@ -171,8 +173,9 @@ export class StakingAppClient implements Injectable {
     async addNewStakingToGroup(dispatch: Dispatch<AnyAction>,stake: StakingApp){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
         try {
+            const remappedNetwork = NetworksDropdownValues.find(e=>e.identifier === stake.network)
             const res = await this.api({
-                command: 'adminSaveStakingContractInfo', data: {...stake,adminSecret:'TEST_SECRET'}, params: [] } as JsonRpcRequest);
+                command: 'adminSaveStakingContractInfo', data: {...stake,network: remappedNetwork?.value,adminSecret:'STAKINGADMIN'}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
             }
@@ -187,9 +190,11 @@ export class StakingAppClient implements Injectable {
 
     async updateStakingInfo(dispatch: Dispatch<AnyAction>,stake: StakingApp){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        const curr = `${stake.currency.split(':')[0]}:${stake.currency.split(':')[1].toLowerCase()}`
+
         try {
             const res = await this.api({
-                command: 'adminUpdateStakingContractInfo', data: {...stake}, params: [] } as JsonRpcRequest);
+                command: 'adminUpdateStakingContractInfo', data: {...stake,currency:curr}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
             }
@@ -204,9 +209,10 @@ export class StakingAppClient implements Injectable {
 
     async deleteStakingInfo(dispatch: Dispatch<AnyAction>,stake: StakingApp){
         dispatch(addAction(CommonActions.WAITING, { source: 'signInToServer' }));
+        const remappedNetwork = NetworksDropdownValues.find(e=>e.identifier === stake.network)?.value || stake.network
         try {
             const res = await this.api({
-                command: 'adminDeleteStakingContractInfo', data: {...stake}, params: [] } as JsonRpcRequest);
+                command: 'adminDeleteStakingContractInfo',  data: {...stake,network: remappedNetwork}, params: [] } as JsonRpcRequest);
             if(res){
                 return res;
             }
@@ -266,6 +272,9 @@ export class StakingAppClient implements Injectable {
         //@ts-ignore
         theme['mainLogo'] = infos.mainLogo;
         infos.noMainPage = true;
+        const remappedNetwork = NetworksDropdownValues.find(e=>e.identifier === infos.network)
+        infos.network = remappedNetwork?.value || infos.network;
+        infos.defaultCurrency = `${remappedNetwork?.value || infos.network}:${infos.defaultCurrency.split(':')[1]}`
         try {
             const res = await this.api({
                 command: 'addGroupInfo', data: {info: {
@@ -356,7 +365,9 @@ export class StakingAppClient implements Injectable {
 
     async refreshStakeEvents(dispatch: Dispatch<AnyAction>, events: StakeEvent[]) {
         try {
-            const pendingTxs = events.filter(e => e.transactionStatus === 'pending')?.map(tx => tx.mainTxId);
+            const isRecent = isLessThan24HourAgo()
+            const pendingTxs = events.filter(e => e.transactionStatus === 'pending' || isLessThan24HourAgo(e.createdAt))?.map(tx => tx.mainTxId);
+            console.log(pendingTxs)
             if (!!pendingTxs.length) {
                 const updatedEvents = await this.api({
                     command: 'updateStakingEvents', data: { txIds: pendingTxs }, params: []});
@@ -483,7 +494,10 @@ export class StakingAppClient implements Injectable {
         const token = this.getToken(dispatch);
         try {
             dispatch(addAction(CommonActions.WAITING, { source: 'processRequest' }));
+            console.log('responseresponseresponse');
+
             const response = await this.client.getSendTransactionResponse(requestId);
+            console.log(response,'responseresponseresponse');
             if (response.rejected) {
                 throw new Error((response as any).reason || 'Request was rejected');
             }

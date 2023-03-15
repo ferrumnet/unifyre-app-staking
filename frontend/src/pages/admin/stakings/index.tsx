@@ -1,5 +1,5 @@
 import { useHistory } from 'react-router';
-import React,{useEffect} from 'react';
+import React,{useEffect, useState} from 'react';
 import { PrimaryButton, TextField } from '@fluentui/react';
 import { Divider,Dropdown } from '@fluentui/react-northstar'
 import {
@@ -10,10 +10,13 @@ import './stakings.scss';
 import { connect } from 'react-redux';
 import { SaerchStakingGroupInfo, SaerchStakingGroupInfoDispatch,SaerchStakingGroupInfoProps } from './stakings';
 import { GroupInfo ,StakingApp } from '../../../common/Types';
-import { stakingFields,editableStakingFields,newStaking } from '../../../common/Utils';
+import { stakingFields,editableStakingFields,newStaking, NetworksDropdownValues } from '../../../common/Utils';
 
 function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroupInfoDispatch) {
     const history  = useHistory();
+    const [groupFilter,setGroupFilter] = useState('')
+    const [groups,setGroups] = useState([''])
+    const [results,showResults] = useState(false)
 
     const getGroupId = (currency: string) => {
         return props.groupInfos.filter(e=>e.defaultCurrency===currency)[0].groupId
@@ -23,18 +26,50 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
         return currency.split(' ')[0];
     }
 
+    const groupsDetails = [...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId})`)]
+
     const option = {
         "staking":"staking",
         "liquidity":"stakeFarming"
     }
 
     useEffect(()=>{
+        if(props.groupInfos.length > 0){
+            setGroups([...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId})`)])
+        }
+    },[props.groupInfos]);
+
+    useEffect(()=>{
         props.fetchGroups();
     },[]);
 
+    const handleFilter = (value:string) => {
+        setGroupFilter(value)
+        if(value){
+            const filter = [...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId.toLowerCase()})`)].filter(
+                e => e.toLowerCase().includes(value.toLowerCase())
+            )
+            setGroups(filter)
+        }else{
+            const filter = [...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId})`)]
+            showResults(false)
+            setGroups(filter)
+        }
+       
+    }
+
+    const handleStakingClick = (info) => {
+        showResults(true)
+        setGroupFilter(info)
+        props.onChangeCurrency( getCurrency(info?.toString() || ''), props.groupInfos, props.fetchStakings)
+    }
+
+    const remappedNetwork = NetworksDropdownValues.find(e=>e.value===props.selectedStaking.network)?.identifier || props.selectedStaking.network
+
+    const url = (curr:string) => `https://stake.unifyre.io/${curr}/info/${props.selectedStaking.contractAddress}/${remappedNetwork}`
 
     const infoCards = ( info : StakingApp,index:number ) => (
-        <div className="info-card" onClick={ () => props.onSelect(index,props.stakings)}>
+        <div className="info-card" onClick={ () =>  props.onSelect(index,props.stakings)}>
             <div className="info">
                 Name : { info.name }
             </div>
@@ -50,8 +85,16 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
         </div>
     )    
 
-    const groups = [...props.groupInfos.map(e=>`${e.defaultCurrency} (${e.groupId})`)]
-    console.log(props);
+    const GroupCards = ( info : string,index:number ) => (
+        <div className="info-card" onClick={()=>handleStakingClick(info) }>
+            <div className="info">
+                { info }
+            </div>
+          
+        </div>
+    )    
+    
+
     return(
         <div>
             {   
@@ -60,35 +103,68 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                     <div className="search-fields">
                         <Row ><ThemedText.H3>{`Search Group Stakings By Currency`}</ThemedText.H3></Row>
                         <Gap/>
-                        <Dropdown
+                        {/* <Dropdown
                             items={groups}
                             placeholder="Select Group Currency"
-                            checkable
-                            search
+                            checkable={false}
+                            search={false}
                             onChange={(e:any, selectedOption) => props.onChangeCurrency( getCurrency(selectedOption.value?.toString() || ''), props.groupInfos, props.fetchStakings ) }
-                        />
-                        
-                        <Gap/>
-                        <div className="form-header">
+                        /> */}
+                        <div>
+                                <TextField
+                                    placeholder='Filter Stakings Id'
+                                    onChange={(e,v)=>handleFilter(v||'')}
+                                    value={groupFilter}
+                                />
+                                <Gap/>
+                            </div>
+                            <Gap/>
+                        {/* <div className="form-header">
                             <PrimaryButton onClick={()=>props.fetchStakings(props.currency)}>Search</PrimaryButton>
-                        </div>
+                        </div> */}
                     </div>
-                    <div>
-                        <div className="form-header">
-                            <Row><ThemedText.H3>{`Group Stakings`}</ThemedText.H3></Row>
-                            { (props.currency != '') && <PrimaryButton  onClick={()=>props.onNew()} >Add New Staking to Group</PrimaryButton> }
+                    {
+                        !results &&
+                        <div>
+                            <div className="form-header">
+                                <Row><ThemedText.H3>{`Available Group Stakings`}</ThemedText.H3></Row>
+                            </div>
+                            <Gap size={"small"}/>
+                            <Divider/>
+                            {
+                                groups.map(
+                                    //@ts-ignore
+                                    (e,i) => GroupCards(e,i)
+                                )
+                            }
+                            <Gap/>   
                         </div>
-                        <Gap size={"small"}/>
-                        <Divider/>
-                        {
-                            props.stakings.map(
-                                //@ts-ignore
-                                (e,i) => infoCards(e,i)
-                            )
-                        }
-                        <Gap/>
-                       
-                    </div>
+                    }
+                    {
+                        results &&
+                        <div>
+                            <div className="form-header">
+                                <Row><ThemedText.H3>{`Group Stakings`}</ThemedText.H3></Row>
+                                {
+                                    (props.currency != '') && 
+                                        <PrimaryButton  onClick={()=>props.onNew()} >
+                                            Add New Staking to Group
+                                        </PrimaryButton> 
+                                }
+                              
+                            </div>
+                            <Gap size={"small"}/>
+                            <Divider/>
+                            {
+                                props.stakings.map(
+                                    //@ts-ignore
+                                    (e,i) => infoCards(e,i)
+                                )
+                            }
+                            <Gap/>
+                        
+                        </div>
+                    }
                 </div>
             }
             {
@@ -123,6 +199,21 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                                         />
                                         <Gap/>
                                     </>
+                                    : (i === 'network') ? 
+                                    <>
+                                        <Gap/>
+                                        <div> {i} </div>
+                                        <Gap size={"small"}/>
+                                        <Dropdown
+                                            items={NetworksDropdownValues.map(e=>e.identifier)}
+                                            placeholder={`Select Network`}
+                                            checkable
+                                            value={props.selectedStaking[`${i}`] || ''}
+                                            onChange={(e:any, selectedOption) => props.onSelectedInfoChange(selectedOption.value || '', `${i}`)}
+                                            //@ts-ignore
+                                        />
+                                        <Gap/>
+                                    </>
                                 
                                     :
                                     <>
@@ -140,7 +231,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                     }
                     <Gap/>
                     <div>
-                        <PrimaryButton onClick={()=>props.addNewStakings(props.selectedStaking,props.onReturn,()=>props.fetchStakings(props.currency))}>
+                        <PrimaryButton onClick={()=>props.addNewStakings(props.selectedStaking,props.onNew,()=>props.fetchStakings(props.currency))}>
                             {'Add Staking to Group'}
                         </PrimaryButton>
                     </div>
@@ -159,7 +250,7 @@ function SaerchStakingInfo(props: SaerchStakingGroupInfoProps&SaerchStakingGroup
                     <Gap size={"small"}/>
                     <Divider/>
                     <Row centered>
-                        <div> Staking Url : {`https://stake.unifyre.io/${getGroupId(props.currency)}/info/${props.selectedStaking.contractAddress}/${props.selectedStaking.network}`}</div>
+                        <div style={{"cursor":"pointer"}}> Staking Url : {url(getGroupId(props.currency))} <span onClick={()=>navigator.clipboard.writeText(url(getGroupId(props.currency)))}>{'🔗'}</span></div>
                     </Row>
                     <Gap/>
                     <Gap/>

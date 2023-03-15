@@ -4,7 +4,7 @@ import { addAction, CommonActions } from "../../common/Actions";
 import { DashboardState, RootState } from "../../common/RootState";
 import { intl } from "unifyre-react-helper";
 import { StakingAppClient, StakingAppServiceActions } from "../../services/StakingAppClient";
-import { BackendMode, logError, Utils } from "../../common/Utils";
+import { BackendMode, logError, NetworksDropdownValues, Utils } from "../../common/Utils";
 import { loadThemeForGroup } from "../../themeLoader";
 import { Connect, CurrencyList, UnifyreExtensionWeb3Client } from "unifyre-extension-web3-retrofit";
 import { ReponsivePageWrapperDispatch } from "../../base/PageWrapperTypes";
@@ -37,9 +37,11 @@ function mapStateToProps(state: RootState): DashboardProps {
     const stakingData = state.data.stakingData.selectedContract;
     const addr = userProfile?.accountGroups[0]?.addresses || {};
     const address = addr[0] || {};
+    console.log(stakingData?.network, address?.network)
+    const remappedNetwork = (val) => NetworksDropdownValues.find(e=>e.value===val)?.identifier || val
     const netError = stakingData?.network && address?.network &&
         (stakingData?.network !== address?.network) ?
-        `You are connected to ${address.network}. Please connect to ${stakingData!.network} for the current staking` :
+        `You are connected to ${remappedNetwork(address.network)}. Please connect to ${remappedNetwork(stakingData!.network)} for the current staking` :
         '';
     return {
         ...state.ui.dashboard,
@@ -108,7 +110,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>) => ({
                 }
                 
                 const currencyList = inject<CurrencyList>(CurrencyList);
-                currencyList.set([groupInfo.defaultCurrency]);
+                currencyList.set([groupInfo.defaultCurrency, 'ARBITRUM_ETHEREUM:0x32794Db72F65BF6533879BdBA5249784e5e49a44']);
                 console.log(currencyList.get(),"currencyListcurrencyList")
                 loadThemeForGroup(groupInfo.themeVariables);
                 await client.loadStakingsForToken(dispatch, groupInfo.defaultCurrency);

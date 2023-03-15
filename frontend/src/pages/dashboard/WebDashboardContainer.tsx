@@ -24,6 +24,7 @@ import { LoginContainer } from "../admin/dashboard/login";
 import { GroupInfoContainer } from "../admin/groupInfo";
 import { StakingInfoContainer } from "../admin/stakings";
 
+
 function _loadTheme(themeVariables: FulentTheme, customTheme: any) {
     const themeConstants = WebdefaultDarkThemeConstantsBuilder(themeVariables)
       .set(Theme.Colors.bkgShade0, themeVariables.semanticColors.bodyBackground)
@@ -95,8 +96,9 @@ function DashboardComponent(props: DashboardProps&DashboardDispatch) {
                 theme={theme}
                 onConnected={props.onConnected}
                 onDisconnected={props.onDisconnected}
+                isAdminPage={groupId === 'admin'}
                 onConnectionFailed={props.onConnectionFailed}
-                container={props.initialized ? IocModule.container() : undefined}
+                container={props.initialized ? groupId != 'admin' ? IocModule.container() : undefined : undefined}
                 authError={props.error}
                 panelOpen={false}
               >
